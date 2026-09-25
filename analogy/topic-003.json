@@ -1,0 +1,44 @@
+{
+  "topic_no": "003",
+  "roadmap_id": "0.3",
+  "title": "Cloud City Construction: Freestanding Estates vs Shared High-Rise Apartments",
+  "city_concept": "Estates with Private Utilities vs High-Rise Units with Shared Plumbing",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery was buying an entire detached estate with its own dedicated power generator, water well, and security guard for every single baker (Virtual Machines). Costs soared, and building a new estate took 20 minutes.",
+      "analogy_elements": [
+        "Detached Mansions (VMs)",
+        "Private Power Plant (Guest Kernel)"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian constructed a modular high-rise apartment complex (Containers / Kubernetes). Bakers rent individual private apartments (Namespaces) sharing central city water and power mains (Shared Linux Kernel). New rooms furnish in seconds.",
+      "analogy_elements": [
+        "Apartment Complex (Container Host)",
+        "Modular Apartments (Pods)",
+        "Shared Plumbing (Host Kernel)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "One reckless baker left their commercial dough mixer running at full throttle, threatening to brown out the entire building. Superintendent Ola clamped a municipal circuit breaker (cgroup CPU/memory limit) on that specific apartment.",
+      "analogy_elements": [
+        "Power Surge (CPU Spike)",
+        "Circuit Breaker (cgroups)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In an apartment building, a catastrophic foundation crack can compromise all tenants simultaneously. Because containers share one host kernel, an unpatched kernel privilege escalation allows an attacker to break out of a container onto the host machine.",
+      "analogy_elements": [
+        "Shared Kernel Security Boundary"
+      ]
+    }
+  ]
+}

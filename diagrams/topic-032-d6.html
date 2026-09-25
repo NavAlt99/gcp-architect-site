@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Observability: Cloud Monitoring, Logging, Trace &amp; Profiler — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-032.html">← Topic page</a><span>4.5 · TOPIC-032-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-032-d6",
+  "title": "Observability: Cloud Monitoring, Logging, Trace & Profiler \u2014 D6",
+  "topic_no": "032",
+  "roadmap_id": "4.5",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Observability decouples telemetry collection from application execution. OpenTelemetry agents export structured logs, latency metrics, and trace contexts asynchronously to centralized Google Operations endpoints.",
+  "groups": [
+    {
+      "id": "g-microservices",
+      "label": "Application Workload Tier (GKE & Cloud Run)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-otel-mesh",
+      "label": "OpenTelemetry Collection & Log Routing Sinks",
+      "type": "project",
+      "scope": "global",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-ops-analytics",
+      "label": "Cloud Operations Analytics & Profiler Suite",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-pod",
+      "label": "App Microservice Pod",
+      "product": "GKE Workload",
+      "group": "g-microservices",
+      "plane": "data",
+      "x": 150,
+      "y": 140,
+      "detail": "Microservice instrumented with OpenTelemetry SDK; injects traceparent header."
+    },
+    {
+      "id": "otel-agent",
+      "label": "OpenTelemetry Collector",
+      "product": "DaemonSet / Sidecar",
+      "group": "g-microservices",
+      "plane": "control",
+      "x": 150,
+      "y": 280,
+      "detail": "Batches metrics, logs, and spans; flushes asynchronously over gRPC to Google APIs."
+    },
+    {
+      "id": "log-router",
+      "label": "Cloud Logging Log Router",
+      "product": "Centralized Log Router",
+      "group": "g-otel-mesh",
+      "plane": "control",
+      "x": 450,
+      "y": 140,
+      "detail": "Routes structured JSON logs to _Default bucket, BigQuery long-term sink, and Pub/Sub."
+    },
+    {
+      "id": "trace-engine",
+      "label": "Cloud Trace Distributed Spans",
+      "product": "Trace Analysis",
+      "group": "g-otel-mesh",
+      "plane": "data",
+      "x": 450,
+      "y": 280,
+      "detail": "Visualizes end-to-end multi-hop latency waterfalls across microservices."
+    },
+    {
+      "id": "monitoring-mql",
+      "label": "Cloud Monitoring (MQL)",
+      "product": "Metrics & SLO Alerts",
+      "group": "g-ops-analytics",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Evaluates p99 latency queries and triggers PagerDuty alerts on error budget burn."
+    },
+    {
+      "id": "profiler-daemon",
+      "label": "Cloud Profiler (Continuous)",
+      "product": "Flame Graph Profiling",
+      "group": "g-ops-analytics",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Low-overhead continuous profiling identifying exact CPU and memory memory leaks."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-pod",
+      "to": "otel-agent",
+      "label": "1. Flush Telemetry (OTLP)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "otel-agent",
+      "to": "log-router",
+      "label": "2. Stream Structured JSON Logs",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "otel-agent",
+      "to": "trace-engine",
+      "label": "3. Push Trace Spans (W3C)",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "log-router",
+      "to": "monitoring-mql",
+      "label": "4. Log-Based Metric Extraction",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "app-pod",
+      "to": "profiler-daemon",
+      "label": "5. Continuous Heap Sampling",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Asynchronous Telemetry Ingestion",
+      "edges": [
+        "e1"
+      ],
+      "action": "Microservice flushes metrics, logs, and trace spans to OpenTelemetry collector.",
+      "why_traversal": "Asynchronous batching introduces zero latency into customer transaction paths.",
+      "protocol": "OTLP / gRPC Port 4317",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Log Routing & Filtering",
+      "edges": [
+        "e2",
+        "e4"
+      ],
+      "action": "Log Router extracts error metrics and routes compliance logs to BigQuery.",
+      "why_traversal": "Exclusion filters prevent storing noisy debug logs, saving 80% on logging bills.",
+      "protocol": "Cloud Logging API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Distributed Trace Analysis",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Trace correlates spans with TraceID; identifies 1,800ms bottleneck in database query.",
+      "why_traversal": "Pinpoints exact microservice causing latency degradation across complex meshes.",
+      "protocol": "Cloud Trace API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Continuous Profiling",
+      "edges": [
+        "e5"
+      ],
+      "action": "Cloud Profiler captures CPU flame graph, highlighting inefficient regex in production code.",
+      "why_traversal": "Less than 1% CPU overhead enables safe continuous profiling directly in production.",
+      "protocol": "Cloud Profiler Agent",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "log-ingest-cost-shock",
+      "label": "Debug Log Ingestion Explosion",
+      "changes": {
+        "failedNodes": [
+          "log-router"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Developer left DEBUG logging enabled in 500 pods; generated 50TB logs/day.",
+      "diverted_path": "Monthly logging costs spike by $25,000 within 48 hours.",
+      "blast_radius": "Severe billing overrun; log router throttles non-critical projects.",
+      "recovery": "Create exclusion filter in Log Router to drop severity < INFO; set up log volume alerts."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "app-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

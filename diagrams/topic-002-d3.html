@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>System Failure Modes: Resource Exhaustion &amp; Cascade Recovery</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-002.html">← Topic page</a><span>0.2 · TOPIC-002-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-002-d3",
+  "title": "System Failure Modes: Resource Exhaustion & Cascade Recovery",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "failure",
+  "purpose": "Visualizes the critical failure mechanics of Linux OS resource exhaustion (EMFILE file descriptor saturation and 100% inode depletion) inside a production compute instance.",
+  "routing_rationale": "When application workloads experience unexpected traffic surges, kernel-level limits (ulimit -n) reject new connection sockets. If unhandled errors trigger uncontrolled debug logging, filesystem inode exhaustion locks the persistent disk into read-only mode.",
+  "groups": [
+    {
+      "id": "g-app",
+      "label": "Application Runtime Space",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 30,
+      "width": 410,
+      "height": 350
+    },
+    {
+      "id": "g-os",
+      "label": "OS Kernel Limits & Filesystem Subsystem",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 470,
+      "y": 30,
+      "width": 430,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Traffic Burst",
+      "product": "External Ingress",
+      "group": "g-app",
+      "plane": "data",
+      "x": 120,
+      "y": 110,
+      "detail": "Spike of 50,000 concurrent HTTP requests hitting the Compute Engine instance."
+    },
+    {
+      "id": "proc",
+      "label": "Web Server Daemon",
+      "product": "Nginx / Node.js Process",
+      "group": "g-app",
+      "plane": "data",
+      "x": 280,
+      "y": 110,
+      "detail": "Accepts client TCP connections and delegates request processing to worker threads."
+    },
+    {
+      "id": "disk",
+      "label": "Error Log (/var/log)",
+      "product": "Root Persistent Disk",
+      "group": "g-app",
+      "plane": "data",
+      "x": 280,
+      "y": 260,
+      "detail": "Captures unthrottled verbose application stack traces and debug dumps during cascading failures."
+    },
+    {
+      "id": "nofile",
+      "label": "ulimit -n (FD Limit)",
+      "product": "Kernel Process Quota",
+      "group": "g-os",
+      "plane": "control",
+      "x": 670,
+      "y": 110,
+      "detail": "Limits maximum open file descriptors (sockets, files, pipes) per process; default is often 1024."
+    },
+    {
+      "id": "inodes",
+      "label": "Disk Inode Table",
+      "product": "Ext4 / XFS Filesystem",
+      "group": "g-os",
+      "plane": "data",
+      "x": 670,
+      "y": 260,
+      "detail": "Fixed metadata table tracking file pointers; exhausting inodes causes 'No space left on device' even with free disk bytes."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-conn",
+      "from": "client",
+      "to": "proc",
+      "label": "1. 50k Concurrent HTTP Requests",
+      "plane": "data"
+    },
+    {
+      "id": "e-fd",
+      "from": "proc",
+      "to": "nofile",
+      "label": "2. socket() / accept4() Syscall",
+      "plane": "control"
+    },
+    {
+      "id": "e-wr",
+      "from": "proc",
+      "to": "disk",
+      "label": "3. Unthrottled Error Log Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e-in",
+      "from": "disk",
+      "to": "inodes",
+      "label": "4. Allocate Inode per Micro-log",
+      "plane": "data"
+    },
+    {
+      "id": "e-rec",
+      "from": "nofile",
+      "to": "proc",
+      "label": "5. prlimit Live Remediation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Traffic Surge & Socket Descriptor Allocation",
+      "edges": [
+        "e-conn"
+      ],
+      "action": "Flash crowd or retry storm floods Web Server Daemon with 50,000 concurrent TCP connection attempts.",
+      "why_traversal": "Each active HTTP connection requires a dedicated socket file descriptor allocated by the Linux kernel.",
+      "protocol": "TCP SYN Flood / HTTP 1.1",
+      "plane": "Data Plane",
+      "narration": "Step 1: Sudden traffic surge directs thousands of concurrent client connections to the web server process.",
+      "check": {
+        "commands": "ss -s && netstat -ant | grep ESTABLISHED | wc -l",
+        "metrics": "guest/network/tcp_connections"
+      }
+    },
+    {
+      "n": 2,
+      "title": "File Descriptor Ceiling Reached (EMFILE Error)",
+      "edges": [
+        "e-fd"
+      ],
+      "action": "Web server reaches default ulimit -n ceiling (1024); kernel syscall accept4() returns errno 24 (EMFILE: Too many open files).",
+      "why_traversal": "Linux kernel enforces strict per-process file descriptor limits to prevent single processes from exhausting global kernel memory.",
+      "protocol": "POSIX accept4() Syscall / Error 24 EMFILE",
+      "plane": "Control Plane",
+      "narration": "Step 2: Process exhausts allocated file descriptors; kernel immediately rejects subsequent socket() and accept() calls.",
+      "check": {
+        "commands": "lsof -p $(pgrep nginx) | wc -l && ulimit -n",
+        "logs": "nginx: [emerg] socket() failed (24: Too many open files)"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Cascading Error Logging & Disk I/O Saturation",
+      "edges": [
+        "e-wr"
+      ],
+      "action": "Application catches unhandled connection failures and writes verbose stack traces to /var/log/app/error.log at 10,000 lines/second.",
+      "why_traversal": "Unthrottled error logging generates massive write I/O amplification, saturating virtual persistent disk IOPS and storage bandwidth.",
+      "protocol": "POSIX write() Syscall / Ext4 Write Queue",
+      "plane": "Data Plane",
+      "narration": "Step 3: Unhandled failure cascade triggers emergency error logging, hammering persistent disk write IOPS.",
+      "check": {
+        "commands": "iostat -xz 1 5 && tail -f /var/log/app/error.log",
+        "metrics": "compute.googleapis.com/instance/disk/write_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Filesystem Inode Table Depletion (100% Inodes)",
+      "edges": [
+        "e-in"
+      ],
+      "action": "Micro-log creation exhausts 100% of available filesystem inodes; kernel marks filesystem read-only, rejecting all writes despite gigabytes of free disk space.",
+      "why_traversal": "Ext4/XFS filesystems allocate a finite inode table at format time. Even a 0-byte file requires one inode.",
+      "protocol": "Ext4 Inode Allocation Block / VFS Read-Only Lock",
+      "plane": "Data Plane",
+      "narration": "Step 4: Millions of error files exhaust the filesystem inode table; kernel puts disk in read-only mode to prevent corruption.",
+      "check": {
+        "commands": "df -ih / && touch /tmp/test",
+        "logs": "kernel: EXT4-fs error: no free inode; remounting read-only"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Live prlimit Elevation & Automated Remediation",
+      "edges": [
+        "e-rec"
+      ],
+      "action": "Automated SRE remediation script detects saturation, executes prlimit --pid=<pid> --nofile=65536:65536 live, and purges micro-logs.",
+      "why_traversal": "prlimit allows modifying running process resource ceilings without restarting the daemon, restoring connection capacity immediately.",
+      "protocol": "Kernel prlimit64() Syscall / Logrotate Prune",
+      "plane": "Control Plane",
+      "narration": "Step 5: Live prlimit call expands process file descriptor ceiling to 65,536; logrotate prunes orphan logs and normal traffic resumes.",
+      "check": {
+        "commands": "prlimit --pid=$(pgrep nginx) --nofile && df -ih /",
+        "logs": "prlimit applied; file descriptor ceiling updated to 65536"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "inode-exhaustion-outage",
+      "label": "100% Inode Exhaustion Outage (Silent Lockup)",
+      "changes": {
+        "failedNodes": [
+          "inodes",
+          "disk"
+        ]
+      },
+      "narration": "Unrotated session files or debug logs consume every filesystem inode. df -h shows 50GB free, but applications crash with 'No space left on device'.",
+      "root_cause": "Missing logrotate configuration and rapid generation of millions of small temporary files.",
+      "path_divergence": "System cannot write PID files, locks, or database journals. Daemon panics and system monitoring scripts fail to record data.",
+      "blast_radius": "Entire Compute Engine VM instance. All resident daemons crash or enter read-only degraded state.",
+      "durable_prevention": "Configure daily logrotate with maxsize 100M and maxage 7; set up Cloud Monitoring metric disk/inode_used_percent > 85%.",
+      "check": {
+        "command": "df -ih /",
+        "metric": "guest/disk/inode_used_percent = 100"
+      }
+    },
+    {
+      "id": "emfile-socket-rejection",
+      "label": "EMFILE Socket Rejection Cascade",
+      "changes": {
+        "failedNodes": [
+          "nofile",
+          "proc"
+        ]
+      },
+      "narration": "High-traffic web proxy hits system default ulimit -n ceiling of 1024 open files. Inbound TCP handshakes stall, triggering 502 Bad Gateway across upstream load balancers.",
+      "root_cause": "systemd unit file omitted LimitNOFILE directive; inherited default soft limit of 1024 from parent init environment.",
+      "path_divergence": "Incoming connections sit in TCP listen backlog queue until backlog fills, dropping subsequent SYN packets.",
+      "blast_radius": "All incoming user traffic routed through this web proxy instance.",
+      "durable_prevention": "Add LimitNOFILE=65535 to [Service] block in systemd unit file and set /etc/security/limits.conf system-wide.",
+      "check": {
+        "command": "prlimit --pid=$(pgrep nginx) | grep NOFILE",
+        "metric": "loadbalancing.googleapis.com/https/backend_request_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e-conn"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes the critical failure mechanics of Linux OS resource exhaustion (EMFILE file descriptor saturation and 100% inode depletion) inside a production compute instance."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

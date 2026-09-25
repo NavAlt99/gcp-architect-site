@@ -1,0 +1,43 @@
+{
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "title": "Cloud City: Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML",
+  "city_concept": "City Sky Regatta & Signal Mirrors",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Airships were racing across the mountain valley, but spectators in the town square could only see distant specks and had no idea who was winning.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Broadcaster Brian mounted signal mirrors on airships (Video Feeds) and set up relay towers (Cloud CDN) beaming live flags to every street corner.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Brian hired an actuary (Vertex AI) who calculated wind drift to announce the winner 30 seconds before the final turn.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Signal mirrors are obscured by fog; digital video streaming over cloud CDN reaches millions of devices simultaneously in 4K.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

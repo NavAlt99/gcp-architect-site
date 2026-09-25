@@ -1,0 +1,218 @@
+{
+  "id": "topic-031-d6",
+  "title": "Disaster Recovery Patterns: RTO, RPO & Multi-Region Strategies \u2014 D6",
+  "topic_no": "031",
+  "roadmap_id": "4.4",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Selecting a Disaster Recovery strategy requires balancing the financial cost of idle standby infrastructure against the business revenue loss per hour of operational downtime.",
+  "groups": [
+    {
+      "id": "g-primary-region",
+      "label": "Primary Production Region (us-central1)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-replication-ch",
+      "label": "Continuous Data Replication Channel",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dr-standby-region",
+      "label": "Disaster Recovery Region (us-east4)",
+      "type": "region",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pri-app",
+      "label": "Primary GKE Workloads",
+      "product": "100% Active User Traffic",
+      "group": "g-primary-region",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Active regional cluster processing 10,000 orders/sec."
+    },
+    {
+      "id": "pri-db",
+      "label": "Cloud SQL Primary DB",
+      "product": "Synchronous SSD Storage",
+      "group": "g-primary-region",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Primary transactional database writing WAL logs."
+    },
+    {
+      "id": "dr-rep-channel",
+      "label": "Cross-Region Read Replica",
+      "product": "Async Cross-Region CDC",
+      "group": "g-replication-ch",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Replicates WAL changes across Google global backbone with RPO < 5 seconds."
+    },
+    {
+      "id": "dr-standby-app",
+      "label": "Warm Standby GKE Cluster",
+      "product": "Minimal Baseline (2 Pods)",
+      "group": "g-dr-standby-region",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Keeps core pods pre-warmed; ready to autoscale to 100 pods within 3 minutes."
+    },
+    {
+      "id": "dr-promoted-db",
+      "label": "Promotable Secondary DB",
+      "product": "RTO < 5m / RPO < 5s",
+      "group": "g-dr-standby-region",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Promoted to read-write primary upon regional failover activation."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "pri-app",
+      "to": "pri-db",
+      "label": "1. Write Transaction Data",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "pri-db",
+      "to": "dr-rep-channel",
+      "label": "2. Stream Cross-Region Replication",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dr-rep-channel",
+      "to": "dr-promoted-db",
+      "label": "3. Replicate to Backup Region",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "dr-standby-app",
+      "to": "dr-promoted-db",
+      "label": "4. Re-bind Connection on Failover",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Asynchronous Cross-Region Sync",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Primary writes replicate across Google dedicated fiber backbone to us-east4.",
+      "why_traversal": "Guarantees RPO < 5 seconds without penalizing primary write latency.",
+      "protocol": "PostgreSQL Streaming Replication",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Warm Standby Ready State",
+      "edges": [
+        "e4"
+      ],
+      "action": "Standby GKE cluster runs minimal baseline instances, ready for instant scale-up.",
+      "why_traversal": "Reduces RTO to < 5 minutes while saving 70% compute costs compared to hot standby.",
+      "protocol": "GKE Cluster Autoscaling",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cold-backup-rto-trap",
+      "label": "Cold Backup RTO Disaster",
+      "changes": {
+        "failedNodes": [
+          "dr-standby-app"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Organization used Cold Backup strategy for 20TB database to save money.",
+      "diverted_path": "Restoring 20TB database from GCS bucket took 28 hours during regional outage.",
+      "blast_radius": "Business offline for over a full day; massive financial loss.",
+      "recovery": "Upgrade mission-critical workloads from Cold Backup to Warm Standby or Spanner Multi-Region."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "pri-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "pri-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

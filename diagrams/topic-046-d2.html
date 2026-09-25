@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: EHR Healthcare — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-046.html">← Topic page</a><span>7.4a · TOPIC-046-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-046-d2",
+  "title": "Case Study: EHR Healthcare \u2014 Request & Control Flow",
+  "topic_no": "046",
+  "roadmap_id": "7.4a",
+  "kind": "flow",
+  "purpose": "Traces End-to-End Patient Record Ingestion: from hospital clinic HL7 message to FHIR parsing, DLP tokenization, and Spanner transactional commit.",
+  "routing_rationale": "Streaming patient telemetry through the Cloud Healthcare API ensures real-time clinical record availability across distributed hospital emergency rooms.",
+  "groups": [
+    {
+      "id": "g-clinic-admission",
+      "label": "Emergency Room Admission Terminal",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ingest-transform",
+      "label": "Cloud Healthcare FHIR Pipeline",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-spanner-commit",
+      "label": "Multi-Region Patient EHR Persistence",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "er-terminal",
+      "label": "ER Check-In Terminal",
+      "product": "HL7 ADT_A01 Message",
+      "group": "g-clinic-admission",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Nurse admits patient in hospital; generates HL7 admission transaction."
+    },
+    {
+      "id": "hl7-adapter",
+      "label": "Healthcare API Ingress",
+      "product": "HL7v2 to FHIR R4 Converter",
+      "group": "g-ingest-transform",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Validates message structure and converts to Patient and Encounter FHIR resources."
+    },
+    {
+      "id": "audit-hipaa",
+      "label": "HIPAA Audit Logger",
+      "product": "Cloud Audit Logs (Data Access)",
+      "group": "g-ingest-transform",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Logs exact clinician ID, timestamp, and patient identifier access for HIPAA audits."
+    },
+    {
+      "id": "spanner-ehr-master",
+      "label": "Cloud Spanner Leader",
+      "product": "External Consistency Commit",
+      "group": "g-spanner-commit",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Commits patient encounter in 4ms; immediately visible to doctors in all regions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "er-terminal",
+      "to": "hl7-adapter",
+      "label": "1. Ingest ADT_A01 Admission",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "hl7-adapter",
+      "to": "audit-hipaa",
+      "label": "2. Record HIPAA Audit Event",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "hl7-adapter",
+      "to": "spanner-ehr-master",
+      "label": "3. Commit FHIR Encounter Record",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "HL7 to FHIR Transformation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Healthcare API ingests message and logs immutable data access audit trail.",
+      "why_traversal": "Guarantees regulatory compliance and converts proprietary formats to open standards.",
+      "protocol": "MLLP / HTTPS",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Multi-Region Clinical Commit",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Spanner commits transaction with TrueTime external consistency.",
+      "why_traversal": "Ensures doctors in any connected hospital clinic see identical, up-to-the-millisecond records.",
+      "protocol": "Spanner gRPC Commit",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "truetime-drift-spike",
+      "label": "Clock Drift Halts Cross-Region Transaction",
+      "changes": {
+        "failedNodes": [
+          "spanner-ehr-master"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Severe NTP clock skew detected on local client machine.",
+      "diverted_path": "Spanner TrueTime API prevents commit until uncertainty window resolves, ensuring zero data anomalies.",
+      "blast_radius": "Transaction delayed by 12ms.",
+      "recovery": "TrueTime self-stabilizes via Google atomic clock synchronization."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "er-terminal"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "er-terminal"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces End-to-End Patient Record Ingestion: from hospital clinic HL7 message to FHIR parsing, DLP tokenization, and Spanner transactional commit."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

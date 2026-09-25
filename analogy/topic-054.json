@@ -1,0 +1,43 @@
+{
+  "topic_no": "054",
+  "roadmap_id": "D.4",
+  "title": "Cloud City: Machine Learning: Vertex AI Architecture & MLOps Pipelines",
+  "city_concept": "City Guild of Inventors & Master Automata",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Clockmakers were building mechanical automata by hand, but every automaton was unique, broke down in rain, and could not be repaired by anyone else.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Master Inventor Vera established the Automata Assembly Works (Vertex AI): standardized gear templates (Pipelines) and precision testing benches (Evaluation).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Vera installed self-calibrating springs (Model Monitoring) that adjusted gear tension automatically as mechanical teeth wore down.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Clockwork gears wear out physically; digital AI models are retrained, versioned, and served elastically via cloud APIs.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

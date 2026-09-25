@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Serverless Compute: Cloud Run, Functions, and Workflows — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-015.html">← Topic page</a><span>2.3 · TOPIC-015-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-015-d2",
+  "title": "Serverless Compute: Cloud Run, Functions, and Workflows \u2014 Request & Control Flow",
+  "topic_no": "015",
+  "roadmap_id": "2.3",
+  "kind": "flow",
+  "purpose": "Traces cold-start and request invocation: from HTTPS client ingress through Cloud Run internal proxy to container startup and database query.",
+  "routing_rationale": "When traffic arrives at an idle service, Cloud Run launches container instances in hundreds of milliseconds, dynamically adjusting concurrency per container.",
+  "groups": [
+    {
+      "id": "g-req",
+      "label": "Idle Ingress State",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-scaling",
+      "label": "Scale-from-Zero Dynamic Controller",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-exec",
+      "label": "Warmed Serving Container",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-wake",
+      "label": "First User Request",
+      "product": "HTTPS Invocation",
+      "group": "g-req",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Arrives at service that has scaled down to 0 instances to save costs."
+    },
+    {
+      "id": "proxy-buffer",
+      "label": "Cloud Run Request Buffer",
+      "product": "Envoy Queue",
+      "group": "g-req",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Holds incoming HTTP connection open while container cold-starts."
+    },
+    {
+      "id": "run-scaler",
+      "label": "Instance Autoscaler",
+      "product": "Scale-to-Zero Controller",
+      "group": "g-scaling",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Detects 0 available instances; pulls image and provisions microVM in 350ms."
+    },
+    {
+      "id": "warm-container",
+      "label": "Active Container Instance",
+      "product": "Node.js Server",
+      "group": "g-exec",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Executes application bootstrap; binds to port $PORT (8080)."
+    },
+    {
+      "id": "served-resp",
+      "label": "HTTP 200 OK Response",
+      "product": "Client Delivery",
+      "group": "g-exec",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Releases buffered request and streams payload back to client."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-wake",
+      "to": "proxy-buffer",
+      "label": "1. Ingress on Idle Service",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "proxy-buffer",
+      "to": "run-scaler",
+      "label": "2. Signal Cold Start Needed",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "run-scaler",
+      "to": "warm-container",
+      "label": "3. Provision & Bootstrap MicroVM",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "proxy-buffer",
+      "to": "warm-container",
+      "label": "4. Release Buffered HTTP Request",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "warm-container",
+      "to": "served-resp",
+      "label": "5. Stream Payload (HTTP 200)",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Idle Connection Buffering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Request arrives at 0-replica service; proxy buffers connection while notifying scaler.",
+      "why_traversal": "Scale-to-zero saves 100% compute costs during periods of inactivity.",
+      "protocol": "HTTPS 443",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Sub-Second MicroVM Boot",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Run pulls container image from Artifact Registry cache and boots gVisor sandbox.",
+      "why_traversal": "Container starts in ~350ms, minimizing cold start latency penalty.",
+      "protocol": "Internal Infrastructure RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Execution and Response",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Proxy flushes buffered request to active container; application returns HTTP 200.",
+      "why_traversal": "Subsequent requests reuse warm container with sub-10ms response times.",
+      "protocol": "HTTP/1.1 TCP 8080",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cold-start-timeout",
+      "label": "Heavy Application Startup Timeout",
+      "changes": {
+        "failedNodes": [
+          "warm-container"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Heavy Java/Spring container took 45s to initialize, exceeding container startup timeout.",
+      "diverted_path": "Cloud Run terminates container; proxy returns HTTP 504 Gateway Timeout.",
+      "blast_radius": "First users encounter failure after extended wait.",
+      "recovery": "Configure min-instances = 1 to keep container warm; optimize JVM startup with GraalVM."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-wake"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-wake"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces cold-start and request invocation: from HTTPS client ingress through Cloud Run internal proxy to container startup and database query."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

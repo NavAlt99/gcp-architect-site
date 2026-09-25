@@ -1,0 +1,190 @@
+{
+  "id": "topic-041-d3",
+  "title": "Performance Optimization & Scalability \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "041",
+  "roadmap_id": "6.2",
+  "kind": "failure",
+  "purpose": "Simulates Cloud Bigtable Key Hotspotting & Automated Tablet Rebalancing: illustrates detection of monotonically increasing row keys and key visualizer remediation.",
+  "routing_rationale": "Monotonically increasing row keys (like sequential timestamps) cause all write traffic to pile onto a single tablet server; salting or reversing keys distributes load evenly across all nodes.",
+  "groups": [
+    {
+      "id": "g-hotspot-client",
+      "label": "IoT Ingestion Stream (Sequential Keys)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-bigtable-cluster",
+      "label": "Cloud Bigtable Distributed Tablet Cluster",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "iot-stream",
+      "label": "100k IoT Devices",
+      "product": "Row Key: timestamp#device_id",
+      "group": "g-hotspot-client",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "All 100,000 devices send metrics with current timestamp prefix: 2026-09-24T12:00:01#dev1."
+    },
+    {
+      "id": "key-visualizer",
+      "label": "Bigtable Key Visualizer",
+      "product": "Diagnostic Diagnostic Heatmap",
+      "group": "g-hotspot-client",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Reveals intense bright red horizontal stripe indicating write hotspotting on single tablet."
+    },
+    {
+      "id": "hot-tablet-node",
+      "label": "Tablet Node 1 (CPU 100%)",
+      "product": "Overloaded Single Tablet Server",
+      "group": "g-bigtable-cluster",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Receives 100% of write traffic; write latency spikes from 3ms to 4,500ms."
+    },
+    {
+      "id": "salted-rebalance",
+      "label": "Salted Hash Key Distribution",
+      "product": "Row Key: hash(device_id)#timestamp",
+      "group": "g-bigtable-cluster",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Distributes writes evenly across all 16 tablet nodes; cluster CPU drops to 22%."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "iot-stream",
+      "to": "hot-tablet-node",
+      "label": "1. Monotonic Timestamp Writes",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "hot-tablet-node",
+      "to": "key-visualizer",
+      "label": "2. Flag Write Saturation Heatmap",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "key-visualizer",
+      "to": "salted-rebalance",
+      "label": "3. Apply Hashed Row Key Pattern",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Hotspotting Saturation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Sequential timestamp keys funnel all writes to one tablet; Key Visualizer reveals severe hotspot.",
+      "why_traversal": "Visualizes the most common Bigtable anti-pattern.",
+      "protocol": "Bigtable gRPC Stream",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Key Salting & Even Distribution",
+      "edges": [
+        "e3"
+      ],
+      "action": "Application switches row key prefix to hash(device_id); writes scatter across all tablets.",
+      "why_traversal": "Restores single-digit millisecond write performance across millions of QPS.",
+      "protocol": "Row Key Hash Salting",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unmitigated-hotspot-crash",
+      "label": "Tablet Server Thrashing",
+      "changes": {
+        "failedNodes": [
+          "hot-tablet-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Application persisted sequential keys without salting during sudden IoT telemetry surge.",
+      "diverted_path": "Writes fail with DEADLINE_EXCEEDED; IoT gateway buffers overflow.",
+      "blast_radius": "IoT telemetry data loss.",
+      "recovery": "Pre-split Bigtable tables and salt row keys with murmur3 hash prefixes."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "iot-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "iot-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cloud Bigtable Key Hotspotting & Automated Tablet Rebalancing: illustrates detection of monotonically increasing row keys and key visualizer remediation."
+}

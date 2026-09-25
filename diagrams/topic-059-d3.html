@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Storage &amp; Messaging Decision Cheat Sheet — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-059.html">← Topic page</a><span>cheat-5 · TOPIC-059-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-059-d3",
+  "title": "Storage & Messaging Decision Cheat Sheet \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "059",
+  "roadmap_id": "cheat-5",
+  "kind": "failure",
+  "purpose": "Simulates Pub/Sub Dead-Letter Queue (DLQ) & Poison Pill Isolation: malformed payload fails consumer processing 5 times and is automatically diverted to DLQ topic.",
+  "routing_rationale": "Dead-letter topics isolate poison pill messages that repeatedly crash subscriber code, allowing healthy message processing to continue uninterrupted.",
+  "groups": [
+    {
+      "id": "g-message-flow",
+      "label": "Active Production Pub/Sub Subscription",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-dlq-quarantine",
+      "label": "Dead-Letter Queue (DLQ) & Remediation",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "poison-message",
+      "label": "Poison Pill JSON Message",
+      "product": "Malformed Payload (Corrupted UTF-8)",
+      "group": "g-message-flow",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Message triggers unhandled panic in subscriber parsing code."
+    },
+    {
+      "id": "failing-subscriber",
+      "label": "Order Processing Subscriber",
+      "product": "Crashes on Parse (5 NACKs)",
+      "group": "g-message-flow",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Rejects message 5 consecutive times; exceeds maxDeliveryAttempts=5 threshold."
+    },
+    {
+      "id": "dlq-topic",
+      "label": "Dead-Letter Topic (DLQ)",
+      "product": "orders-dead-letter-topic",
+      "group": "g-dlq-quarantine",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Pub/Sub automatically routes poison message away from main subscription queue."
+    },
+    {
+      "id": "unblocked-orders",
+      "label": "Healthy Orders Flowing",
+      "product": "100% Throughput Restored",
+      "group": "g-dlq-quarantine",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Main subscription continues processing remaining 10,000 valid orders smoothly."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "poison-message",
+      "to": "failing-subscriber",
+      "label": "1. Attempt Message Delivery",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "failing-subscriber",
+      "to": "dlq-topic",
+      "label": "2. 5 Delivery Failures -> Divert to DLQ",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dlq-topic",
+      "to": "unblocked-orders",
+      "label": "3. Unblock Main Subscription Processing",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Poison Pill Isolation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Pub/Sub tracks retry count; diverts failing message to dead-letter topic after 5 NACKs.",
+      "why_traversal": "Prevents bad payloads from permanently blocking the head of the subscription queue.",
+      "protocol": "Pub/Sub DLQ Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Queue Unblocking & Remediation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Valid orders resume processing; alert notifies engineers to inspect poison message in DLQ.",
+      "why_traversal": "Delivers continuous uptime even when upstream clients emit malformed data.",
+      "protocol": "Cloud Pub/Sub ACK",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "missing-dlq-infinite-loop",
+      "label": "Missing DLQ Causes Infinite CrashLoopBackOff",
+      "changes": {
+        "failedNodes": [
+          "failing-subscriber"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Subscription lacked DLQ configuration; subscriber crashed and restarted in infinite loop.",
+      "diverted_path": "Subscriber pods crashed repeatedly; queue backlogged with 50,000 unprocessed orders.",
+      "blast_radius": "Delayed customer order fulfillment.",
+      "recovery": "Always attach dead-letter topics with maxDeliveryAttempts on all production subscriptions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "poison-message"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "poison-message"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Pub/Sub Dead-Letter Queue (DLQ) & Poison Pill Isolation: malformed payload fails consumer processing 5 times and is automatically diverted to DLQ topic."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

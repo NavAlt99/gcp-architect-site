@@ -1,0 +1,44 @@
+{
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "title": "Cloud City Operating Regulations & Inspection Crews",
+  "city_concept": "Building Codes, Service Permits, and Registry Ledgers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery's kitchen equipment was running unmonitored. Ovens overheated without warning, unmanaged delivery carts cluttered the fire exits, and nobody kept an official record of building keys.",
+      "analogy_elements": [
+        "Unsupervised Ovens (Unmanaged Processes)",
+        "Lost Building Keys (SSH Sprawl)"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Ola the Operator introduced building superintendent guidelines (systemd). All engines are catalogued, fire permits are verified via digital visitor badges (OS Login), and fuel consumption is strictly metered (cgroups).",
+      "analogy_elements": [
+        "Superintendent Office (systemd)",
+        "Building Ledgers (journalctl)",
+        "Electronic Badge Reader (IAP / OS Login)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "During a flash pastry sale, delivery orders swamped the mailroom. The room hit its maximum parcel capacity (ulimit open file descriptors) and new letters were dropped at the doorstep until Superintendent Ola expanded the intake ceiling.",
+      "analogy_elements": [
+        "Overfilled Mailroom (Too many open files)",
+        "Expanded Mail Slots (ulimit -n 65535)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In a physical city, if a basement fills up with flour bags, you can stack them into the hallway. In Linux filesystems, if the Inode Table is full, creating a single zero-byte text file is strictly rejected by physics, regardless of empty disk gigabytes.",
+      "analogy_elements": [
+        "Rigid Inode Capacity Ceiling"
+      ]
+    }
+  ]
+}

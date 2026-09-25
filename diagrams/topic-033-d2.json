@@ -1,0 +1,215 @@
+{
+  "id": "topic-033-d2",
+  "title": "Testing for Reliability: Load & Chaos \u2014 Request & Control Flow",
+  "topic_no": "033",
+  "roadmap_id": "4.6",
+  "kind": "flow",
+  "purpose": "Traces the Step-by-Step Chaos Experiment Lifecycle: hypothesis verification, baseline measurement, fault injection, resilience observation, and automated cleanup.",
+  "routing_rationale": "A structured chaos experiment must always establish a steady-state hypothesis before introducing chaos to mathematically verify that the system self-heals.",
+  "groups": [
+    {
+      "id": "g-exp-phase1",
+      "label": "Phase 1: Steady-State Baseline",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-exp-phase2",
+      "label": "Phase 2: Chaos Injection & Blast Guard",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-exp-phase3",
+      "label": "Phase 3: Automated Verification & Cleanup",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "baseline-check",
+      "label": "Verify Steady State",
+      "product": "p99 < 200ms / Error Rate 0.01%",
+      "group": "g-exp-phase1",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Validates that production SLO is healthy before beginning chaos experiment."
+    },
+    {
+      "id": "inject-network-delay",
+      "label": "Inject 300ms Delay",
+      "product": "Chaos Mesh NetworkChaos",
+      "group": "g-exp-phase2",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Emulates cross-region WAN degradation between app service and inventory service."
+    },
+    {
+      "id": "circuit-breaker-trip",
+      "label": "Envoy Circuit Breaker",
+      "product": "Trips after 5 Consecutive Delays",
+      "group": "g-exp-phase2",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Shunts traffic to fallback cached inventory response in 2ms."
+    },
+    {
+      "id": "automated-cleanup",
+      "label": "Experiment Complete & Cleaned",
+      "product": "Delete Chaos CRD",
+      "group": "g-exp-phase3",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Removes chaos injection; verifies system recovers to steady-state within 30 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "baseline-check",
+      "to": "inject-network-delay",
+      "label": "1. Confirm Steady State -> Inject Chaos",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "inject-network-delay",
+      "to": "circuit-breaker-trip",
+      "label": "2. Induce Latency -> Trip Circuit Breaker",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "circuit-breaker-trip",
+      "to": "automated-cleanup",
+      "label": "3. Verify Fallback -> Clean Up Injection",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Hypothesis Confirmation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Validates steady-state; injects 300ms network delay into inventory service.",
+      "why_traversal": "Ensures experiment tests a specific resilience hypothesis.",
+      "protocol": "Kubernetes CRD Application",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Circuit Breaker Shunting",
+      "edges": [
+        "e2"
+      ],
+      "action": "Envoy proxy trips circuit breaker and returns cached catalog data.",
+      "why_traversal": "Confirms user experience is shielded from downstream latency.",
+      "protocol": "Envoy Filter Protocol",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Cleanup & Verification",
+      "edges": [
+        "e3"
+      ],
+      "action": "Chaos controller deletes fault CRD; telemetry confirms p99 returns to < 200ms.",
+      "why_traversal": "Leaves zero lingering synthetic defects in production.",
+      "protocol": "Kubernetes API Cleanup",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "linger-chaos-failure",
+      "label": "Zombie Chaos CRD Lingers in Production",
+      "changes": {
+        "failedNodes": [
+          "automated-cleanup"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "CI runner crashed mid-experiment, leaving NetworkChaos CRD running indefinitely.",
+      "diverted_path": "Production service permanently degraded by 300ms.",
+      "blast_radius": "Customers experience sluggish checkout for 8 hours.",
+      "recovery": "Add automated TTL expiration directly in Chaos Mesh CRD spec so faults self-terminate."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "baseline-check"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "baseline-check"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Step-by-Step Chaos Experiment Lifecycle: hypothesis verification, baseline measurement, fault injection, resilience observation, and automated cleanup."
+}

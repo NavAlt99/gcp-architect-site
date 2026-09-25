@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Key Numbers, Limits &amp; SLAs to Memorise — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-060.html">← Topic page</a><span>cheat-7 · TOPIC-060-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-060-d2",
+  "title": "Key Numbers, Limits & SLAs to Memorise \u2014 Request & Control Flow",
+  "topic_no": "060",
+  "roadmap_id": "cheat-7",
+  "kind": "flow",
+  "purpose": "Traces Compound Availability Calculation Traversal: Front End (99.99%) * Compute (99.95%) * Database (99.95%) = 99.89% serial availability -> Refactored to 99.999% via multi-region parallel design.",
+  "routing_rationale": "Step-by-step compound availability calculations expose hidden reliability flaws in serial cloud architectures.",
+  "groups": [
+    {
+      "id": "g-serial-chain-calc",
+      "label": "Serial Component Availability Math",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-refactored-parallel",
+      "label": "Refactored Parallel Multi-Region Math",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-sla-contract-met",
+      "label": "Final Contractual Compliance",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "serial-calc",
+      "label": "Serial: 0.9999 * 0.9995 * 0.9995",
+      "product": "Compound Availability: 99.89%",
+      "group": "g-serial-chain-calc",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "99.89% availability permits 48.6 minutes of downtime every month (Fails 99.99% goal)."
+    },
+    {
+      "id": "parallel-calc",
+      "label": "Parallel: 1 - (1 - 0.9995)^2",
+      "product": "Redundant Regions: 99.99997%",
+      "group": "g-refactored-parallel",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Two active-active regional clusters reduce un-availability to virtually zero."
+    },
+    {
+      "id": "contract-approved",
+      "label": "Satisfies 99.99% Enterprise SLA",
+      "product": "Max Downtime: 4.3 Min / Month",
+      "group": "g-sla-contract-met",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Architecture mathematically guaranteed to satisfy contract with high safety margin."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "serial-calc",
+      "to": "parallel-calc",
+      "label": "1. Serial Fails SLA -> Introduce Redundancy",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "parallel-calc",
+      "to": "contract-approved",
+      "label": "2. Confirm Parallel Math Exceeds Target",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Serial Failure Recognition",
+      "edges": [
+        "e1"
+      ],
+      "action": "Calculates compound math: 99.89% fails customer's 99.99% requirement.",
+      "why_traversal": "Demonstrates why single-region multi-tier systems cannot meet four-nines SLAs.",
+      "protocol": "Availability Math",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Parallel Math Verification",
+      "edges": [
+        "e2"
+      ],
+      "action": "Dual-region active-active deployment achieves 99.9999%, passing SLA with ease.",
+      "why_traversal": "Proves architectural viability mathematically before writing code.",
+      "protocol": "SLA Certification",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "shared-failure-domain-trap",
+      "label": "Common Mode Failure Invalidates Parallel Math",
+      "changes": {
+        "failedNodes": [
+          "parallel-calc"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Both parallel regions shared a single global IAM service account that had its permissions revoked.",
+      "diverted_path": "Both regions crashed simultaneously; parallel math became irrelevant.",
+      "blast_radius": "Global outage.",
+      "recovery": "Eliminate shared dependencies across redundant failure domains."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "serial-calc"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "serial-calc"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Compound Availability Calculation Traversal: Front End (99.99%) * Compute (99.95%) * Database (99.95%) = 99.89% serial availability -> Refactored to 99.999% via multi-region parallel design."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

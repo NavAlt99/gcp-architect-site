@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Serverless Compute: Cloud Run, Functions, and Workflows — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-015.html">← Topic page</a><span>2.3 · TOPIC-015-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-015-d6",
+  "title": "Serverless Compute: Cloud Run, Functions, and Workflows \u2014 D6",
+  "topic_no": "015",
+  "roadmap_id": "2.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Cloud Run provides serverless container execution with automatic scale-to-zero. Serverless VPC Access enables private connectivity to internal VPC databases.",
+  "groups": [
+    {
+      "id": "g-ingress-serv",
+      "label": "Serverless Ingress & Event Trigger",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-run-core",
+      "label": "Cloud Run Managed Container Fleet",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-private-vpc",
+      "label": "Private VPC & Managed Database Tier",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client-req",
+      "label": "HTTPS Client / Eventarc",
+      "product": "Client Invocation",
+      "group": "g-ingress-serv",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Public web request or Cloud Storage object creation event."
+    },
+    {
+      "id": "run-proxy",
+      "label": "Cloud Run Ingress Proxy",
+      "product": "Envoy Edge Mesh",
+      "group": "g-ingress-serv",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Terminates TLS; manages container auto-scaling and concurrency multiplexing."
+    },
+    {
+      "id": "run-instance",
+      "label": "Container Instance",
+      "product": "gVisor MicroVM (1 vCPU, 512MB)",
+      "group": "g-run-core",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Isolated sandboxed container handling up to 80 concurrent requests."
+    },
+    {
+      "id": "vpc-connector",
+      "label": "Serverless VPC Connector",
+      "product": "vpcaccess.googleapis.com",
+      "group": "g-run-core",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Throughput-scalable bridge routing private RFC 1918 traffic from Cloud Run into VPC."
+    },
+    {
+      "id": "cloud-sql",
+      "label": "Cloud SQL (Private IP)",
+      "product": "PostgreSQL (10.0.2.8)",
+      "group": "g-private-vpc",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Enterprise database rejecting public internet access; accepts internal VPC traffic only."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client-req",
+      "to": "run-proxy",
+      "label": "1. Ingress Request",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "run-proxy",
+      "to": "run-instance",
+      "label": "2. Concurrency Dispatch",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "run-instance",
+      "to": "vpc-connector",
+      "label": "3. Internal RFC 1918 Route",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpc-connector",
+      "to": "cloud-sql",
+      "label": "4. Query Database",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Serverless Ingress",
+      "edges": [
+        "e1"
+      ],
+      "action": "Request arrives at Cloud Run; proxy evaluates container concurrency.",
+      "why_traversal": "If idle, launches microVM container in hundreds of milliseconds.",
+      "protocol": "HTTPS TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "MicroVM Execution",
+      "edges": [
+        "e2"
+      ],
+      "action": "Container processes request in gVisor sandbox; connects to private database.",
+      "why_traversal": "gVisor provides hardware-grade multi-tenant security boundary.",
+      "protocol": "Local gVisor Syscall",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Serverless VPC Egress",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Packet traverses Serverless VPC Connector into private VPC to query Cloud SQL.",
+      "why_traversal": "Allows serverless containers to communicate with private enterprise databases without public IPs.",
+      "protocol": "TCP Port 5432 (PostgreSQL)",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "connector-throughput-saturation",
+      "label": "VPC Connector Throughput Saturation",
+      "changes": {
+        "failedNodes": [
+          "vpc-connector"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Concurrent database queries exceeded e2-micro VPC connector bandwidth limit (200 Mbps).",
+      "diverted_path": "Packets dropped at VPC boundary; Cloud Run returns HTTP 500.",
+      "blast_radius": "Database queries fail under high traffic surge.",
+      "recovery": "Resize Serverless VPC Access connector to min 3 instances with e2-standard-4 machine types."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client-req"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client-req"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

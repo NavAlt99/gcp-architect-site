@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Platform Engineering &amp; Golden Paths — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-044.html">← Topic page</a><span>6.5 · TOPIC-044-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-044-d2",
+  "title": "Platform Engineering & Golden Paths \u2014 Request & Control Flow",
+  "topic_no": "044",
+  "roadmap_id": "6.5",
+  "kind": "flow",
+  "purpose": "Traces Golden Path Microservice Vending Flow: template selection -> GitHub repo creation -> CI/CD pipeline instantiation -> GCP infrastructure binding -> first deployment.",
+  "routing_rationale": "Golden Paths provide developers with a fully functional hello-world service with working CI/CD, telemetry, and security policies ready in minutes.",
+  "groups": [
+    {
+      "id": "g-stage-scaffold",
+      "label": "Step 1: Code Repository Scaffolding",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-stage-infra",
+      "label": "Step 2: Cloud Infrastructure Vending",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-stage-deploy",
+      "label": "Step 3: Initial Deployment Verification",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "github-scaffold",
+      "label": "GitHub Repo Scaffolding",
+      "product": "Go Gin Template + Dockerfile",
+      "group": "g-stage-scaffold",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Generates repo with pre-configured GitHub Actions, Dependabot, and C4 docs."
+    },
+    {
+      "id": "terraform-vendor",
+      "label": "Terraform Cloud Runner",
+      "product": "Provisions Cloud SQL & Pub/Sub",
+      "group": "g-stage-infra",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Applies enterprise golden module with automated daily backups and CMEK keys."
+    },
+    {
+      "id": "first-deploy-run",
+      "label": "Automated First Deploy",
+      "product": "Cloud Deploy Release v0.1.0",
+      "group": "g-stage-deploy",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Deploys working sample endpoint to dev GKE cluster."
+    },
+    {
+      "id": "telemetry-verify",
+      "label": "Observability Pre-Wired",
+      "product": "Dashboard & SLO Live",
+      "group": "g-stage-deploy",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Cloud Monitoring dashboard and PagerDuty alerts created automatically."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "github-scaffold",
+      "to": "terraform-vendor",
+      "label": "1. Initialize Repo & Trigger Infra Build",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "terraform-vendor",
+      "to": "first-deploy-run",
+      "label": "2. Infra Ready -> Trigger Initial Deploy",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "first-deploy-run",
+      "to": "telemetry-verify",
+      "label": "3. Verify Health & Wire Telemetry",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Repository & Infrastructure Provisioning",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Platform scaffolds Git repo and provisions matching Terraform infrastructure.",
+      "why_traversal": "Reduces developer onboarding time from 3 weeks to 3 minutes.",
+      "protocol": "GitHub & Terraform APIs",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Zero-Day Observability",
+      "edges": [
+        "e3"
+      ],
+      "action": "Sample service deploys; monitoring dashboard and SLO burn rate alerts go live instantly.",
+      "why_traversal": "Ensures no service enters production without baseline observability.",
+      "protocol": "Cloud Monitoring API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "broken-template-failure",
+      "label": "Outdated Dockerfile Base Image Fails Build",
+      "changes": {
+        "failedNodes": [
+          "github-scaffold"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Golden Path template referenced deprecated Go 1.18 base image with CVEs.",
+      "diverted_path": "CI security linter rejects build; developer vending fails.",
+      "blast_radius": "Developer onboarding blocked.",
+      "recovery": "Platform team maintains automated weekly CI test running all Golden Path templates."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "github-scaffold"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "github-scaffold"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Golden Path Microservice Vending Flow: template selection -> GitHub repo creation -> CI/CD pipeline instantiation -> GCP infrastructure binding -> first deployment."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

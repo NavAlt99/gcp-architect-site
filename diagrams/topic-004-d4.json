@@ -1,0 +1,231 @@
+{
+  "id": "topic-004-d4",
+  "title": "Cloud Concepts & Operating Models \u2014 D4",
+  "topic_no": "004",
+  "roadmap_id": "0.4",
+  "kind": "security",
+  "groups": [
+    {
+      "id": "g-cust",
+      "label": "Customer Responsibility",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    },
+    {
+      "id": "g-goog",
+      "label": "Google Cloud Responsibility",
+      "type": "vpc",
+      "scope": "global",
+      "x": 480,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "iam-data",
+      "label": "IAM, Data & Content",
+      "product": "Customer Domain",
+      "group": "g-cust",
+      "plane": "control",
+      "x": 150,
+      "y": 140,
+      "detail": "Access management, dataset classification, customer encryption keys, network security rules."
+    },
+    {
+      "id": "app-code",
+      "label": "Application Code",
+      "product": "Customer Domain",
+      "group": "g-cust",
+      "plane": "data",
+      "x": 310,
+      "y": 140,
+      "detail": "Container binaries, code vulnerabilities, library dependencies, application logic."
+    },
+    {
+      "id": "os-patch",
+      "label": "OS & Runtime (IaaS/PaaS)",
+      "product": "Shared Boundary",
+      "group": "g-cust",
+      "plane": "data",
+      "x": 230,
+      "y": 280,
+      "detail": "Guest OS patches (Customer on GCE; Google on Cloud Run / Cloud Functions / GKE Autopilot)."
+    },
+    {
+      "id": "infra",
+      "label": "Physical Datacenter & Fiber",
+      "product": "Google Domain",
+      "group": "g-goog",
+      "plane": "data",
+      "x": 590,
+      "y": 140,
+      "detail": "B4 backbone fiber, Titan security chips, physical campus biometric security, hardware disposal."
+    },
+    {
+      "id": "hyper-sdn",
+      "label": "Hypervisor & Andromeda SDN",
+      "product": "Google Domain",
+      "group": "g-goog",
+      "plane": "data",
+      "x": 750,
+      "y": 200,
+      "detail": "Software-defined networking, hypervisor patching, physical disk encryption by default."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-resp1",
+      "from": "iam-data",
+      "to": "app-code",
+      "label": "Authorize Execution",
+      "plane": "control"
+    },
+    {
+      "id": "e-resp2",
+      "from": "app-code",
+      "to": "os-patch",
+      "label": "Runtime Dependency",
+      "plane": "data"
+    },
+    {
+      "id": "e-resp3",
+      "from": "os-patch",
+      "to": "infra",
+      "label": "Execute on Google Infra",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Initiation & Perimeter Traversal",
+      "edges": [
+        "e-resp1"
+      ],
+      "action": "Client initiates request from IAM, Data & Content to Application Code over TLS 1.3.",
+      "why_traversal": "Traffic enters through Google Anycast Edge; TLS cryptographic handshake is terminated close to user, mitigating Layer 3/4 volumetric DDoS attacks before internal routing.",
+      "protocol": "TCP / TLS 1.3 (Port 443)",
+      "plane": "Data Plane",
+      "narration": "Hop 1: Ingress traffic arrives from IAM, Data & Content to Application Code across Google Edge network.",
+      "check": {
+        "commands": "gcloud applicationcode list",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "IAM Validation & Workload Dispatch",
+      "edges": [
+        "e-resp2"
+      ],
+      "action": "Application Code evaluates IAM permissions and routes request over Andromeda SDN to OS & Runtime (IaaS/PaaS).",
+      "why_traversal": "Zero-Trust policy requires verifying cryptographic caller identity and VPC Service Control perimeters before releasing traffic into private compute subnets.",
+      "protocol": "Internal HTTP/2 or gRPC",
+      "plane": "Data Plane",
+      "narration": "Hop 2: Application Code validates request credentials and dispatches payload to OS & Runtime (IaaS/PaaS).",
+      "check": {
+        "commands": "gcloud logging read 'protoPayload.authenticationInfo.principalEmail:*'",
+        "metrics": "custom.googleapis.com/rpc/latency"
+      }
+    },
+    {
+      "n": 3,
+      "title": "State Persistence & Data Sync",
+      "edges": [
+        "e-resp3"
+      ],
+      "action": "OS & Runtime (IaaS/PaaS) executes business logic, processing payload and updating state on Physical Datacenter & Fiber.",
+      "why_traversal": "Separates stateless application compute from stateful persistence; backends communicate over private RFC 1918 peered connections without traversing the public internet.",
+      "protocol": "TCP (RFC 1918 Private Peering)",
+      "plane": "Data Plane",
+      "narration": "Hop 3: OS & Runtime (IaaS/PaaS) processes transaction and synchronizes persistent state with Physical Datacenter & Fiber.",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "compute.googleapis.com/instance/disk/write_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Response Delivery & Acknowledgment",
+      "edges": [
+        "e-resp1"
+      ],
+      "action": "Final response payload is returned from Application Code to IAM, Data & Content with HTTP 200 OK.",
+      "why_traversal": "Client receives cryptographic confirmation of completed transaction across established low-latency HTTP/2 connection.",
+      "protocol": "HTTP/2 Response (Port 443)",
+      "plane": "Data Plane",
+      "narration": "Hop 4: Final response payload returned to IAM, Data & Content with HTTP 200 OK.",
+      "check": {
+        "commands": "curl -Iv https://service.brightloaf.internal",
+        "metrics": "loadbalancing.googleapis.com/https/response_count"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "breach-misconfig",
+      "label": "Public Cloud Storage Data Leak (Customer Error)",
+      "changes": {
+        "failedNodes": [
+          "iam-data"
+        ]
+      },
+      "narration": "Customer grants 'allUsers' the 'roles/storage.objectViewer' role. Data is leaked; Google's physical security remains 100% intact, but customer boundary failed.",
+      "check": {
+        "command": "gcloud storage buckets get-iam-policy gs://customer-bucket",
+        "metric": "Public bucket policy alert in Security Command Center"
+      },
+      "root_cause": "Customer grants 'allUsers' the 'roles/storage.objectViewer' role. Data is leaked; Google's physical security remains 100% intact, but customer boundary failed.",
+      "diverted_path": "Normal request path is interrupted at IAM, Data & Content. Downstream components receive timeout errors or drop packets without acknowledgment, forcing client retries or failover redirection.",
+      "blast_radius": "All user sessions dependent on IAM, Data & Content experience elevated latency, HTTP 5xx errors, or severed connections.",
+      "recovery": "Deploy multi-region Anycast failover, cross-zone active-standby redundancy, automated health check eviction, and exponential backoff circuit breakers."
+    },
+    {
+      "id": "transient-network-drop",
+      "label": "Application Code Network Degradation",
+      "changes": {
+        "failedNodes": [
+          "app-code"
+        ]
+      },
+      "root_cause": "Underlying Andromeda vSwitch queue saturation or hypervisor host maintenance causing 40% packet loss on Application Code.",
+      "diverted_path": "Incoming TCP streams to Application Code experience high retransmission rates and latency spikes up to 4500ms; gateway circuit breaker opens to shed load.",
+      "blast_radius": "Transactions processed by Application Code slow down significantly; client applications encounter timeout errors.",
+      "recovery": "Configure client-side exponential backoff with full jitter; deploy Regional Managed Instance Groups with auto-healing and minimum 3-zone distribution.",
+      "narration": "Packet loss and connection timeouts detected on Application Code. Circuit breaker trips to protect cluster.",
+      "check": {
+        "command": "gcloud compute instances describe app-code --format='yaml(status)'",
+        "metric": "compute.googleapis.com/instance/network/dropped_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "iam-data"
+        ],
+        "failedEdges": [
+          "e-resp1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Higher abstraction tiers transfer infrastructure toil to Google. While customers manage guest OS patches and firewalls in Compute Engine (IaaS), Google manages the entire OS, runtime, and scaling in Cloud Run (PaaS/Serverless).",
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

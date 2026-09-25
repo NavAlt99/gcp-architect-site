@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Protection: Cloud KMS, Sensitive Data Protection &amp; Encryption — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-036.html">← Topic page</a><span>5.3 · TOPIC-036-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-036-d6",
+  "title": "Data Protection: Cloud KMS, Sensitive Data Protection & Encryption \u2014 D6",
+  "topic_no": "036",
+  "roadmap_id": "5.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Comprehensive data protection requires securing data at rest with customer-managed cryptographic keys (CMEK) while automatically identifying and pseudonymizing sensitive PII before analytical persistence.",
+  "groups": [
+    {
+      "id": "g-kms-tier",
+      "label": "Cryptographic Hierarchy: Cloud KMS",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-dlp-pipeline",
+      "label": "Automated Sensitive Data Protection (DLP)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-secure-storage",
+      "label": "Protected Storage & Analytics",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cloud-hsm-key",
+      "label": "Cloud HSM Key Ring",
+      "product": "FIPS 140-2 Level 3 Hardware Key",
+      "group": "g-kms-tier",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Hardware security module storing root encryption keys with automatic annual rotation."
+    },
+    {
+      "id": "dek-generator",
+      "label": "Data Encryption Key (DEK)",
+      "product": "Envelope Encryption Engine",
+      "group": "g-kms-tier",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Generates local AES-256 keys to encrypt raw records; wrapped by Key Encryption Key (KEK)."
+    },
+    {
+      "id": "dlp-inspect",
+      "label": "Cloud DLP Inspect Engine",
+      "product": "InfoType Detection (SSN, Cards)",
+      "group": "g-dlp-pipeline",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Scans raw files using built-in infoTypes to identify social security and credit card numbers."
+    },
+    {
+      "id": "dlp-tokenize",
+      "label": "Crypto-Tokenization Engine",
+      "product": "Deterministic Pseudonymization",
+      "group": "g-dlp-pipeline",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Replaces sensitive SSN with encrypted token: TOKEN_#8921_x9f preserving format."
+    },
+    {
+      "id": "sanitized-bq",
+      "label": "Sanitized BigQuery Data",
+      "product": "CMEK-Encrypted Dataset",
+      "group": "g-secure-storage",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Stores tokenized analytical records encrypted at rest using Cloud KMS HSM key."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cloud-hsm-key",
+      "to": "dek-generator",
+      "label": "1. Wrap Local DEK with HSM KEK",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "dlp-inspect",
+      "to": "dlp-tokenize",
+      "label": "2. Flag PII & Invoke Tokenizer",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dek-generator",
+      "to": "sanitized-bq",
+      "label": "3. Encrypt Dataset with CMEK",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "dlp-tokenize",
+      "to": "sanitized-bq",
+      "label": "4. Persist De-Identified Records",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Envelope Encryption & Key Wrapping",
+      "edges": [
+        "e1",
+        "e3"
+      ],
+      "action": "Cloud KMS generates wrapped DEK for BigQuery storage encryption.",
+      "why_traversal": "Delivers cryptographic key ownership with zero performance degradation on large tables.",
+      "protocol": "KMS Envelope Encryption",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "PII Inspection & Tokenization",
+      "edges": [
+        "e2",
+        "e4"
+      ],
+      "action": "Cloud DLP scans payload, identifies sensitive infoTypes, tokenizes them, and writes to BigQuery.",
+      "why_traversal": "Allows analysts to query sanitized data without exposing raw PII.",
+      "protocol": "Cloud DLP REST API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "key-disable-kill-switch",
+      "label": "Emergency CMEK Revocation Shuts Down Access",
+      "changes": {
+        "failedNodes": [
+          "cloud-hsm-key"
+        ],
+        "failedEdges": [
+          "e1",
+          "e3"
+        ]
+      },
+      "root_cause": "Security incident response officer disabled the KEK in Cloud KMS.",
+      "diverted_path": "All reads and writes to BigQuery instantly blocked across all users.",
+      "blast_radius": "Immediate dataset freeze.",
+      "recovery": "Re-enable KEK version in Cloud KMS once security threat is resolved."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cloud-hsm-key"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cloud-hsm-key"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

@@ -1,0 +1,43 @@
+{
+  "topic_no": "048",
+  "roadmap_id": "7.4c",
+  "title": "Cloud City: Case Study: TerramEarth \u2014 IoT Fleet, Bigtable & Predictive Maintenance",
+  "city_concept": "City Municipal Cart Fleet & Workshop Sensors",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Twenty thousand city freight wagons were breaking wooden axles on cobblestones without warning, blocking streets for days.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Master Mechanic Martha installed vibration meters on every wagon axle (IoT Sensors) and built two reporting channels: emergency bells (Cellular) and depot inspections (Wi-Fi).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Martha recorded all vibration logs in the Grand Ledger (Bigtable), noticing axles groaned at a specific pitch 2 days before snapping.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Manual mechanical checks take hours per wagon; cloud IoT ingest processes sensor telemetry from 20M vehicles in sub-seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

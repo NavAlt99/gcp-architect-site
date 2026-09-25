@@ -1,0 +1,43 @@
+{
+  "topic_no": "020",
+  "roadmap_id": "2.8",
+  "title": "Cloud City: Databases: Cloud SQL, Spanner, Firestore, and Bigtable",
+  "city_concept": "City Record Archives & Municipal Ledgers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery kept recipe secrets and financial ledgers in a single notebook in the kitchen drawer. A spilled cup of coffee obliterated two years of financial history.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian built the Central Municipal Records Hall (Cloud SQL & Spanner). All transactions are recorded in synchronized vaults across multiple city gates.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a city earthquake, the North Vault was destroyed. The South Vault instantly assumed primary ledger authority without losing a single cent.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical archives, duplicating books takes hours; in Cloud Spanner, atomic transactions commit across continents using atomic GPS clocks.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

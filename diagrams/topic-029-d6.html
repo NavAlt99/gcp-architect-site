@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SRE Concepts: SLIs, SLOs, Error Budgets &amp; The Four Golden Signals — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-029.html">← Topic page</a><span>4.2 · TOPIC-029-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-029-d6",
+  "title": "SRE Concepts: SLIs, SLOs, Error Budgets & The Four Golden Signals \u2014 D6",
+  "topic_no": "029",
+  "roadmap_id": "4.2",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Error budgets turn reliability from an adversarial debate between Product and SRE into an objective, data-driven mathematical policy: feature velocity continues only while error budget remains.",
+  "groups": [
+    {
+      "id": "g-sli-probes",
+      "label": "Telemetry Probes & SLI Measurement",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-slo-engine",
+      "label": "SLO Engine & 30-Day Error Budget",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-release-gate",
+      "label": "Release Velocity & Governance Gate",
+      "type": "organization",
+      "scope": "organization",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "probe-availability",
+      "label": "Availability SLI Probe",
+      "product": "HTTP 200 vs 5xx Ratio",
+      "group": "g-sli-probes",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Good requests (non-5xx) / Total requests measured at Load Balancer: 99.94% over 30d."
+    },
+    {
+      "id": "probe-latency",
+      "label": "Latency SLI Probe",
+      "product": "p99 < 350ms Probe",
+      "group": "g-sli-probes",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Percentage of requests completing under 350ms: 98.7% over 30d rolling window."
+    },
+    {
+      "id": "budget-meter",
+      "label": "Error Budget Tracker",
+      "product": "Remaining: 18.4% (30-day)",
+      "group": "g-slo-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "For 99.9% SLO, allows 43 minutes of downtime per month. 35 minutes already consumed."
+    },
+    {
+      "id": "deploy-gatekeeper",
+      "label": "Cloud Deploy Policy Gate",
+      "product": "Automated Freeze Enforcer",
+      "group": "g-release-gate",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Queries error budget before production release; halts non-urgent deployments if budget < 0."
+    },
+    {
+      "id": "sre-reliability-sprint",
+      "label": "Reliability Sprint Mode",
+      "product": "SRE Task Redirection",
+      "group": "g-release-gate",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Mandates that 100% of engineering bandwidth switches to bug fixes and resilience hardening."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "probe-availability",
+      "to": "budget-meter",
+      "label": "1. Ingest Availability SLI",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "probe-latency",
+      "to": "budget-meter",
+      "label": "2. Ingest Latency SLI",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "budget-meter",
+      "to": "deploy-gatekeeper",
+      "label": "3. Evaluate Release Permission",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "deploy-gatekeeper",
+      "to": "sre-reliability-sprint",
+      "label": "4. Trigger Freeze if Budget Exhausted",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "SLI Telemetry Aggregation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Monitoring MQL evaluates availability and latency ratios over 30-day rolling window.",
+      "why_traversal": "Provides objective mathematical quantification of user happiness.",
+      "protocol": "MQL Query Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Budget Evaluation & Release Gating",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "If error budget drops to 0%, deployment pipeline automatically locks out feature releases.",
+      "why_traversal": "Aligns developer incentives directly with system reliability.",
+      "protocol": "Cloud Deploy Admission Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "budget-override-failure",
+      "label": "Executive Override Deploys Fragile Feature",
+      "changes": {
+        "failedNodes": [
+          "deploy-gatekeeper"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Executive manually overrode deployment freeze while error budget was exhausted at 0%.",
+      "diverted_path": "Unstable feature release causes 5-hour global outage.",
+      "blast_radius": "System availability drops to 98.2%; SLA financial penalty triggered.",
+      "recovery": "Establish strict C-level governance requiring joint VP Engineering and SRE sign-off to override freeze."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "probe-availability"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "probe-availability"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

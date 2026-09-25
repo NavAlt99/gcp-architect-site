@@ -1,0 +1,233 @@
+{
+  "id": "topic-016-d5",
+  "title": "Virtual Private Cloud (VPC) Networking & Security \u2014 D5",
+  "topic_no": "016",
+  "roadmap_id": "2.4",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Google Cloud VPCs are global resources spanning all regions. Subnets are regional, allowing compute instances across the globe to communicate privately without public IPs.",
+  "groups": [
+    {
+      "id": "g-ext-net",
+      "label": "External SaaS & Edge Internet",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-us",
+      "label": "Global VPC: production-vpc (Subnet us-central1 / 10.1.0.0/24)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-eu",
+      "label": "Global VPC: production-vpc (Subnet europe-west1 / 10.2.0.0/24)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "saas-api",
+      "label": "External SaaS API",
+      "product": "Public Payment Gateway",
+      "group": "g-ext-net",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "External vendor endpoint requiring outbound HTTPS connectivity over public internet."
+    },
+    {
+      "id": "cloud-nat",
+      "label": "Cloud NAT Gateway",
+      "product": "Regional Outbound NAT",
+      "group": "g-vpc-us",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Performs source network address translation for private RFC 1918 instances."
+    },
+    {
+      "id": "vm-us",
+      "label": "Private Compute VM (US)",
+      "product": "10.1.0.5 (No Public IP)",
+      "group": "g-vpc-us",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Compute Engine instance processing local order transactions."
+    },
+    {
+      "id": "cloud-router",
+      "label": "Cloud Router (BGP)",
+      "product": "ASN 64513 Dynamic BGP",
+      "group": "g-vpc-eu",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Exchanges dynamic routes and provides the routing control path used by Cloud NAT."
+    },
+    {
+      "id": "vm-eu",
+      "label": "Private Database VM (EU)",
+      "product": "10.2.0.8 (Europe Subnet)",
+      "group": "g-vpc-eu",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Private VM communicating directly with US VM over Google private fiber without public IPs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "vm-us",
+      "to": "cloud-nat",
+      "label": "1. Outbound Egress to NAT",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "cloud-nat",
+      "to": "saas-api",
+      "label": "2. SNAT to SaaS API",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "vm-us",
+      "to": "vm-eu",
+      "label": "3. Global VPC Private Routing",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "cloud-router",
+      "to": "cloud-nat",
+      "label": "4. Dynamic Port Allocation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Outbound NAT Egress",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Private VM calls SaaS API; Cloud NAT translates 10.1.0.5:54321 to public IP 35.190.20.10:1024.",
+      "why_traversal": "Private VMs communicate with internet APIs without exposing inbound listening ports.",
+      "protocol": "TCP SYN / HTTPS 443",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Global Private Routing",
+      "edges": [
+        "e3"
+      ],
+      "action": "US VM communicates directly with EU VM across Google's private Andromeda SDN backbone.",
+      "why_traversal": "Global VPC routing eliminates VPN tunnels or public internet transit between regions.",
+      "protocol": "Private RFC 1918 TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Dynamic Port Scaling",
+      "edges": [
+        "e4"
+      ],
+      "action": "Cloud NAT dynamically allocates additional port blocks to VM as connection count rises.",
+      "why_traversal": "Dynamic Port Allocation prevents packet drops during outbound connection spikes.",
+      "protocol": "Internal Control RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "nat-exhaustion",
+      "label": "Cloud NAT Port Pool Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "cloud-nat"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "VM initiated 10,000 concurrent outbound connections; static port allocation ran out of ports.",
+      "diverted_path": "New outbound TCP handshakes dropped; external SaaS calls time out.",
+      "blast_radius": "Only outbound SaaS calls from this VM fail; intra-VPC traffic to EU VM continues normally.",
+      "recovery": "Enable Dynamic Port Allocation on Cloud NAT and assign secondary NAT IP addresses."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "saas-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "saas-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}

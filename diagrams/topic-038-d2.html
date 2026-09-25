@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Operations &amp; Threat Detection — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-038.html">← Topic page</a><span>5.5 · TOPIC-038-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-038-d2",
+  "title": "Security Operations & Threat Detection \u2014 Request & Control Flow",
+  "topic_no": "038",
+  "roadmap_id": "5.5",
+  "kind": "flow",
+  "purpose": "Traces Automated Cryptomining Malware Containment: from suspicious outbound Stratum protocol connection detection to VM snapshot and forensic network isolation.",
+  "routing_rationale": "Automated forensic response preserves volatile memory and disk state for security analysts before severing network connectivity, ensuring evidence is preserved for prosecution.",
+  "groups": [
+    {
+      "id": "g-infected-vm",
+      "label": "Compromised Compute Instance",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-detection-pipeline",
+      "label": "Threat Detection & Alert Pipeline",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-contain-forensics",
+      "label": "Forensic Containment Actions",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "miner-process",
+      "label": "Cryptomining Process",
+      "product": "XMRig Miner (CPU 100%)",
+      "group": "g-infected-vm",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Malware spawned via unpatched web vulnerability; connects to mining pool."
+    },
+    {
+      "id": "mining-pool-ip",
+      "label": "Mining Pool Outbound Connection",
+      "product": "Stratum Protocol (Port 3333)",
+      "group": "g-infected-vm",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Sends proof-of-work hashes to malicious mining pool IP."
+    },
+    {
+      "id": "scc-detector",
+      "label": "SCC Finding: CRYPTOMINING",
+      "product": "Finding Severity: HIGH",
+      "group": "g-detection-pipeline",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Identifies known mining pool IP address from Google Threat Intelligence database."
+    },
+    {
+      "id": "forensic-disk-snap",
+      "label": "Forensic Disk Snapshot",
+      "product": "gcloud compute disks snapshot",
+      "group": "g-contain-forensics",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Creates point-in-time forensic image of infected disk for evidence analysis."
+    },
+    {
+      "id": "quarantine-firewall",
+      "label": "Apply Quarantine Tag",
+      "product": "Network Isolation (Priority 0)",
+      "group": "g-contain-forensics",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Applies network tag 'quarantine'; drops 100% of ingress and egress traffic."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "miner-process",
+      "to": "mining-pool-ip",
+      "label": "1. Outbound Hash Submission",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mining-pool-ip",
+      "to": "scc-detector",
+      "label": "2. Flow Log Flagged by SCC",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "scc-detector",
+      "to": "forensic-disk-snap",
+      "label": "3. Capture Forensic Snapshot",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "scc-detector",
+      "to": "quarantine-firewall",
+      "label": "4. Sever Outbound Connectivity",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Threat Identification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "VPC flow log records connection to mining pool; SCC Event Threat Detection triggers finding.",
+      "why_traversal": "Detects cryptomining within seconds without needing agent software inside the VM.",
+      "protocol": "Netflow Anomaly Matching",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Forensic Capture & Isolation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Automated pipeline snapshots disk for digital forensics and drops all traffic.",
+      "why_traversal": "Preserves forensic evidence while eliminating compute cost and risk of lateral spread.",
+      "protocol": "Compute Engine Admin API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "snapshot-timeout",
+      "label": "Disk Snapshot Timeout During High I/O",
+      "changes": {
+        "failedNodes": [
+          "forensic-disk-snap"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Disk saturated by mining malware I/O; snapshot request queued for 120 seconds.",
+      "diverted_path": "Isolation delayed while waiting for snapshot.",
+      "blast_radius": "Additional 2 minutes of unauthorized network egress.",
+      "recovery": "Execute network quarantine tag application concurrently before initiating disk snapshot."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "miner-process"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "miner-process"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Automated Cryptomining Malware Containment: from suspicious outbound Stratum protocol connection detection to VM snapshot and forensic network isolation."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

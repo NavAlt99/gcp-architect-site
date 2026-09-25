@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Networking Fundamentals — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-001.html">← Topic page</a><span>0.1 · TOPIC-001-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-001-d2",
+  "title": "Networking Fundamentals \u2014 Request & Control Flow",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "flow",
+  "purpose": "Traces the packet lifecycle from browser keystroke to HTTP 200 payload delivery across Google Edge Anycast and Andromeda SDN.",
+  "routing_rationale": "Rather than routing traffic across standard public internet transit hops with variable latency, Google Anycast pulls the packet into Google's private fiber network at the nearest edge PoP, routing under Andromeda SDN direct to backend containers.",
+  "groups": [
+    {
+      "id": "g-client",
+      "label": "Client Environment",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-edge",
+      "label": "Google Edge Network (Anycast PoP)",
+      "type": "region",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpc",
+      "label": "Regional VPC Subnet & Andromeda Mesh",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "Browser (URL bar)",
+      "product": "User Agent",
+      "group": "g-client",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User enters URL; initiates DNS lookup and TCP socket connection."
+    },
+    {
+      "id": "os-cache",
+      "label": "OS Resolver / Cache",
+      "product": "Host DNS",
+      "group": "g-client",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Checks local resolver cache before sending recursive query to 8.8.8.8."
+    },
+    {
+      "id": "edge-pop",
+      "label": "Anycast Edge PoP",
+      "product": "Edge Infrastructure",
+      "group": "g-edge",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "BGP Anycast routes request to nearest Google Point of Presence worldwide."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-edge",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Terminates TCP/TLS connection; applies DDoS filtering and HTTP/2 multiplexing."
+    },
+    {
+      "id": "backend-vm",
+      "label": "Backend App Instance",
+      "product": "Compute Engine",
+      "group": "g-vpc",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Private VM receiving decapsulated HTTP request and computing JSON response."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "browser",
+      "to": "os-cache",
+      "label": "1. Resolve Hostname",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "browser",
+      "to": "edge-pop",
+      "label": "2. BGP Anycast Routing",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "edge-pop",
+      "to": "gfe",
+      "label": "3. TLS Termination",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "gfe",
+      "to": "backend-vm",
+      "label": "4. Private Fiber Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Hostname Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "OS resolver queries 8.8.8.8; receives Anycast VIP 34.120.45.67.",
+      "why_traversal": "DNS resolution establishes edge destination before socket handshake.",
+      "protocol": "DNS UDP/53",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "host brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "BGP Anycast Ingress",
+      "edges": [
+        "e2"
+      ],
+      "action": "Browser opens TCP SYN connection to nearest Google Point of Presence.",
+      "why_traversal": "Pulls packet into Google fiber within 15ms, minimizing public internet jitter.",
+      "protocol": "TCP SYN / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "traceroute 34.120.45.67",
+        "metrics": "network/ingress_bytes"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Edge TLS Termination",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE terminates TLS handshake and performs HTTP/2 multiplexing.",
+      "why_traversal": "Offloads crypto overhead from backend compute nodes.",
+      "protocol": "TLS 1.3 / HTTP/2",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "openssl s_client -connect 34.120.45.67:443",
+        "metrics": "loadbalancing.googleapis.com/https/backend_latencies"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Backend Processing",
+      "edges": [
+        "e4"
+      ],
+      "action": "Andromeda delivers packet to backend vNIC for HTTP 200 JSON processing.",
+      "why_traversal": "Application parses request and streams response back along reverse tunnel.",
+      "protocol": "HTTP/1.1 or gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -w '%{time_total}' https://brightloaf.com",
+        "metrics": "compute.googleapis.com/instance/cpu/utilization"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "mtu-blackhole",
+      "label": "PMTUD Blackhole / Packet Drop",
+      "changes": {
+        "failedNodes": [
+          "backend-vm"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Packet exceeds 1460-byte VPC MTU and DF flag is set while ICMP Fragmentation Needed is blocked.",
+      "diverted_path": "Large payloads are silently dropped in transit without TCP acknowledgment.",
+      "blast_radius": "Large API responses hang indefinitely while small ping packets succeed.",
+      "recovery": "Configure VPC MTU to 1500 or 8896 bytes; allow ICMP Type 3 Code 4 in firewall rules."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "browser"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "browser"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the packet lifecycle from browser keystroke to HTTP 200 payload delivery across Google Edge Anycast and Andromeda SDN."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

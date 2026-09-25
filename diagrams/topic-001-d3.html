@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Networking Fundamentals — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-001.html">← Topic page</a><span>0.1 · TOPIC-001-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-001-d3",
+  "title": "Networking Fundamentals \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "failure",
+  "purpose": "Demonstrates automated packet failure recovery across SNAT port exhaustion and MTU blackholing, proving how Cloud NAT dynamic port allocation and PMTUD prevent silent connection drops.",
+  "routing_rationale": "When a single zone encounters link saturation, Andromeda SDN and Cloud Load Balancing withdraw the degraded route in under 5 seconds, rerouting established TCP flows to healthy standby paths.",
+  "groups": [
+    {
+      "id": "g-prim",
+      "label": "Primary Traffic Path (Zone A)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-failover",
+      "label": "Resilience & Failover Path (Zone B)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "vm-a",
+      "label": "Active Backend VM (Zone A)",
+      "product": "Compute Engine",
+      "group": "g-prim",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Serving active production traffic in availability zone us-central1-a."
+    },
+    {
+      "id": "probe-a",
+      "label": "Health Check Probe",
+      "product": "Cloud Monitoring",
+      "group": "g-prim",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Polls HTTP /healthz every 5s; 3 timeouts mark backend unhealthy."
+    },
+    {
+      "id": "vm-b",
+      "label": "Standby Backend VM (Zone B)",
+      "product": "Compute Engine",
+      "group": "g-failover",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Healthy warm standby instance in independent failure domain us-central1-b."
+    },
+    {
+      "id": "andromeda-lb",
+      "label": "Andromeda Flow Router",
+      "product": "Cloud Load Balancing",
+      "group": "g-failover",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Dynamically updates routing table to bypass unhealthy instance."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "probe-a",
+      "to": "vm-a",
+      "label": "1. Health Probe HTTP",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "probe-a",
+      "to": "andromeda-lb",
+      "label": "2. Signal Unhealthy Status",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "andromeda-lb",
+      "to": "vm-b",
+      "label": "3. Reroute Traffic Flow",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vm-a",
+      "to": "vm-b",
+      "label": "4. Drain & Sync State",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Steady-State Health Probing",
+      "edges": [
+        "e1"
+      ],
+      "action": "Cloud Health Check probes VM in Zone A with HTTP GET /healthz.",
+      "why_traversal": "Validates process responsiveness before routing incoming customer traffic.",
+      "protocol": "HTTP/1.1 TCP 8080",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Probe Failure Detection",
+      "edges": [
+        "e2"
+      ],
+      "action": "After 3 missed probes, prober notifies Andromeda flow router of VM failure.",
+      "why_traversal": "Automated eviction prevents blackholing customer transactions on crashed instance.",
+      "protocol": "Internal Control RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Dynamic Traffic Failover",
+      "edges": [
+        "e3"
+      ],
+      "action": "Andromeda rewires forwarding table to direct new TCP flows to Zone B.",
+      "why_traversal": "Sub-second route convergence preserves client SLAs during zonal outages.",
+      "protocol": "Andromeda Flow Update",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Healthy State Recovery",
+      "edges": [
+        "e4"
+      ],
+      "action": "Standby VM in Zone B assumes active traffic load with zero dropped sessions.",
+      "why_traversal": "Workloads distributed across independent failure domains maintain 99.99% availability.",
+      "protocol": "TCP Connection Migration",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "zonal-blackhole",
+      "label": "Zone A Fiber Blackhole",
+      "changes": {
+        "failedNodes": [
+          "vm-a"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Physical optical fiber failure in Zone A datacenter cuts backend connectivity.",
+      "diverted_path": "Traffic is immediately shifted to Zone B standby nodes; Zone A is quarantined.",
+      "blast_radius": "Only uncommitted in-flight packets in Zone A require client retry.",
+      "recovery": "Automated regional MIG pre-scales Zone B capacity to absorb 100% diverted traffic."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "vm-a"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "vm-a"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Demonstrates automated packet failure recovery across SNAT port exhaustion and MTU blackholing, proving how Cloud NAT dynamic port allocation and PMTUD prevent silent connection drops."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

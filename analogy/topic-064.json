@@ -1,0 +1,44 @@
+{
+  "topic_no": "064",
+  "roadmap_id": "cheat-6",
+  "title": "Cloud City: Messaging selection",
+  "city_concept": "A district with roads, permits, warehouses, and an operations room",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf grows faster than its original city district can safely support.",
+      "analogy_elements": [
+        "Brightloaf city",
+        "crowded district"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The city assigns a clear district, permits, roads, and an operations owner.",
+      "analogy_elements": [
+        "permits",
+        "roads",
+        "operators"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A failed road, exhausted utility, or bad permit affects only its declared blast radius.",
+      "analogy_elements": [
+        "failure boundary",
+        "emergency route"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Cloud policies are software rules, not physical walls; verify the real behavior in documentation.",
+      "analogy_elements": [
+        "metaphor limit"
+      ]
+    }
+  ]
+}

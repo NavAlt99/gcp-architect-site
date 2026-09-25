@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reference Architectures &amp; Patterns — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-024.html">← Topic page</a><span>3.3 · TOPIC-024-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-024-d2",
+  "title": "Reference Architectures & Patterns \u2014 Request & Control Flow",
+  "topic_no": "024",
+  "roadmap_id": "3.3",
+  "kind": "flow",
+  "purpose": "Traces the End-to-End Cache-Aside Request Flow: demonstrates request dispatch, cache lookup, Spanner query on miss, and asynchronous cache repopulation.",
+  "routing_rationale": "A clean cache-aside implementation guarantees fresh data while protecting backend relational databases from read query exhaustion.",
+  "groups": [
+    {
+      "id": "g-client-req",
+      "label": "Client Ingress & Load Balancing",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-service-logic",
+      "label": "Service Layer & Cache Validation",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-tier",
+      "label": "Transactional Storage Layer",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-client",
+      "label": "Mobile / Web Client",
+      "product": "HTTPS Request",
+      "group": "g-client-req",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User navigates to catalog item /products/sku-99214."
+    },
+    {
+      "id": "app-service",
+      "label": "Catalog Microservice",
+      "product": "Cloud Run Container",
+      "group": "g-service-logic",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Receives request; executes cache-aside lookup logic."
+    },
+    {
+      "id": "cache-store",
+      "label": "Memorystore Redis",
+      "product": "Cache Miss / Hit Lookup",
+      "group": "g-service-logic",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Stores JSON serialized catalog items with 1-hour TTL."
+    },
+    {
+      "id": "spanner-data",
+      "label": "Cloud Spanner Leader",
+      "product": "Primary Paxos Replica",
+      "group": "g-storage-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Executes SELECT * FROM Products WHERE Sku = 'sku-99214'."
+    },
+    {
+      "id": "pubsub-invalidate",
+      "label": "Cloud Pub/Sub Invalidation",
+      "product": "Cache Eviction Topic",
+      "group": "g-storage-tier",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Publishes cache invalidation event when catalog updates occur."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-client",
+      "to": "app-service",
+      "label": "1. GET /products/sku-99214",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "app-service",
+      "to": "cache-store",
+      "label": "2. Redis GET sku-99214",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "app-service",
+      "to": "spanner-data",
+      "label": "3. Spanner Query (Cache Miss)",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "spanner-data",
+      "to": "cache-store",
+      "label": "4. Redis SETEX (Backfill)",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "spanner-data",
+      "to": "pubsub-invalidate",
+      "label": "5. Publish Invalidation on Mutation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Cache Evaluation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "App service queries Redis for SKU. If key exists, returns payload immediately in 1.2ms.",
+      "why_traversal": "Eliminates roundtrips to relational database for repeated read queries.",
+      "protocol": "RESP (Redis)",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Persistence Query & Cache Repopulation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "On cache miss, queries Spanner, returns response to user, and asynchronously populates Redis.",
+      "why_traversal": "Ensures subsequent requests for this SKU hit memory cache.",
+      "protocol": "gRPC / Redis Protocol",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Cache Coherence Invalidation",
+      "edges": [
+        "e5"
+      ],
+      "action": "When inventory or price changes, Spanner commit triggers Pub/Sub to invalidate Redis key.",
+      "why_traversal": "Prevents stale inventory or incorrect pricing data from persisting in cache.",
+      "protocol": "Pub/Sub Fan-out",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "stale-cache-leak",
+      "label": "Deadlock Invalidation Worker",
+      "changes": {
+        "failedNodes": [
+          "pubsub-invalidate"
+        ],
+        "failedEdges": [
+          "e5"
+        ]
+      },
+      "root_cause": "Invalidation subscriber crashed due to unhandled JSON schema change.",
+      "diverted_path": "Redis cache serves out-of-date product pricing for 60 minutes.",
+      "blast_radius": "Customers buy items at incorrect prices.",
+      "recovery": "Deploy schema validation on Pub/Sub messages and add dead-letter topic alerting."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the End-to-End Cache-Aside Request Flow: demonstrates request dispatch, cache lookup, Spanner query on miss, and asynchronous cache repopulation."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

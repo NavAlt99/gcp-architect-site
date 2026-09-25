@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>001 (0.1) Networking Fundamentals | GCP Architect Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
+  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+</head>
+<body>
+
+    <!-- Navigation -->
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-link">
+        <span style="font-size:16px;">☁</span>
+        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
+      </a>
+
+      <!-- Quick Topic Navigator -->
+      <div class="nav-topic-switcher">
+        <a href="../index.html" class="nav-topic-arrow prev disabled" title="Start of Roadmap (Topic 001)">‹</a>
+        <div class="nav-select-wrapper">
+          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
+            <optgroup label="Phase 0 — Prerequisites">
+              <option value="topic-001.html" selected>001 [0.1] Networking Fundamentals</option>
+              <option value="topic-002.html">002 [0.2] Linux & Command Line for Archi…</option>
+              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
+              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
+              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
+              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
+            </optgroup>
+            <optgroup label="Phase 1 — GCP Foundations">
+              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
+              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
+              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
+              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
+              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
+              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
+            </optgroup>
+            <optgroup label="Phase 2 — Core Services">
+              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
+              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
+              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
+              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
+              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
+              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
+              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
+              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
+              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
+            </optgroup>
+            <optgroup label="Phase 3 — Architecture Thinking">
+              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
+              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
+              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
+              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
+              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
+              <option value="topic-027.html">027 [3.5] Diagramming & Docs: C4 Model</option>
+            </optgroup>
+            <optgroup label="Phase 4 — Reliability & HA">
+              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
+              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
+              <option value="topic-030.html">030 [4.3] High Availability by Layer</option>
+              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
+              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
+              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
+            </optgroup>
+            <optgroup label="Phase 5 — Security & Compliance">
+              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
+              <option value="topic-035.html">035 [5.2] Network Security: VPC-SC & Clo…</option>
+              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
+              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
+              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
+              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
+            </optgroup>
+            <optgroup label="Phase 6 — Optimization & Ops">
+              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
+              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
+              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
+              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
+              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
+            </optgroup>
+            <optgroup label="Phase 7 — Case Studies & Exam">
+              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
+              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
+              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
+              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
+              <option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing …</option>
+              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
+            </optgroup>
+            <optgroup label="Data, Analytics & ML">
+              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
+              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
+              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
+              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
+            </optgroup>
+            <optgroup label="Service Decision Cheat Sheets">
+              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
+              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
+              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
+              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
+              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
+              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
+            </optgroup>
+          </select>
+        </div>
+        <a href="topic-002.html" class="nav-topic-arrow next" title="Next Topic: Linux & Command Line for Architects [Key: N]">›</a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html" class="nav-link">Overview</a>
+        <a href="#diagrams" class="nav-link">Diagrams</a>
+        <a href="#demo-or-practice" class="nav-link">Labs</a>
+        <a href="#quiz" class="nav-link">Knowledge Check</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Topic Sub-Navigation Strip -->
+    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
+      <div class="subnav-breadcrumbs">
+        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-phase">Phase 0 — Prerequisites</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Topic 001</span>
+        <span class="crumb-progress">(1 of 60)</span>
+      </div>
+      <div class="subnav-actions">
+        <span class="subnav-nav-btn prev disabled">← Prev</span>
+        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
+        <a href="topic-002.html" class="subnav-nav-btn next" title="Linux & Command Line for Architects">Next (002) →</a>
+      </div>
+    </nav>
+
+    
+    <!-- Topic Header -->
+    <header class="page-header">
+      <div class="page-meta">
+        <span class="badge">Topic 001</span>
+        <span class="badge badge-type">Roadmap ID: 0.1</span>
+        <span class="badge" style="background:#FEF3C7; color:#92400E;">Phase 0 — Prerequisites</span>
+        <span class="badge badge-type">Page Type: Concept</span>
+        <span style="font-size:0.8rem; color:var(--text-muted);">Verified: 2026-09-24</span>
+      </div>
+      <h1 class="page-title">Networking Fundamentals</h1>
+      <p class="page-lead">
+        The foundation of cloud systems: OSI layers, IP subnet math, DNS resolution, TCP/TLS handshakes, L4 vs L7 routing, and stateful firewalls.
+      </p>
+    </header>
+
+    <!-- Part 1: Real-World Explanation -->
+    <nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world">
+      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+      
+      <h3>The Situation: Brightloaf Bakery Goes Online</h3>
+      <p>
+        <strong>Brightloaf Bakery</strong> began as a beloved single neighborhood storefront in Portland, Oregon founded by Bea the Baker. When orders surged, Bea launched a web ordering portal hosted on a single cloud server. At first, everything worked. But as Bea expanded to three new bakery kitchens across the state, order notifications were dropped, customers in Seattle reported sluggish checkouts, and an emergency developer accidentally assigned the same private IP range to two connected bakeries, completely freezing communication between store registers and the order queue.
+      </p>
+
+      <div class="callout danger">
+        <div class="callout-title">The Pain: Why Network Architecture Breaks Businesses</div>
+        Without understanding networking boundaries, organizations suffer severe outages:
+        <ul>
+          <li><strong>IP Collision Disasters:</strong> Connecting two corporate networks or VPCs with overlapping RFC 1918 ranges (e.g. both using <code>10.0.0.0/16</code>) requires emergency, expensive network redesign.</li>
+          <li><strong>The DNS TTL Freeze:</strong> Setting a 24-hour DNS TTL before a server migration causes 50% of customers to hit a dead server for an entire day when an IP changes.</li>
+          <li><strong>The L4 vs L7 Blindspot:</strong> Trying to route HTTP cookies or URL paths using a Layer 4 TCP proxy fails because L4 proxies cannot inspect application payloads.</li>
+        </ul>
+      </div>
+
+      <h3>The Mental Model in One Paragraph</h3>
+      <p>
+        Think of cloud networking like a municipal parcel postal system. The <strong>IP address</strong> is the street address of the building; the <strong>Subnet (CIDR)</strong> is the designated postal district; the <strong>Port number</strong> is the specific apartment buzzer or department room; <strong>DNS</strong> is the city telephone directory translating human names to numeric addresses; and <strong>TCP/TLS</strong> is the registered mail protocol ensuring envelopes arrive un-tampered, acknowledged, and in exact sequence.
+      </p>
+
+      <h3>Who Cares and Why</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Primary Objective</th>
+            <th>Critical Risk If Ignored</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Chief Technology Officer (CTO)</strong></td>
+            <td>Scalable multi-region expansion and partner integrations.</td>
+            <td>Unroutable networks stalling corporate mergers and acquisitions.</td>
+          </tr>
+          <tr>
+            <td><strong>Security Lead / CISO</strong></td>
+            <td>Zero Trust isolation and minimal public exposure.</td>
+            <td>Exposing private databases directly to the public internet without NAT.</td>
+          </tr>
+          <tr>
+            <td><strong>SRE / DevOps Engineer</strong></td>
+            <td>Predictable latency, zero-downtime rollouts, and MTTR.</td>
+            <td>Silent packet blackholing caused by MTU mismatches or SNAT port exhaustion.</td>
+          </tr>
+          <tr>
+            <td><strong>FinOps / Finance Lead</strong></td>
+            <td>Controlling egress bandwidth costs and inter-zone transit.</td>
+            <td>Accidental cross-region egress charges multiplying monthly cloud bills.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Common Misconceptions</h3>
+      <ul>
+        <li><strong>Myth:</strong> <em>"A /24 subnet provides 256 usable IP addresses."</em><br>
+        <strong>Reality:</strong> In standard IPv4, 2 addresses are reserved (network and broadcast). In <strong>Google Cloud VPCs, exactly 4 addresses are reserved</strong> (.0 network, .1 default gateway, .2 reserved for future, and .3 reserved for future), leaving 252 usable IPs.</li>
+        <li><strong>Myth:</strong> <em>"Stateful firewalls require you to write both an inbound allow rule and an outbound return rule."</em><br>
+        <strong>Reality:</strong> Stateful firewalls track active connection 5-tuples. Once ingress traffic is permitted, the return egress traffic is automatically allowed.</li>
+        <li><strong>Myth:</strong> <em>"DNS propagation delay is caused by internet servers slowly updating each other."</em><br>
+        <strong>Reality:</strong> Delay is strictly governed by local client and recursive resolver caching based on the record's <strong>Time To Live (TTL)</strong>.</li>
+      </ul>
+
+      <h3>Vocabulary Starter</h3>
+      <ul>
+        <li><code>CIDR (Classless Inter-Domain Routing)</code>: Notation (e.g. <code>10.0.0.0/24</code>) indicating network prefix length and available host IP capacity.</li>
+        <li><code>RFC 1918</code>: Internet standard designating non-routable private IP address spaces (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>).</li>
+        <li><code>SNAT (Source Network Address Translation)</code>: Rewriting a private source IP to a public IP to enable outbound internet access without exposing the host.</li>
+        <li><code>Layer 4 (Transport)</code>: Operates on TCP/UDP ports and IP packets without decrypting or parsing application content.</li>
+        <li><code>Layer 7 (Application)</code>: Operates on HTTP/HTTPS, inspects URLs, headers, cookies, and gRPC methods.</li>
+      </ul>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Networking Fundamentals design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Networking Fundamentals gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.1 · Networking Fundamentals; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+    </section>
+
+    <!-- Part 2: Technical Discussion & Diagrams -->
+    <section class="topic-section" id="technical">
+      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
+      
+
+      <h4>Layer 1 — Foundation: The Network Protocol Stack & Scope</h4>
+      <p>
+        Every interaction in Google Cloud relies on the TCP/IP stack. Understanding where each protocol sits determines how services isolate and communicate:
+      </p>
+      <ul>
+        <li><strong>Layer 3 (Network):</strong> IPv4 and IPv6 packet addressing. Routers forward packets based on destination IP headers without knowing the application payload.</li>
+        <li><strong>Layer 4 (Transport):</strong> TCP (connection-oriented, reliable, sequenced) and UDP (connectionless, low-latency, best-effort). Identifies destination applications via 16-bit <strong>ports</strong> (e.g., Port 443 for HTTPS, Port 53 for DNS).</li>
+        <li><strong>Layer 7 (Application):</strong> HTTP/1.1, HTTP/2, and HTTP/3 (QUIC over UDP). Handles requests, verbs (<code>GET</code>, <code>POST</code>), TLS termination, and payload compression.</li>
+      </ul>
+
+      <h4>Layer 2 — Practitioner: Subnet Math and Cloud NAT Rules</h4>
+      <p>
+        When designing subnets, architects must calculate IP allocations defensively:
+      </p>
+      <pre><code>Formula for Usable IPs in GCP Subnet = 2^(32 - Prefix) - 4
+Example: /24 subnet -> 2^(32 - 24) - 4 = 256 - 4 = 252 Usable IPs
+Example: /22 subnet -> 2^(32 - 22) - 4 = 1024 - 4 = 1020 Usable IPs
+Example: /28 subnet -> 2^(32 - 28) - 4 = 16 - 4 = 12 Usable IPs (Minimum supported in GCP VPC)</code></pre>
+
+      <p>
+        <strong>Production Defaults to Avoid:</strong> Never deploy production workloads in the GCP <code>default</code> VPC. Default VPCs have auto-generated subnets in every global region with firewall rules opening ports <code>22</code> (SSH) and <code>3389</code> (RDP) to <code>0.0.0.0/0</code>. Always provision a custom-mode VPC with explicit subnet CIDRs and strict firewall tags.
+      </p>
+
+      <h4>Layer 3 — Architect: System Design & Trade-Offs</h4>
+      <p>
+        Choosing the right load balancing layer is a foundational architectural decision:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Layer 4 (Passthrough / Network LB)</th>
+            <th>Layer 7 (Proxy / Application LB)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Protocols</strong></td>
+            <td>Raw TCP / UDP / ESP</td>
+            <td>HTTP, HTTPS, HTTP/2, gRPC, WebSocket</td>
+          </tr>
+          <tr>
+            <td><strong>TLS Termination</strong></td>
+            <td>Terminated at backend instance</td>
+            <td>Terminated at Google edge (GFE Anycast IP)</td>
+          </tr>
+          <tr>
+            <td><strong>Routing Capabilities</strong></td>
+            <td>Client IP hash, 5-tuple, protocol/port</td>
+            <td>Host and path routing, header rewrites, Cloud Armor WAF</td>
+          </tr>
+          <tr>
+            <td><strong>Latency Impact</strong></td>
+            <td>Ultra-low (direct passthrough, Maglev routing)</td>
+            <td>Slight proxy latency, but accelerated by Anycast edge</td>
+          </tr>
+          <tr>
+            <td><strong>Architecture Rule</strong></td>
+            <td colspan="2"><em>"Choose L7 for web APIs, microservice path routing, and global caching; choose L4 for custom TCP protocols, gaming UDP streams, or when backends must see client IP without Proxy Protocol."</em></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Layer 4 — Staff: Internals, Failure Modes & Day-2 Operations</h4>
+      <p>
+        <strong>Underneath the Hood: Google Andromeda SDN:</strong> GCP does not use physical switches or VLANs to separate customer traffic. Instead, the <strong>Andromeda Software-Defined Network (SDN)</strong> operates at the hypervisor kernel level. When a VM transmits a packet, Andromeda encapsulates it in Geneve headers with metadata tags, bypassing physical router hops and achieving wire-speed packet processing over Google's Jupiter datacenter fabric.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Failure-Mode Table (Staff Reference)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Failure Mode</th>
+              <th>Signal You Will See</th>
+              <th>Blast Radius</th>
+              <th>Immediate Action</th>
+              <th>Durable Prevention</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>SNAT Port Exhaustion</strong></td>
+              <td>Outbound connections timeout with TCP SYN drops. Error <code>EADDRNOTAVAIL</code>.</td>
+              <td>All private VMs in subnet calling external APIs.</td>
+              <td>Increase <code>min-ports-per-vm</code> in Cloud NAT configuration.</td>
+              <td>Enable Dynamic Port Allocation in Cloud NAT and use Private Google Access.</td>
+            </tr>
+            <tr>
+              <td><strong>MTU Blackholing (1460 vs 1500)</strong></td>
+              <td>SSH/ping works, but large data payloads (HTTP POST, large git clones) hang indefinitely.</td>
+              <td>Inter-datacenter VPN or Interconnect traffic.</td>
+              <td>Clamp TCP MSS to 1420 bytes on border routers.</td>
+              <td>Standardize VPC MTU to 1500 or configure Path MTU Discovery (PMTUD) allowing ICMP Type 3.</td>
+            </tr>
+            <tr>
+              <td><strong>Overlapping CIDR Peering Block</strong></td>
+              <td><code>gcloud compute networks peerings create</code> fails with <code>PEERING_OVERLAPPING_SUBNETS</code>.</td>
+              <td>Inter-VPC cross-team communication halted.</td>
+              <td>Implement Private NAT or intermediate proxy layer.</td>
+              <td>Enforce centralized IPAM (IP Address Management) in landing zone governance.</td>
+            </tr>
+            <tr>
+              <td><strong>DNS Resolver Throttling</strong></td>
+              <td>Intermittent <code>SERVFAIL</code> or query timeouts from dense GKE clusters.</td>
+              <td>All pods resolving external or internal domains.</td>
+              <td>Deploy NodeLocal DNSCache DaemonSet.</td>
+              <td>Scale NodeLocal DNS and increase Cloud DNS outbound forwarder quotas.</td>
+            </tr>
+            <tr>
+              <td><strong>Stateful Connection Exhaustion</strong></td>
+              <td>VM cannot establish new TCP sessions despite low CPU/RAM.</td>
+              <td>Single high-traffic VM or NAT gateway instance.</td>
+              <td>Reboot instance or scale horizontally across multiple VMs.</td>
+              <td>Tune Linux kernel <code>net.netfilter.nf_conntrack_max</code> and enable connection reuse.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Diagrams Section -->
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Networking Fundamentals must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div id="diagrams">
+        <h3>2B — Interactive Architecture Diagrams</h3>
+        
+        <div class="callout" style="margin-bottom: 24px;">
+          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
+          <p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+        <div class="diagram-suite-nav">
+          <span class="suite-title">VIEWPOINT:</span>
+          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+        </div>
+
+<!-- Diagram 1 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Networking Fundamentals — Scope & Architecture Map</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes foundational Google Cloud network segmentation: how external client requests traverse Anycast edge infrastructure and Andromeda SDN to reach zero-trust RFC 1918 private subnets without exposing backend VMs.
+          </p>
+        </div>
+        <div id="diagram-d1"></div>
+
+        <!-- Diagram 2 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: Networking Fundamentals — Request & Control Flow</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Traces the packet lifecycle from browser keystroke to HTTP 200 payload delivery across Google Edge Anycast and Andromeda SDN.
+          </p>
+        </div>
+        <div id="diagram-d2"></div>
+
+        <!-- Diagram 3 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: Networking Fundamentals — Failure Injection & Auto-Healing</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Demonstrates automated packet failure recovery across SNAT port exhaustion and MTU blackholing, proving how Cloud NAT dynamic port allocation and PMTUD prevent silent connection drops.
+          </p>
+        </div>
+        <div id="diagram-d3"></div>
+      </div>
+    
+      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Networking Fundamentals — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Networking Fundamentals — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Networking Fundamentals — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
+    </section>
+
+    <!-- Part 3: Explained by Analogy -->
+    <section class="topic-section" id="analogy">
+      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+      
+      <p>
+        Imagine <strong>Cloud City</strong>: a thriving commercial metropolis with residential districts, commercial centers, express highways, and municipal checkpoints.
+      </p>
+
+      <div class="analogy-stepper">
+        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+      </div>
+
+      <div class="analogy-box" id="analogy-display"><div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div><div class="analogy-mapping"><h3>Cloud City mapping table</h3><p>Brightloaf campus maps to the topic resource; permits map to IAM and policy; roads map to networking and dependencies; emergency response maps to recovery operations.</p><p><strong>Where the metaphor breaks:</strong> cloud policies are software rules, not physical walls. Verify the real behavior in documentation.</p></div>
+        <!-- Loaded dynamically via script -->
+      </div>
+
+      <h3>Analogy to Technical Mapping Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Cloud City Metaphor</th>
+            <th>Real Google Cloud Concept</th>
+            <th>Architectural Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>City Avenues & District Grid</strong></td>
+            <td>VPC Subnets & CIDR Notation</td>
+            <td>Defines non-conflicting IP address spaces for workloads.</td>
+          </tr>
+          <tr>
+            <td><strong>City Directory & Post Office</strong></td>
+            <td>Cloud DNS Nameservers</td>
+            <td>Translates human-readable names to routable network coordinates.</td>
+          </tr>
+          <tr>
+            <td><strong>City Gate Tollbooths</strong></td>
+            <td>Cloud NAT Gateways</td>
+            <td>Allows internal residents to send mail outbound without exposing homes.</td>
+          </tr>
+          <tr>
+            <td><strong>Guard Checkpoints & Inspection Badges</strong></td>
+            <td>Stateful Cloud Firewalls & Security Tags</td>
+            <td>Inspects inbound vehicle origins and permits verified connections.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Part 4: Practice Exercise -->
+    <section class="topic-section" id="demo-or-practice"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> Confirm the disposable project, budget, region, IAM, plan, and cleanup before any create or apply action.</div>
+      <h2 class="section-title"><span class="section-number">4</span> Hands-On Practice Exercise</h2>
+      
+      <div class="callout">
+        <div class="callout-title">Client Brief: Brightloaf Bakery Multi-Regional Subnet Sizing</div>
+        <p>
+          Brightloaf Bakery is migrating from a single legacy server to a custom GCP VPC across two regions: <code>us-west1</code> (Oregon) and <code>us-central1</code> (Iowa). The corporate network team has allocated the supernet <code>10.100.0.0/16</code> to this cloud project.
+        </p>
+        <p><strong>Your Architectural Tasks:</strong></p>
+        <ol>
+          <li>Allocate non-overlapping subnets for:
+            <ul>
+              <li><code>us-west1-web</code>: requires capacity for at least 180 compute instances.</li>
+              <li><code>us-west1-db</code>: requires capacity for at least 20 database read replicas.</li>
+              <li><code>us-central1-web</code>: requires capacity for at least 500 instances during national seasonal sales.</li>
+            </ul>
+          </li>
+          <li>Calculate the exact usable host count for each subnet, accounting for GCP's 4 reserved IP addresses.</li>
+          <li>Identify the CIDR prefix required if Brightloaf later establishes a VPC Peering connection with an on-premises warehouse using <code>10.100.1.0/24</code>.</li>
+        </ol>
+      </div>
+
+      <button class="btn-de" id="toggle-solution-btn" onclick="toggleSolution()" style="margin-bottom:1rem;">
+        👁 Show Worked Solution & Rubric
+      </button>
+
+      <div id="solution-block" style="display:none; background:var(--bg-body); padding:1.25rem; border-radius:8px; border:1px solid var(--border-color);">
+        <h4>Worked Solution</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Subnet Name</th>
+              <th>Region</th>
+              <th>Assigned CIDR</th>
+              <th>Total IPs</th>
+              <th>GCP Reserved</th>
+              <th>Usable Host Capacity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>us-west1-web</code></td>
+              <td><code>us-west1</code></td>
+              <td><code>10.100.10.0/24</code></td>
+              <td>256</td>
+              <td>4 (.0, .1, .2, .3)</td>
+              <td><strong>252 usable</strong> (satisfies >180)</td>
+            </tr>
+            <tr>
+              <td><code>us-west1-db</code></td>
+              <td><code>us-west1</code></td>
+              <td><code>10.100.20.0/27</code></td>
+              <td>32</td>
+              <td>4 (.0, .1, .2, .3)</td>
+              <td><strong>28 usable</strong> (satisfies >20)</td>
+            </tr>
+            <tr>
+              <td><code>us-central1-web</code></td>
+              <td><code>us-central1</code></td>
+              <td><code>10.100.32.0/23</code></td>
+              <td>512</td>
+              <td>4 (.0, .1, .2, .3)</td>
+              <td><strong>508 usable</strong> (satisfies >500)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Collision Analysis:</strong> If on-premises uses <code>10.100.1.0/24</code>, that range must remain strictly quarantined from cloud allocations. If assigned to cloud subnets, VPC Peering will fail immediately with <code>PEERING_OVERLAPPING_SUBNETS_NOT_ALLOWED</code>.</p>
+
+        <h4>Evaluation Rubric</h4>
+        <ul>
+          <li><strong>Score 3/3 (Staff):</strong> Subnets appropriately sized with room for growth; correctly deducted 4 GCP reserved IPs; identified peering conflict risk.</li>
+          <li><strong>Score 2/3 (Practitioner):</strong> Subnets correctly sized, but forgot GCP 4-IP reservation rule (assumed 2 reserved IPs).</li>
+          <li><strong>Score 1/3 (Beginner):</strong> Overlapping subnets or incorrect CIDR prefix calculation.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Footer 1: Check Your Understanding -->
+    <section class="topic-section" id="quiz">
+      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+      
+      <!-- Recall 1 -->
+      <div class="quiz-card">
+        <span class="quiz-badge">Band: Recall (Question 1)</span>
+        <p><strong>In a Google Cloud VPC subnet with CIDR block 10.0.0.0/28, how many IP addresses are usable for Compute Engine VM instances?</strong></p>
+        <ul class="quiz-options">
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Standard IPv4 subtracts 2, but GCP subtracts 4.')">A) 14</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! Total IPs = 2^(32-28) = 16. GCP reserves .0 (network), .1 (gateway), .2 (reserved), and .3 (reserved). 16 - 4 = 12 usable IPs.')">B) 12</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, '16 is the total raw IP count with zero reserved.')">C) 16</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, '11 is incorrect.')">D) 11</button>
+        </ul>
+        <div class="quiz-explanation"></div>
+      </div>
+
+      <!-- Application 1 -->
+      <div class="quiz-card">
+        <span class="quiz-badge">Band: Application (Question 2)</span>
+        <p><strong>You are designing the network for private Compute Engine instances that must securely pull container base images from an external public registry. The instances must not have public IP addresses. What should you configure?</strong></p>
+        <ul class="quiz-options">
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! Cloud NAT provides managed outbound SNAT for instances without external IPs without exposing them to inbound attacks.')">A) Configure a Cloud Router and enable Cloud NAT on the subnet.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Private Google Access only routes to Google APIs (*.googleapis.com), not general public third-party registries.')">B) Enable Private Google Access on the subnet.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Assigning ephemeral public IPs violates the security requirement to have no public IPs.')">C) Assign ephemeral public IPs with an egress firewall rule.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'VPC Peering connects private VPCs, not the public internet.')">D) Establish VPC Network Peering with an external transit VPC.</button>
+        </ul>
+        <div class="quiz-explanation"></div>
+      </div>
+
+      <!-- PCA Scenario -->
+      <div class="quiz-card">
+        <span class="quiz-badge">Band: PCA Scenario (Question 3)</span>
+        <p><strong>Your enterprise application runs across two regions (us-east1 and us-west1). You need to route incoming international user traffic to the nearest healthy region based on latency, terminate TLS as close to users as possible, and protect the origin servers with Google Cloud Armor security policies. Which architecture should you choose?</strong></p>
+        <ul class="quiz-options">
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! Global External Application Load Balancers use Google Anycast IPs to terminate TLS at edge points of presence, dynamically route to the nearest healthy backend MIG, and natively integrate with Cloud Armor.')">A) Global External Application Load Balancer with backends in both regions.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Incorrect: Regional External ALBs terminate TLS within a single region and cannot provide multi-region Anycast failover or global latency-based routing.')">B) Two Regional External Application Load Balancers with Cloud DNS Round-Robin.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Incorrect: Network Load Balancers operate at Layer 4; they cannot terminate TLS, inspect HTTP headers, or attach Cloud Armor Layer 7 WAF policies.')">C) External Passthrough Network Load Balancer in each region.</button>
+          <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Incorrect: Cloud CDN is for caching content, not terminating application origin logic or providing Layer 7 firewall policies on non-cacheable APIs.')">D) Cloud CDN connected directly to Compute Engine instance groups.</button>
+        </ul>
+        <div class="quiz-explanation"></div>
+      </div>
+
+      <!-- Staff Review Challenge -->
+      <div class="quiz-card">
+        <span class="quiz-badge">Band: Staff Review Challenge (Question 4)</span>
+        <p><strong>Staff Architectural Review:</strong> An engineer proposes connecting two separate GCP projects via VPC Network Peering. Both VPCs currently use <code>10.240.0.0/16</code> for their primary subnets. What failure will occur, and what is the staff-level remediation?</p>
+        <div class="callout danger" style="margin-top:0.5rem;">
+          <strong>Staff Analysis:</strong> VPC Network Peering strictly forbids overlapping subnets. The control plane will abort peering creation immediately. Remediation options:
+          <ol>
+            <li><strong>Preferred:</strong> Renumber subnets in one project before production data accumulates.</button>
+            <li><strong>Tactical:</strong> Use <strong>Private NAT</strong> (Cloud NAT for internal-to-internal translation) to map one side's overlapping IPs to a non-conflicting virtual pool.</button>
+            <li><strong>L7 Gateway:</strong> Terminate traffic on an Internal Application Load Balancer connected across Shared VPC or Private Service Connect (PSC).</button>
+          </ol>
+        </div>
+      </div>
+      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
+    </section>
+
+    <!-- Footer 2: Further Reading -->
+    <section class="topic-section" id="reading">
+      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
+      
+      <ul>
+        <li><strong>Concepts:</strong> <a href="https://cloud.google.com/vpc/docs/overview" target="_blank">Google Cloud VPC Network Overview</a> (Verifies VPC resource model, global scope, and Andromeda SDN).</li>
+        <li><strong>Subnets & IP Ranges:</strong> <a href="https://cloud.google.com/vpc/docs/subnets" target="_blank">Subnet IP Allocation Rules</a> (Verifies the 4 reserved IP addresses rule: .0, .1, .2, and .3).</li>
+        <li><strong>Cloud NAT:</strong> <a href="https://cloud.google.com/nat/docs/overview" target="_blank">Cloud NAT Architecture</a> (Verifies SNAT dynamic port allocation and port exhaustion metrics).</li>
+        <li><strong>Load Balancing:</strong> <a href="https://cloud.google.com/load-balancing/docs/choosing-load-balancer" target="_blank">Choosing a Load Balancer Guide</a> (Verifies L4 vs L7 comparison and Anycast edge behavior).</li>
+        <li><strong>Exam Alignment:</strong> <a href="https://cloud.google.com/learn/certification/cloud-architect" target="_blank">Professional Cloud Architect Exam Guide (Section 2: Designing Network Infrastructure)</a>.</li>
+        <li><strong>Staff Deep Dive:</strong> <em>"Jupiter Rising: A Decade of Clos Topologies and Centralized Control in Google’s Datacenter Network"</em> (Google Research Paper on internal network fabric).</li>
+      </ul>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:1rem;">Documentation verified against current Google Cloud technical specifications as of: 2026-09-24.</p>
+    </section>
+    <!-- Topic Pagination Footer -->
+    <nav class="topic-pagination" aria-label="Topic Pagination">
+      <!-- Previous Topic (Start of Curriculum) -->
+      <a href="../index.html" class="pagination-card prev">
+        <div class="pagination-direction">← ROADMAP START</div>
+        <div class="pagination-topic-meta">Curriculum Overview</div>
+        <div class="pagination-title">Topic 001: Networking Fundamentals</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>I</kbd></div>
+      </a>
+
+      <!-- Roadmap Overview -->
+      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
+        <div class="pagination-direction">ROADMAP OVERVIEW</div>
+        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-title">Architecture Explorer</div>
+        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
+      </a>
+
+      <!-- Next Topic -->
+      <a href="topic-002.html" class="pagination-card next">
+        <div class="pagination-direction">NEXT TOPIC →</div>
+        <div class="pagination-topic-meta">Phase 0 — Prerequisites • [0.2]</div>
+        <div class="pagination-title">002: Linux & Command Line for Architects</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
+      </a>
+    </nav>
+
+
+  </main>
+
+    <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+  <script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-001-d1",
+  "title": "Networking Fundamentals \u2014 Scope & Architecture Map",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "map",
+  "purpose": "Visualizes foundational Google Cloud network segmentation: how external client requests traverse Anycast edge infrastructure and Andromeda SDN to reach zero-trust RFC 1918 private subnets without exposing backend VMs.",
+  "routing_rationale": "Direct internet ingress to private instances is forbidden. Traffic must first resolve via Anycast DNS, terminate at an External HTTP(S) Load Balancer (Google Front End), and be encapsulated over Andromeda SDN before reaching private VMs. Outbound egress is mediated via Cloud NAT.",
+  "groups": [
+    {
+      "id": "g-ext",
+      "label": "Public Internet & Client Edge",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-core",
+      "label": "GCP Project: production-landing",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 620,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Browser",
+      "product": "External Client",
+      "group": "g-ext",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User machine initiating DNS queries and TLS connections over IPv4/IPv6."
+    },
+    {
+      "id": "dns",
+      "label": "Cloud DNS Resolver",
+      "product": "Cloud DNS (8.8.8.8)",
+      "group": "g-ext",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Resolves domain to public load balancer Anycast virtual IP."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-core",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "L7 Global proxy with Anycast IP terminating TLS handshakes and routing to backends."
+    },
+    {
+      "id": "vm",
+      "label": "App Backend VM",
+      "product": "Compute Engine (10.0.1.4)",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 140,
+      "detail": "Private Compute Engine VM in 10.0.1.0/24 subnet (no public IP)."
+    },
+    {
+      "id": "nat",
+      "label": "Cloud NAT Gateway",
+      "product": "Cloud NAT Gateway",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 280,
+      "detail": "Regional NAT gateway translating egress packets from RFC 1918 to public IPs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client",
+      "to": "dns",
+      "label": "1. DNS Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "client",
+      "to": "gfe",
+      "label": "2. Anycast Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "gfe",
+      "to": "vm",
+      "label": "3. Andromeda Transit",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vm",
+      "to": "nat",
+      "label": "4. Private Outbound Egress",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "DNS Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client queries Cloud DNS for public domain A record.",
+      "why_traversal": "Anycast DNS returns the nearest Google Edge Point of Presence virtual IP.",
+      "protocol": "UDP/53 DNS",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "dig +short brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Anycast Edge Handshake",
+      "edges": [
+        "e2"
+      ],
+      "action": "Client opens TLS 1.3 socket to nearest Google Front End edge proxy.",
+      "why_traversal": "Traffic enters Google's private fiber network immediately, bypassing public internet hops.",
+      "protocol": "TCP 443 / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -Iv https://brightloaf.com",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Forwarding",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE encapsulates packet over Andromeda SDN to private VM in subnet.",
+      "why_traversal": "Zero-trust network: backends have no public IP and sit in private RFC 1918 subnets.",
+      "protocol": "Geneve Encapsulation",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "compute.googleapis.com/instance/network/received_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Cloud NAT Egress",
+      "edges": [
+        "e4"
+      ],
+      "action": "Backend VM calls external payment API through regional Cloud NAT gateway.",
+      "why_traversal": "Cloud NAT provides managed outbound source IP translation without inbound attack surfaces.",
+      "protocol": "TCP / SNAT",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute routers nats list",
+        "metrics": "router.googleapis.com/nat/allocated_ports"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "snat-starvation",
+      "label": "SNAT Port Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "nat"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "VM exceeded 64 concurrent outbound connections without dynamic port allocation enabled.",
+      "diverted_path": "Outbound SYN packets are dropped by Cloud NAT; external API calls hang.",
+      "blast_radius": "All private VMs sharing the NAT IP encounter outbound network timeouts.",
+      "recovery": "Enable Dynamic Port Allocation; assign secondary external IP addresses to Cloud NAT router.",
+      "narration": "NAT port pool exhausted. New outbound TCP connections dropped.",
+      "check": {
+        "command": "gcloud compute routers get-status nat-router",
+        "metric": "router.googleapis.com/nat/dropped_sent_packets_count"
+      }
+    }
+  ]
+}
+  </script>
+  <script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-001-d2",
+  "title": "Networking Fundamentals \u2014 Request & Control Flow",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "flow",
+  "purpose": "Traces the packet lifecycle from browser keystroke to HTTP 200 payload delivery across Google Edge Anycast and Andromeda SDN.",
+  "routing_rationale": "Rather than routing traffic across standard public internet transit hops with variable latency, Google Anycast pulls the packet into Google's private fiber network at the nearest edge PoP, routing under Andromeda SDN direct to backend containers.",
+  "groups": [
+    {
+      "id": "g-client",
+      "label": "Client Environment",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-edge",
+      "label": "Google Edge Network (Anycast PoP)",
+      "type": "region",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpc",
+      "label": "Regional VPC Subnet & Andromeda Mesh",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "Browser (URL bar)",
+      "product": "User Agent",
+      "group": "g-client",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User enters URL; initiates DNS lookup and TCP socket connection."
+    },
+    {
+      "id": "os-cache",
+      "label": "OS Resolver / Cache",
+      "product": "Host DNS",
+      "group": "g-client",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Checks local resolver cache before sending recursive query to 8.8.8.8."
+    },
+    {
+      "id": "edge-pop",
+      "label": "Anycast Edge PoP",
+      "product": "Edge Infrastructure",
+      "group": "g-edge",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "BGP Anycast routes request to nearest Google Point of Presence worldwide."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-edge",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Terminates TCP/TLS connection; applies DDoS filtering and HTTP/2 multiplexing."
+    },
+    {
+      "id": "backend-vm",
+      "label": "Backend App Instance",
+      "product": "Compute Engine",
+      "group": "g-vpc",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Private VM receiving decapsulated HTTP request and computing JSON response."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "browser",
+      "to": "os-cache",
+      "label": "1. Resolve Hostname",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "browser",
+      "to": "edge-pop",
+      "label": "2. BGP Anycast Routing",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "edge-pop",
+      "to": "gfe",
+      "label": "3. TLS Termination",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "gfe",
+      "to": "backend-vm",
+      "label": "4. Private Fiber Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Hostname Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "OS resolver queries 8.8.8.8; receives Anycast VIP 34.120.45.67.",
+      "why_traversal": "DNS resolution establishes edge destination before socket handshake.",
+      "protocol": "DNS UDP/53",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "host brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "BGP Anycast Ingress",
+      "edges": [
+        "e2"
+      ],
+      "action": "Browser opens TCP SYN connection to nearest Google Point of Presence.",
+      "why_traversal": "Pulls packet into Google fiber within 15ms, minimizing public internet jitter.",
+      "protocol": "TCP SYN / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "traceroute 34.120.45.67",
+        "metrics": "network/ingress_bytes"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Edge TLS Termination",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE terminates TLS handshake and performs HTTP/2 multiplexing.",
+      "why_traversal": "Offloads crypto overhead from backend compute nodes.",
+      "protocol": "TLS 1.3 / HTTP/2",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "openssl s_client -connect 34.120.45.67:443",
+        "metrics": "loadbalancing.googleapis.com/https/backend_latencies"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Backend Processing",
+      "edges": [
+        "e4"
+      ],
+      "action": "Andromeda delivers packet to backend vNIC for HTTP 200 JSON processing.",
+      "why_traversal": "Application parses request and streams response back along reverse tunnel.",
+      "protocol": "HTTP/1.1 or gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -w '%{time_total}' https://brightloaf.com",
+        "metrics": "compute.googleapis.com/instance/cpu/utilization"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "mtu-blackhole",
+      "label": "PMTUD Blackhole / Packet Drop",
+      "changes": {
+        "failedNodes": [
+          "backend-vm"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Packet exceeds 1460-byte VPC MTU and DF flag is set while ICMP Fragmentation Needed is blocked.",
+      "diverted_path": "Large payloads are silently dropped in transit without TCP acknowledgment.",
+      "blast_radius": "Large API responses hang indefinitely while small ping packets succeed.",
+      "recovery": "Configure VPC MTU to 1500 or 8896 bytes; allow ICMP Type 3 Code 4 in firewall rules."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-001-d3",
+  "title": "Networking Fundamentals \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "failure",
+  "purpose": "Demonstrates automated packet failure recovery across SNAT port exhaustion and MTU blackholing, proving how Cloud NAT dynamic port allocation and PMTUD prevent silent connection drops.",
+  "routing_rationale": "When a single zone encounters link saturation, Andromeda SDN and Cloud Load Balancing withdraw the degraded route in under 5 seconds, rerouting established TCP flows to healthy standby paths.",
+  "groups": [
+    {
+      "id": "g-prim",
+      "label": "Primary Traffic Path (Zone A)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-failover",
+      "label": "Resilience & Failover Path (Zone B)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "vm-a",
+      "label": "Active Backend VM (Zone A)",
+      "product": "Compute Engine",
+      "group": "g-prim",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Serving active production traffic in availability zone us-central1-a."
+    },
+    {
+      "id": "probe-a",
+      "label": "Health Check Probe",
+      "product": "Cloud Monitoring",
+      "group": "g-prim",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Polls HTTP /healthz every 5s; 3 timeouts mark backend unhealthy."
+    },
+    {
+      "id": "vm-b",
+      "label": "Standby Backend VM (Zone B)",
+      "product": "Compute Engine",
+      "group": "g-failover",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Healthy warm standby instance in independent failure domain us-central1-b."
+    },
+    {
+      "id": "andromeda-lb",
+      "label": "Andromeda Flow Router",
+      "product": "Cloud Load Balancing",
+      "group": "g-failover",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Dynamically updates routing table to bypass unhealthy instance."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "probe-a",
+      "to": "vm-a",
+      "label": "1. Health Probe HTTP",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "probe-a",
+      "to": "andromeda-lb",
+      "label": "2. Signal Unhealthy Status",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "andromeda-lb",
+      "to": "vm-b",
+      "label": "3. Reroute Traffic Flow",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vm-a",
+      "to": "vm-b",
+      "label": "4. Drain & Sync State",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Steady-State Health Probing",
+      "edges": [
+        "e1"
+      ],
+      "action": "Cloud Health Check probes VM in Zone A with HTTP GET /healthz.",
+      "why_traversal": "Validates process responsiveness before routing incoming customer traffic.",
+      "protocol": "HTTP/1.1 TCP 8080",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Probe Failure Detection",
+      "edges": [
+        "e2"
+      ],
+      "action": "After 3 missed probes, prober notifies Andromeda flow router of VM failure.",
+      "why_traversal": "Automated eviction prevents blackholing customer transactions on crashed instance.",
+      "protocol": "Internal Control RPC",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 3,
+      "title": "Dynamic Traffic Failover",
+      "edges": [
+        "e3"
+      ],
+      "action": "Andromeda rewires forwarding table to direct new TCP flows to Zone B.",
+      "why_traversal": "Sub-second route convergence preserves client SLAs during zonal outages.",
+      "protocol": "Andromeda Flow Update",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 4,
+      "title": "Healthy State Recovery",
+      "edges": [
+        "e4"
+      ],
+      "action": "Standby VM in Zone B assumes active traffic load with zero dropped sessions.",
+      "why_traversal": "Workloads distributed across independent failure domains maintain 99.99% availability.",
+      "protocol": "TCP Connection Migration",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "zonal-blackhole",
+      "label": "Zone A Fiber Blackhole",
+      "changes": {
+        "failedNodes": [
+          "vm-a"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Physical optical fiber failure in Zone A datacenter cuts backend connectivity.",
+      "diverted_path": "Traffic is immediately shifted to Zone B standby nodes; Zone A is quarantined.",
+      "blast_radius": "Only uncommitted in-flight packets in Zone A require client retry.",
+      "recovery": "Automated regional MIG pre-scales Zone B capacity to absorb 100% diverted traffic."
+    }
+  ]
+}
+  </script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-001-d4",
+  "title": "Networking Fundamentals \u2014 D4",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Direct internet ingress to private instances is forbidden. Traffic must first resolve via Anycast DNS, terminate at an External HTTP(S) Load Balancer (Google Front End), and be encapsulated over Andromeda SDN before reaching private VMs. Outbound egress is mediated via Cloud NAT.",
+  "groups": [
+    {
+      "id": "g-ext",
+      "label": "Public Internet & Client Edge",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-core",
+      "label": "GCP Project: production-landing",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 620,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Browser",
+      "product": "External Client",
+      "group": "g-ext",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User machine initiating DNS queries and TLS connections over IPv4/IPv6."
+    },
+    {
+      "id": "dns",
+      "label": "Cloud DNS Resolver",
+      "product": "Cloud DNS (8.8.8.8)",
+      "group": "g-ext",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Resolves domain to public load balancer Anycast virtual IP."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-core",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "L7 Global proxy with Anycast IP terminating TLS handshakes and routing to backends."
+    },
+    {
+      "id": "vm",
+      "label": "App Backend VM",
+      "product": "Compute Engine (10.0.1.4)",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 140,
+      "detail": "Private Compute Engine VM in 10.0.1.0/24 subnet (no public IP)."
+    },
+    {
+      "id": "nat",
+      "label": "Cloud NAT Gateway",
+      "product": "Cloud NAT Gateway",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 280,
+      "detail": "Regional NAT gateway translating egress packets from RFC 1918 to public IPs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client",
+      "to": "dns",
+      "label": "1. DNS Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "client",
+      "to": "gfe",
+      "label": "2. Anycast Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "gfe",
+      "to": "vm",
+      "label": "3. Andromeda Transit",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vm",
+      "to": "nat",
+      "label": "4. Private Outbound Egress",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "DNS Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client queries Cloud DNS for public domain A record.",
+      "why_traversal": "Anycast DNS returns the nearest Google Edge Point of Presence virtual IP.",
+      "protocol": "UDP/53 DNS",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "dig +short brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Anycast Edge Handshake",
+      "edges": [
+        "e2"
+      ],
+      "action": "Client opens TLS 1.3 socket to nearest Google Front End edge proxy.",
+      "why_traversal": "Traffic enters Google's private fiber network immediately, bypassing public internet hops.",
+      "protocol": "TCP 443 / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -Iv https://brightloaf.com",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Forwarding",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE encapsulates packet over Andromeda SDN to private VM in subnet.",
+      "why_traversal": "Zero-trust network: backends have no public IP and sit in private RFC 1918 subnets.",
+      "protocol": "Geneve Encapsulation",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "compute.googleapis.com/instance/network/received_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Cloud NAT Egress",
+      "edges": [
+        "e4"
+      ],
+      "action": "Backend VM calls external payment API through regional Cloud NAT gateway.",
+      "why_traversal": "Cloud NAT provides managed outbound source IP translation without inbound attack surfaces.",
+      "protocol": "TCP / SNAT",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute routers nats list",
+        "metrics": "router.googleapis.com/nat/allocated_ports"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "snat-starvation",
+      "label": "SNAT Port Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "nat"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "VM exceeded 64 concurrent outbound connections without dynamic port allocation enabled.",
+      "diverted_path": "Outbound SYN packets are dropped by Cloud NAT; external API calls hang.",
+      "blast_radius": "All private VMs sharing the NAT IP encounter outbound network timeouts.",
+      "recovery": "Enable Dynamic Port Allocation; assign secondary external IP addresses to Cloud NAT router.",
+      "narration": "NAT port pool exhausted. New outbound TCP connections dropped.",
+      "check": {
+        "command": "gcloud compute routers get-status nat-router",
+        "metric": "router.googleapis.com/nat/dropped_sent_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-001-d5",
+  "title": "Networking Fundamentals \u2014 D5",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Direct internet ingress to private instances is forbidden. Traffic must first resolve via Anycast DNS, terminate at an External HTTP(S) Load Balancer (Google Front End), and be encapsulated over Andromeda SDN before reaching private VMs. Outbound egress is mediated via Cloud NAT.",
+  "groups": [
+    {
+      "id": "g-ext",
+      "label": "Public Internet & Client Edge",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-core",
+      "label": "GCP Project: production-landing",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 620,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Browser",
+      "product": "External Client",
+      "group": "g-ext",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User machine initiating DNS queries and TLS connections over IPv4/IPv6."
+    },
+    {
+      "id": "dns",
+      "label": "Cloud DNS Resolver",
+      "product": "Cloud DNS (8.8.8.8)",
+      "group": "g-ext",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Resolves domain to public load balancer Anycast virtual IP."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-core",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "L7 Global proxy with Anycast IP terminating TLS handshakes and routing to backends."
+    },
+    {
+      "id": "vm",
+      "label": "App Backend VM",
+      "product": "Compute Engine (10.0.1.4)",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 140,
+      "detail": "Private Compute Engine VM in 10.0.1.0/24 subnet (no public IP)."
+    },
+    {
+      "id": "nat",
+      "label": "Cloud NAT Gateway",
+      "product": "Cloud NAT Gateway",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 280,
+      "detail": "Regional NAT gateway translating egress packets from RFC 1918 to public IPs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client",
+      "to": "dns",
+      "label": "1. DNS Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "client",
+      "to": "gfe",
+      "label": "2. Anycast Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "gfe",
+      "to": "vm",
+      "label": "3. Andromeda Transit",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vm",
+      "to": "nat",
+      "label": "4. Private Outbound Egress",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "DNS Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client queries Cloud DNS for public domain A record.",
+      "why_traversal": "Anycast DNS returns the nearest Google Edge Point of Presence virtual IP.",
+      "protocol": "UDP/53 DNS",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "dig +short brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Anycast Edge Handshake",
+      "edges": [
+        "e2"
+      ],
+      "action": "Client opens TLS 1.3 socket to nearest Google Front End edge proxy.",
+      "why_traversal": "Traffic enters Google's private fiber network immediately, bypassing public internet hops.",
+      "protocol": "TCP 443 / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -Iv https://brightloaf.com",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Forwarding",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE encapsulates packet over Andromeda SDN to private VM in subnet.",
+      "why_traversal": "Zero-trust network: backends have no public IP and sit in private RFC 1918 subnets.",
+      "protocol": "Geneve Encapsulation",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "compute.googleapis.com/instance/network/received_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Cloud NAT Egress",
+      "edges": [
+        "e4"
+      ],
+      "action": "Backend VM calls external payment API through regional Cloud NAT gateway.",
+      "why_traversal": "Cloud NAT provides managed outbound source IP translation without inbound attack surfaces.",
+      "protocol": "TCP / SNAT",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute routers nats list",
+        "metrics": "router.googleapis.com/nat/allocated_ports"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "snat-starvation",
+      "label": "SNAT Port Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "nat"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "VM exceeded 64 concurrent outbound connections without dynamic port allocation enabled.",
+      "diverted_path": "Outbound SYN packets are dropped by Cloud NAT; external API calls hang.",
+      "blast_radius": "All private VMs sharing the NAT IP encounter outbound network timeouts.",
+      "recovery": "Enable Dynamic Port Allocation; assign secondary external IP addresses to Cloud NAT router.",
+      "narration": "NAT port pool exhausted. New outbound TCP connections dropped.",
+      "check": {
+        "command": "gcloud compute routers get-status nat-router",
+        "metric": "router.googleapis.com/nat/dropped_sent_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-001-d6",
+  "title": "Networking Fundamentals \u2014 D6",
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Direct internet ingress to private instances is forbidden. Traffic must first resolve via Anycast DNS, terminate at an External HTTP(S) Load Balancer (Google Front End), and be encapsulated over Andromeda SDN before reaching private VMs. Outbound egress is mediated via Cloud NAT.",
+  "groups": [
+    {
+      "id": "g-ext",
+      "label": "Public Internet & Client Edge",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-core",
+      "label": "GCP Project: production-landing",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 620,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Browser",
+      "product": "External Client",
+      "group": "g-ext",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "User machine initiating DNS queries and TLS connections over IPv4/IPv6."
+    },
+    {
+      "id": "dns",
+      "label": "Cloud DNS Resolver",
+      "product": "Cloud DNS (8.8.8.8)",
+      "group": "g-ext",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Resolves domain to public load balancer Anycast virtual IP."
+    },
+    {
+      "id": "gfe",
+      "label": "Google Front End (GFE)",
+      "product": "Edge Proxy",
+      "group": "g-core",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "L7 Global proxy with Anycast IP terminating TLS handshakes and routing to backends."
+    },
+    {
+      "id": "vm",
+      "label": "App Backend VM",
+      "product": "Compute Engine (10.0.1.4)",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 140,
+      "detail": "Private Compute Engine VM in 10.0.1.0/24 subnet (no public IP)."
+    },
+    {
+      "id": "nat",
+      "label": "Cloud NAT Gateway",
+      "product": "Cloud NAT Gateway",
+      "group": "g-core",
+      "plane": "data",
+      "x": 760,
+      "y": 280,
+      "detail": "Regional NAT gateway translating egress packets from RFC 1918 to public IPs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client",
+      "to": "dns",
+      "label": "1. DNS Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "client",
+      "to": "gfe",
+      "label": "2. Anycast Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "gfe",
+      "to": "vm",
+      "label": "3. Andromeda Transit",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vm",
+      "to": "nat",
+      "label": "4. Private Outbound Egress",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "DNS Resolution",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client queries Cloud DNS for public domain A record.",
+      "why_traversal": "Anycast DNS returns the nearest Google Edge Point of Presence virtual IP.",
+      "protocol": "UDP/53 DNS",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "dig +short brightloaf.com",
+        "metrics": "dns.googleapis.com/query/count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Anycast Edge Handshake",
+      "edges": [
+        "e2"
+      ],
+      "action": "Client opens TLS 1.3 socket to nearest Google Front End edge proxy.",
+      "why_traversal": "Traffic enters Google's private fiber network immediately, bypassing public internet hops.",
+      "protocol": "TCP 443 / TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "curl -Iv https://brightloaf.com",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Forwarding",
+      "edges": [
+        "e3"
+      ],
+      "action": "GFE encapsulates packet over Andromeda SDN to private VM in subnet.",
+      "why_traversal": "Zero-trust network: backends have no public IP and sit in private RFC 1918 subnets.",
+      "protocol": "Geneve Encapsulation",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "compute.googleapis.com/instance/network/received_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Cloud NAT Egress",
+      "edges": [
+        "e4"
+      ],
+      "action": "Backend VM calls external payment API through regional Cloud NAT gateway.",
+      "why_traversal": "Cloud NAT provides managed outbound source IP translation without inbound attack surfaces.",
+      "protocol": "TCP / SNAT",
+      "plane": "Data Plane",
+      "check": {
+        "commands": "gcloud compute routers nats list",
+        "metrics": "router.googleapis.com/nat/allocated_ports"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "snat-starvation",
+      "label": "SNAT Port Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "nat"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "VM exceeded 64 concurrent outbound connections without dynamic port allocation enabled.",
+      "diverted_path": "Outbound SYN packets are dropped by Cloud NAT; external API calls hang.",
+      "blast_radius": "All private VMs sharing the NAT IP encounter outbound network timeouts.",
+      "recovery": "Enable Dynamic Port Allocation; assign secondary external IP addresses to Cloud NAT router.",
+      "narration": "NAT port pool exhausted. New outbound TCP connections dropped.",
+      "check": {
+        "command": "gcloud compute routers get-status nat-router",
+        "metric": "router.googleapis.com/nat/dropped_sent_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}
+</script>
+  <script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">
+{
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "title": "Cloud City Roadways & Postal Service",
+  "city_concept": "Roads, Highway Lanes, and Gatekeepers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Before paved avenues and address numbers, Bea the Baker's delivery drivers were wandering aimlessly in Cloud City. Packages collided at crossroads, trucks blocked narrow alleys, and no bakery could tell if flour arrived from the warehouse.",
+      "analogy_elements": [
+        "Unpaved dirt tracks",
+        "Lost delivery wagons"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian laid down a numbered grid of avenues (Subnets & CIDRs). Rae the Dispatcher set up central post offices (DNS) to look up store addresses, and posted city gate guards (Stateful Firewalls) to let verified couriers enter.",
+      "analogy_elements": [
+        "Numbered District Avenues (CIDR)",
+        "Central Directory (DNS)",
+        "City Gates (Firewalls)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "During the Holiday Pastry Rush, thousands of delivery trucks swarmed the single exit tollbooth (SNAT Port Exhaustion). Dispatcher Rae deployed express automated toll-gates with dynamic transponders, clearing the gridlock.",
+      "analogy_elements": [
+        "Traffic Jam at Single Gate",
+        "Dynamic Tollbooths (Auto-Scaled Cloud NAT)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In a real physical city, two streets can share the same name in different neighborhoods. In Cloud City VPC Peering, two districts with identical street numbers (overlapping CIDR blocks) instantly reject road connections. Physical bridges can cross; VPC peering cannot.",
+      "analogy_elements": [
+        "Overlapping Street Numbers Conflict"
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "city": "City Avenues & District Grid",
+      "gcp": "VPC Subnets & CIDR Blocks"
+    },
+    {
+      "city": "City Address Directory",
+      "gcp": "Cloud DNS Nameservers"
+    },
+    {
+      "city": "City Border Checkpoints",
+      "gcp": "Stateful Cloud Firewalls"
+    },
+    {
+      "city": "Delivery Couriers",
+      "gcp": "TCP / IP Packets"
+    },
+    {
+      "city": "Central Traffic Dispatcher",
+      "gcp": "Cloud Load Balancing (L4/L7)"
+    }
+  ]
+}
+  </script>
+
+  <script src="../assets/diagram-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Parse embedded JSON synchronously (bypasses browser file:// CORS restrictions)
+      const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
+      const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
+      const specD3 = JSON.parse(document.getElementById('spec-d3-data').textContent);
+      window.analogyData = JSON.parse(document.getElementById('analogy-data').textContent);
+
+      // Initialize all diagrams immediately
+      new DiagramEngine('diagram-d1', specD1);
+      new DiagramEngine('diagram-d2', specD2);
+      new DiagramEngine('diagram-d3', specD3);
+      new DiagramEngine('diagram-d4', JSON.parse(document.getElementById('spec-d4-data').textContent));
+      new DiagramEngine('diagram-d5', JSON.parse(document.getElementById('spec-d5-data').textContent));
+      new DiagramEngine('diagram-d6', JSON.parse(document.getElementById('spec-d6-data').textContent));
+
+      // Initialize analogy beat
+      showAnalogyBeat(1);
+    });
+
+    function showAnalogyBeat(stepNum) {
+      if (!window.analogyData) return;
+      const beat = window.analogyData.beats.find(b => b.step === stepNum);
+      if (!beat) return;
+
+      const container = document.getElementById('analogy-display');
+      container.innerHTML = `
+        <h4 style="margin-top:0;">Beat ${beat.step}: ${beat.name}</h4>
+        <p style="font-size:0.95rem; line-height:1.6;">${beat.story}</p>
+        <div style="font-size:0.85rem; color:var(--text-muted);">
+          <strong>Analogy Visual Elements:</strong> ${beat.analogy_elements.join(' • ')}
+        </div>
+      `;
+
+      document.querySelectorAll('.stepper-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === stepNum);
+      });
+    }
+
+    function toggleSolution() {
+      const block = document.getElementById('solution-block');
+      const btn = document.getElementById('toggle-solution-btn');
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = '🙈 Hide Worked Solution & Rubric';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = '👁 Show Worked Solution & Rubric';
+      }
+    }
+
+    function checkQuiz(element, isCorrect, explanation) {
+      const card = element.closest('.quiz-card');
+      const options = card.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.style.borderColor = 'var(--border-color)';
+        opt.style.background = 'var(--bg-card)';
+      });
+
+      element.style.borderColor = isCorrect ? 'var(--color-success)' : 'var(--color-danger)';
+      element.style.background = isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+
+      const explEl = card.querySelector('.quiz-explanation');
+      explEl.style.display = 'block';
+      explEl.innerHTML = `<strong>${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
+    }
+  </script>
+  <!-- Floating Quick Navigation Dock -->
+  <div class="floating-topic-dock" id="floating-topic-dock">
+    <span class="dock-btn prev disabled">← 001</span>
+    <span class="dock-indicator" title="Topic 001 of 60">001 / 060</span>
+    <a href="topic-002.html" class="dock-btn next" title="Next Topic: Linux & Command Line for Architects [Key: N]">002 →</a>
+    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
+  </div>
+
+  <script>
+    // Global Keyboard Navigation between topics
+    (function() {
+      const prevUrl = "";
+      const nextUrl = "topic-002.html";
+      document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
+          if (prevUrl) window.location.href = prevUrl;
+        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
+          if (nextUrl) window.location.href = nextUrl;
+        } else if (e.key === 'i' || e.key === 'I') {
+          window.location.href = '../index.html';
+        }
+      });
+    })();
+  </script>
+  <!-- End Floating Quick Navigation Dock -->
+
+  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+</body>
+</html>

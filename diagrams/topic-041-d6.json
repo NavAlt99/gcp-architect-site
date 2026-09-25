@@ -1,0 +1,218 @@
+{
+  "id": "topic-041-d6",
+  "title": "Performance Optimization: Bottlenecks, Caching & Scaling \u2014 D6",
+  "topic_no": "041",
+  "roadmap_id": "6.2",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Maximizing performance requires optimizing every millisecond along the request lifecycle: Anycast edge ingestion (Premium Tier), TLS 1.3 0-RTT handshakes, compute caching, and non-blocking sub-millisecond database lookups.",
+  "groups": [
+    {
+      "id": "g-edge-perf",
+      "label": "Global Edge: Premium Tier & QUIC",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-tier",
+      "label": "Compute Acceleration Tier",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-lowlatency-storage",
+      "label": "Sub-Millisecond Storage Tier",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "premium-net",
+      "label": "Premium Network Tier",
+      "product": "Google Global Fiber Backbone",
+      "group": "g-edge-perf",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Routes user packets into closest local Google PoP; traverses private fiber backbone."
+    },
+    {
+      "id": "http3-quic",
+      "label": "HTTP/3 & QUIC Transport",
+      "product": "UDP-Based 0-RTT Handshakes",
+      "group": "g-edge-perf",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Eliminates head-of-line blocking and establishes encrypted connections in 0 round-trips."
+    },
+    {
+      "id": "tau-compute",
+      "label": "Tau T2D / C3 Compute Nodes",
+      "product": "AMD Milan / Intel Sapphire Rapids",
+      "group": "g-compute-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "High-performance vCPUs delivering 40% higher price-performance for containerized workloads."
+    },
+    {
+      "id": "memorystore-cluster",
+      "label": "Memorystore Cluster for Redis",
+      "product": "In-Memory Microsecond Cache",
+      "group": "g-compute-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Delivers sub-millisecond read latencies for 1,000,000+ QPS hot key queries."
+    },
+    {
+      "id": "bigtable-storage",
+      "label": "Cloud Bigtable SSD Storage",
+      "product": "Sub-10ms Wide-Column NoSQL",
+      "group": "g-lowlatency-storage",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Scales linearly with node count, sustaining millions of writes with single-digit millisecond latency."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "premium-net",
+      "to": "http3-quic",
+      "label": "1. Ingest via Closest PoP",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "http3-quic",
+      "to": "tau-compute",
+      "label": "2. Route Over Private Fiber",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "tau-compute",
+      "to": "memorystore-cluster",
+      "label": "3. Query Sub-Millisecond Cache",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "tau-compute",
+      "to": "bigtable-storage",
+      "label": "4. Read/Write Linear Bigtable",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Network Ingress Acceleration",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Packets enter Google fiber at user's local metro PoP; QUIC terminates handshakes in 0-RTT.",
+      "why_traversal": "Eliminates public internet congestion and reduces latency by up to 50%.",
+      "protocol": "HTTP/3 over UDP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Tiered Caching & Storage Retrieval",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Compute checks Redis cache; cache misses retrieve data from Bigtable in under 8ms.",
+      "why_traversal": "Achieves consistent sub-10ms p99 response times under massive global load.",
+      "protocol": "gRPC / RESP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "standard-tier-degradation",
+      "label": "Standard Tier Cold-Potato Routing Latency",
+      "changes": {
+        "failedNodes": [
+          "premium-net"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Traffic switched to Standard Network Tier, routing over congested public ISP hops.",
+      "diverted_path": "Transatlantic latency jumps from 68ms to 240ms with 3% packet loss.",
+      "blast_radius": "User experience degrades worldwide.",
+      "recovery": "Enforce Premium Network Tier on all production External Load Balancers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "premium-net"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "premium-net"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

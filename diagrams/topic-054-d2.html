@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning: Vertex AI Architecture — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-054.html">← Topic page</a><span>D.4 · TOPIC-054-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-054-d2",
+  "title": "Machine Learning: Vertex AI Architecture \u2014 Request & Control Flow",
+  "topic_no": "054",
+  "roadmap_id": "D.4",
+  "kind": "flow",
+  "purpose": "Traces Real-Time Online Inference Flow: client mobile app request -> API Gateway -> Vertex AI Prediction Endpoint -> Feature Store online lookup -> inference return.",
+  "routing_rationale": "Online feature lookup decouples the mobile client from feature computation: client sends user ID, and Vertex AI enriches the payload with 50 engineered features in 3 milliseconds.",
+  "groups": [
+    {
+      "id": "g-client-inference",
+      "label": "Customer Mobile Client",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-serving-cluster",
+      "label": "Vertex AI Serving Infrastructure",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-online-feature-vault",
+      "label": "Low-Latency Online Feature Store",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "mobile-checkout",
+      "label": "Checkout: $340 Cart",
+      "product": "User: u8921 / Merchant: m440",
+      "group": "g-client-inference",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "User attempts transaction; app requests real-time fraud risk score."
+    },
+    {
+      "id": "vertex-serving-pod",
+      "label": "Vertex Prediction Worker",
+      "product": "XGBoost Fraud Model (v2.1)",
+      "group": "g-serving-cluster",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Runs scoring algorithm in 2.2ms on dedicated container runtime."
+    },
+    {
+      "id": "online-feature-table",
+      "label": "Feature Store Online Entity",
+      "product": "Bigtable-Backed Online Store",
+      "group": "g-online-feature-vault",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Stores entity u8921: 24h_fail_count: 0, 7d_avg_spend: $310, account_age: 412d."
+    },
+    {
+      "id": "fraud-score-result",
+      "label": "Fraud Score: 0.02 (Approved)",
+      "product": "Inference Total Latency: 14ms",
+      "group": "g-serving-cluster",
+      "plane": "data",
+      "x": 440,
+      "y": 290,
+      "detail": "Returns transaction approval token to mobile app in 14ms."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "mobile-checkout",
+      "to": "vertex-serving-pod",
+      "label": "1. POST /predict (user_id: u8921)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "vertex-serving-pod",
+      "to": "online-feature-table",
+      "label": "2. Read Online Entity Features (3ms)",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "online-feature-table",
+      "to": "vertex-serving-pod",
+      "label": "3. Return 50 Feature Values",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-serving-pod",
+      "to": "fraud-score-result",
+      "label": "4. Output Approved Decision",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Online Feature Enrichment",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Prediction worker retrieves customer features from Feature Store in 3ms.",
+      "why_traversal": "Eliminates need for mobile client to compute or pass complex feature histories.",
+      "protocol": "gRPC Entity Lookup",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Low-Latency Fraud Scoring",
+      "edges": [
+        "e4"
+      ],
+      "action": "Model evaluates 50 features and outputs fraud probability of 0.02 in 2.2ms.",
+      "why_traversal": "Secures financial transaction without adding perceptible friction to checkout.",
+      "protocol": "Vertex AI Prediction Protocol",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "feature-staleness-drift",
+      "label": "Batch Feature Sync Lag Causes False Rejections",
+      "changes": {
+        "failedNodes": [
+          "online-feature-table"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Hourly streaming ingestion to Feature Store failed, causing customer spend features to be stale.",
+      "diverted_path": "Model rejected valid customer purchases.",
+      "blast_radius": "Customer checkout abandonment.",
+      "recovery": "Transition to real-time streaming feature ingestion using Vertex AI Feature Store streaming write API."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "mobile-checkout"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "mobile-checkout"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Real-Time Online Inference Flow: client mobile app request -> API Gateway -> Vertex AI Prediction Endpoint -> Feature Store online lookup -> inference return."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

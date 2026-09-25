@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing, Cost Hygiene, and FinOps Architecture — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-010.html">← Topic page</a><span>1.4 · TOPIC-010-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-010-d3",
+  "title": "Billing, Cost Hygiene, and FinOps Architecture \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "010",
+  "roadmap_id": "1.4",
+  "kind": "failure",
+  "purpose": "Simulates billing quota capping: demonstrates an unexpected compute surge tripping 100% budget threshold and triggering automated project isolation.",
+  "routing_rationale": "Automated FinOps scripts revoke compute provisioning permissions while keeping read-only state stores active, preventing unbounded cloud expenditures.",
+  "groups": [
+    {
+      "id": "g-surge",
+      "label": "Cost Surge Blast Radius",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-quarantine",
+      "label": "Automated Project Quarantine",
+      "type": "project",
+      "scope": "project",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dev-instances",
+      "label": "Runaway Dev Instances",
+      "product": "Compute Engine",
+      "group": "g-surge",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Unchecked stress test spawning 200 high-memory n2-standard-32 VMs."
+    },
+    {
+      "id": "budget-daemon",
+      "label": "Cloud Budget Sentinel",
+      "product": "Billing API Monitor",
+      "group": "g-surge",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Calculates hourly run-rate reaching $1,200/hr against $5,000 monthly cap."
+    },
+    {
+      "id": "billing-unlink",
+      "label": "Billing Disabler Function",
+      "product": "Cloud Functions",
+      "group": "g-quarantine",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Calls Cloud Billing API to disable project billing or revoke provisioning IAM."
+    },
+    {
+      "id": "quarantine-state",
+      "label": "Project Quarantined State",
+      "product": "Resource Manager",
+      "group": "g-quarantine",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "VMs stopped gracefully; persistent disks and databases preserved in read-only mode."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dev-instances",
+      "to": "budget-daemon",
+      "label": "1. Spend Velocity Surge",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "budget-daemon",
+      "to": "billing-unlink",
+      "label": "2. Trigger Emergency Quarantine",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "billing-unlink",
+      "to": "quarantine-state",
+      "label": "3. Shut Down Active Workloads",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Runaway Spend Velocity",
+      "edges": [
+        "e1"
+      ],
+      "action": "Dev environment consumes 90% of monthly budget in 90 minutes.",
+      "why_traversal": "FinOps sentinel monitors gradient of spend rather than simple static thresholds.",
+      "protocol": "Billing Telemetry",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Emergency Escalation",
+      "edges": [
+        "e2"
+      ],
+      "action": "Sentinel invokes emergency quarantine Cloud Function via Pub/Sub.",
+      "why_traversal": "Prevents catastrophic organizational cloud billing overdraft.",
+      "protocol": "Pub/Sub Trigger",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Safe Quarantine",
+      "edges": [
+        "e3"
+      ],
+      "action": "Function unlinks billing account; Compute Engine stops all active VMs immediately.",
+      "why_traversal": "Preserves persistent storage while instantly stopping billable CPU/RAM cycles.",
+      "protocol": "Billing API / Shutdown",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-loss-risk",
+      "label": "Accidental Production Project Quarantine",
+      "changes": {
+        "failedNodes": [
+          "billing-unlink"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "FinOps script lacked project tag filtering and quarantined production database.",
+      "diverted_path": "Production database stopped, causing customer outage.",
+      "blast_radius": "Production customer transactions dropped.",
+      "recovery": "Add guardrail condition: never unlink billing on projects with environment=production tag."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dev-instances"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dev-instances"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates billing quota capping: demonstrates an unexpected compute surge tripping 100% budget threshold and triggering automated project isolation."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

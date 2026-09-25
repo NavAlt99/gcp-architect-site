@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cheat Sheet: Storage selection — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-059.html">← Topic page</a><span>cheat-5 · TOPIC-059-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-059-d4",
+  "title": "Cheat Sheet: Storage selection \u2014 D4",
+  "topic_no": "059",
+  "roadmap_id": "cheat-5",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Cost optimization in storage and messaging demands matching access patterns: transition stale objects to Coldline/Archive storage while using Cloud Tasks for targeted rate-limiting and Cloud Pub/Sub for high-throughput broadcast streaming.",
+  "groups": [
+    {
+      "id": "g-storage-classes",
+      "label": "Cloud Storage Classes & Lifecycle",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-filestore-nfs",
+      "label": "Enterprise Managed File Shares",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-messaging-tier",
+      "label": "Asynchronous Messaging & Queuing",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gcs-standard",
+      "label": "Standard Cloud Storage",
+      "product": "Daily Access (Web Media / Data)",
+      "group": "g-storage-classes",
+      "plane": "data",
+      "x": 140,
+      "y": 100,
+      "detail": "Hot storage with zero retrieval fees; best for active website assets and live analytics."
+    },
+    {
+      "id": "gcs-nearline",
+      "label": "Nearline Storage (30-Day)",
+      "product": "Access <= Once / Month",
+      "group": "g-storage-classes",
+      "plane": "data",
+      "x": 140,
+      "y": 180,
+      "detail": "Monthly backups; 30-day minimum storage commitment; lower storage price."
+    },
+    {
+      "id": "gcs-coldline",
+      "label": "Coldline Storage (90-Day)",
+      "product": "Access <= Once / Quarter",
+      "group": "g-storage-classes",
+      "plane": "data",
+      "x": 140,
+      "y": 260,
+      "detail": "Disaster recovery images; 90-day minimum storage commitment."
+    },
+    {
+      "id": "gcs-archive",
+      "label": "Archive Storage (365-Day)",
+      "product": "Access < Once / Year",
+      "group": "g-storage-classes",
+      "plane": "data",
+      "x": 140,
+      "y": 340,
+      "detail": "Regulatory compliance cold storage; $0.0012/GB/mo; 365-day commitment."
+    },
+    {
+      "id": "filestore-share",
+      "label": "Filestore Enterprise NFS",
+      "product": "POSIX Shared File System",
+      "group": "g-filestore-nfs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Multi-reader multi-writer NFSv3 share for GKE and legacy CMS applications."
+    },
+    {
+      "id": "pubsub-engine",
+      "label": "Cloud Pub/Sub",
+      "product": "Global Ingestion (Fan-Out)",
+      "group": "g-messaging-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Decoupled many-to-many event streaming with infinite scale and no provisioning."
+    },
+    {
+      "id": "cloud-tasks-engine",
+      "label": "Cloud Tasks",
+      "product": "Targeted Rate-Limited Task Queue",
+      "group": "g-messaging-tier",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Point-to-point execution with explicit dispatch rate limits and scheduled delivery times."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "gcs-standard",
+      "to": "gcs-nearline",
+      "label": "1. Age > 30d -> Transition to Nearline",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "gcs-nearline",
+      "to": "gcs-coldline",
+      "label": "2. Age > 90d -> Transition to Coldline",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "gcs-coldline",
+      "to": "gcs-archive",
+      "label": "3. Age > 365d -> Transition to Archive",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "filestore-share",
+      "to": "pubsub-engine",
+      "label": "4. Publish File Change Event",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "pubsub-engine",
+      "to": "cloud-tasks-engine",
+      "label": "5. Route to Rate-Limited Task Queue",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Lifecycle Cost Optimization",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Automated object lifecycle policies transition data to cheaper storage tiers as it ages.",
+      "why_traversal": "Slashes storage expenditure by up to 90% automatically.",
+      "protocol": "GCS Lifecycle Management",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Messaging Ingestion & Task Control",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Pub/Sub absorbs high-throughput event spikes; Cloud Tasks controls execution rate to protect backends.",
+      "why_traversal": "Combines massive fan-out ingestion with controlled downstream dispatch.",
+      "protocol": "Pub/Sub / Tasks API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "archive-early-deletion-shock",
+      "label": "Early Deletion Penalty Fee Shock",
+      "changes": {
+        "failedNodes": [
+          "gcs-archive"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Application deleted 100TB of Archive data after 10 days; billed for remaining 355 days of storage.",
+      "diverted_path": "Early deletion fee wiped out anticipated storage savings.",
+      "blast_radius": "Surprise $4,500 bill.",
+      "recovery": "Never store temporary or frequently deleted files in Coldline or Archive storage classes."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gcs-standard"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gcs-standard"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

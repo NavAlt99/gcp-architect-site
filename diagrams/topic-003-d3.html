@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kubernetes Pod Lifecycle &amp; Failure States</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-003.html">← Topic page</a><span>0.3 · TOPIC-003-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-003-d3",
+  "title": "Kubernetes Pod Lifecycle & Failure States",
+  "topic_no": "003",
+  "roadmap_id": "0.3",
+  "kind": "failure",
+  "groups": [
+    {
+      "id": "g-cp",
+      "label": "K8s Control Plane",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 40,
+      "width": 380,
+      "height": 340
+    },
+    {
+      "id": "g-node",
+      "label": "Worker Node (Kubelet)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 450,
+      "y": 40,
+      "width": 440,
+      "height": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "apiserver",
+      "label": "kube-apiserver",
+      "product": "Control Plane",
+      "group": "g-cp",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Validates and persists Pod manifest state in etcd."
+    },
+    {
+      "id": "sched",
+      "label": "kube-scheduler",
+      "product": "Control Plane",
+      "group": "g-cp",
+      "plane": "control",
+      "x": 310,
+      "y": 140,
+      "detail": "Assigns unscheduled Pod to a healthy worker node."
+    },
+    {
+      "id": "kubelet",
+      "label": "kubelet Daemon",
+      "product": "Worker Agent",
+      "group": "g-node",
+      "plane": "control",
+      "x": 580,
+      "y": 140,
+      "detail": "Communicates with CRI to pull image and run containers."
+    },
+    {
+      "id": "pod-status",
+      "label": "Pod: CrashLoopBackOff",
+      "product": "Pod Workload",
+      "group": "g-node",
+      "plane": "data",
+      "x": 760,
+      "y": 280,
+      "detail": "Container repeatedly crashes immediately after startup. Backoff delay increases exponentially."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-sch",
+      "from": "apiserver",
+      "to": "sched",
+      "label": "Watch Unbound Pods",
+      "plane": "control"
+    },
+    {
+      "id": "e-bind",
+      "from": "sched",
+      "to": "kubelet",
+      "label": "Assign Node Binding",
+      "plane": "control"
+    },
+    {
+      "id": "e-crash",
+      "from": "kubelet",
+      "to": "pod-status",
+      "label": "Container Exit != 0",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Steady-State Health Monitoring",
+      "edges": [
+        "e-sch"
+      ],
+      "action": "Health check probe sends heartbeat polling requests every 5 seconds to kube-apiserver.",
+      "why_traversal": "Continuous active probing verifies that the instance is not merely powered on, but capable of processing application requests and database queries.",
+      "protocol": "HTTP / TCP Port 8080",
+      "plane": "Control Plane",
+      "narration": "Hop 1: Health check probe continuously validates kube-apiserver response codes.",
+      "check": {
+        "commands": "gcloud compute health-checks describe hc-app-probe",
+        "metrics": "compute.googleapis.com/health_check/probe_count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Outage Trigger & Anomaly Detection",
+      "edges": [
+        "e-sch"
+      ],
+      "action": "Failure Trigger: kube-apiserver encounters threshold saturation or crash. Health check records 3 consecutive timeouts.",
+      "why_traversal": "Multi-probe threshold prevents transient network blips from triggering premature, expensive failovers.",
+      "protocol": "Internal Control Signal",
+      "plane": "Control Plane",
+      "narration": "Hop 2: Failure occurs on kube-apiserver. Probe signals unhealthy threshold breach to Load Balancer.",
+      "check": {
+        "commands": "gcloud compute health-checks list",
+        "metrics": "health/is_healthy = 0"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated Failover & Traffic Eviction",
+      "edges": [
+        "e-bind"
+      ],
+      "action": "Control plane withdraws kube-apiserver from forwarding table and redirects incoming traffic to standby unit kubelet Daemon.",
+      "why_traversal": "Traffic reroutes in under 5 seconds across Google Andromeda SDN without DNS TTL delay or client reconfiguration.",
+      "protocol": "SDN Flow Table Update",
+      "plane": "Control Plane",
+      "narration": "Hop 3: Load balancer evicts kube-apiserver and reroutes active traffic to kubelet Daemon.",
+      "check": {
+        "commands": "gcloud compute backend-services get-health bs-app",
+        "logs": "Instance marked UNHEALTHY; traffic diverted"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Capacity Recovery & Auto-Healing",
+      "edges": [
+        "e-crash"
+      ],
+      "action": "Auto-Healing: Managed Instance Group recreates failed instance and synchronizes state with kubelet Daemon.",
+      "why_traversal": "MIG auto-healing restores full multi-zone redundancy, returning the cluster to balanced multi-active serving capacity.",
+      "protocol": "Instance Lifecycle Re-creation",
+      "plane": "Data Plane",
+      "narration": "Hop 4: Auto-healing restores capacity; kubelet Daemon serves traffic while new unit initializes.",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "logs": "Auto-healing repair completed"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "image-pull-backoff",
+      "label": "ImagePullBackOff (Registry Auth Failure)",
+      "changes": {
+        "failedNodes": [
+          "kubelet",
+          "pod-status"
+        ]
+      },
+      "narration": "Node service account lacks 'roles/artifactregistry.reader' or image tag does not exist. Kubelet fails image pull.",
+      "check": {
+        "command": "kubectl describe pod &lt;pod&gt;",
+        "metric": "Failed to pull image: 403 Forbidden"
+      },
+      "root_cause": "Node service account lacks 'roles/artifactregistry.reader' or image tag does not exist. Kubelet fails image pull.",
+      "diverted_path": "Normal request path is interrupted at kubelet Daemon, Pod: CrashLoopBackOff. Downstream components receive timeout errors or drop packets without acknowledgment, forcing client retries or failover redirection.",
+      "blast_radius": "All user sessions dependent on kubelet Daemon, Pod: CrashLoopBackOff experience elevated latency, HTTP 5xx errors, or severed connections.",
+      "recovery": "Deploy multi-region Anycast failover, cross-zone active-standby redundancy, automated health check eviction, and exponential backoff circuit breakers."
+    },
+    {
+      "id": "transient-network-drop",
+      "label": "kube-scheduler Network Degradation",
+      "changes": {
+        "failedNodes": [
+          "sched"
+        ]
+      },
+      "root_cause": "Underlying Andromeda vSwitch queue saturation or hypervisor host maintenance causing 40% packet loss on kube-scheduler.",
+      "diverted_path": "Incoming TCP streams to kube-scheduler experience high retransmission rates and latency spikes up to 4500ms; gateway circuit breaker opens to shed load.",
+      "blast_radius": "Transactions processed by kube-scheduler slow down significantly; client applications encounter timeout errors.",
+      "recovery": "Configure client-side exponential backoff with full jitter; deploy Regional Managed Instance Groups with auto-healing and minimum 3-zone distribution.",
+      "narration": "Packet loss and connection timeouts detected on kube-scheduler. Circuit breaker trips to protect cluster.",
+      "check": {
+        "command": "gcloud compute instances describe sched --format='yaml(status)'",
+        "metric": "compute.googleapis.com/instance/network/dropped_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "apiserver"
+        ],
+        "failedEdges": [
+          "e-sch"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "purpose": "Simulates Kubernetes Pod failure lifecycles: demonstrates CrashLoopBackOff root causes, kubelet restart backoff throttling, and automated scheduler recovery onto healthy cluster nodes.",
+  "routing_rationale": "When application containers crash repeatedly, kubelet applies exponential backoff delays (10s to 300s) to prevent CPU starvation, while kube-scheduler evicts unresponsive pods to restore service SLAs.",
+  "summary": "Simulates Kubernetes Pod failure lifecycles: demonstrates CrashLoopBackOff root causes, kubelet restart backoff throttling, and automated scheduler recovery onto healthy cluster nodes."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

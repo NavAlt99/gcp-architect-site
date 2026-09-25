@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reference Architectures &amp; Patterns — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-024.html">← Topic page</a><span>3.3 · TOPIC-024-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-024-d3",
+  "title": "Reference Architectures & Patterns \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "024",
+  "roadmap_id": "3.3",
+  "kind": "failure",
+  "purpose": "Simulates regional database network partition: illustrates Cloud Spanner automatic Paxos quorum failover with zero data loss.",
+  "routing_rationale": "Cloud Spanner maintains external consistency and zero RPO by requiring a majority quorum of voting replicas across 3 regions before committing any transaction.",
+  "groups": [
+    {
+      "id": "g-primary-region",
+      "label": "Region 1: us-central1 (Voting Leader)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-secondary-region",
+      "label": "Region 2: us-east1 (Quorum Voting Replicas)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "spanner-r1-leader",
+      "label": "Spanner Leader (us-central1)",
+      "product": "Primary Paxos Leader",
+      "group": "g-primary-region",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Coordinates transaction 2-phase commits and local read locks."
+    },
+    {
+      "id": "app-r1",
+      "label": "GKE App Pods (us-central1)",
+      "product": "Local Service Clients",
+      "group": "g-primary-region",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Routes database reads and writes to local Spanner leader node."
+    },
+    {
+      "id": "spanner-r2-replica",
+      "label": "Spanner Paxos Replica (us-east1)",
+      "product": "Voting Quorum Member",
+      "group": "g-secondary-region",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Replicates write logs and votes on transaction commit consensus."
+    },
+    {
+      "id": "witness-r3",
+      "label": "Witness Region (us-west1)",
+      "product": "Tie-Breaker Witness",
+      "group": "g-secondary-region",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Participates in voting without storing full persistent database data."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-r1",
+      "to": "spanner-r1-leader",
+      "label": "1. Transaction Commit Request",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "spanner-r1-leader",
+      "to": "spanner-r2-replica",
+      "label": "2. Paxos Replicate Log",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "spanner-r1-leader",
+      "to": "witness-r3",
+      "label": "3. Request Quorum Vote",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Transaction Propose",
+      "edges": [
+        "e1"
+      ],
+      "action": "GKE sends write transaction to local Spanner leader node in us-central1.",
+      "why_traversal": "Clients communicate directly with the Paxos leader for low-latency writes.",
+      "protocol": "Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Paxos Consensus Round",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Leader replicates write log to us-east1 and witness in us-west1 to obtain 2/3 majority.",
+      "why_traversal": "Majority agreement guarantees durability before acknowledgment.",
+      "protocol": "Paxos Consensus",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "leader-region-down",
+      "label": "Total us-central1 Regional Blackout",
+      "changes": {
+        "failedNodes": [
+          "spanner-r1-leader",
+          "app-r1"
+        ],
+        "failedEdges": [
+          "e1",
+          "e2"
+        ]
+      },
+      "root_cause": "Catastrophic fiber cut isolates entire us-central1 Google data center facility.",
+      "diverted_path": "us-east1 replica and us-west1 witness elect us-east1 as new Paxos leader in < 5 seconds.",
+      "blast_radius": "Zero data loss (RPO = 0); application traffic redirects to us-east1 in < 15 seconds.",
+      "recovery": "Global Application Load Balancer shifts all user traffic to healthy us-east1 GKE cluster."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "spanner-r1-leader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "spanner-r1-leader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates regional database network partition: illustrates Cloud Spanner automatic Paxos quorum failover with zero data loss."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

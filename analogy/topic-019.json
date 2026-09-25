@@ -1,0 +1,43 @@
+{
+  "topic_no": "019",
+  "roadmap_id": "2.7",
+  "title": "Cloud City: Cloud Storage, Object Lifecycle, and Enterprise File Systems",
+  "city_concept": "City Central Silos, Archival Vaults, and Sealed Time Capsules",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery dumped receipts, flour sacks, and tax audits in cardboard boxes in the backyard. Rain destroyed paper records and mice ate the tax forms.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian constructed concrete municipal vaults (Cloud Storage). Daily flour goes in the open warehouse, while 10-year financial audits go into sealed blast-proof vaults.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A crooked politician tried shredding campaign donation receipts. The titanium time-lock (Bucket Lock) prevented the vault door from opening for 5 years.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical archives, paper degrades over time; in Cloud Storage, Google uses Reed-Solomon erasure coding across multiple facilities to guarantee 11 9s durability.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cost Optimization &amp; FinOps — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-040.html">← Topic page</a><span>6.1 · TOPIC-040-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-040-d3",
+  "title": "Cost Optimization & FinOps \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "040",
+  "roadmap_id": "6.1",
+  "kind": "failure",
+  "purpose": "Simulates Orphaned Resource Leak & Automated Reclamation: detects unattached Persistent Disks and unassigned External IPs and reclaims them.",
+  "routing_rationale": "Unattached storage volumes and idle static IP addresses quietly consume thousands of dollars monthly; Active Assist Recommender automatically reclaims wasted spend.",
+  "groups": [
+    {
+      "id": "g-waste-source",
+      "label": "Orphaned Infrastructure Waste",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-reclaim-engine",
+      "label": "Active Assist Automated Reclaimer",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "unattached-ssd",
+      "label": "Unattached 2TB SSD Disk",
+      "product": "Status: READY (0 Attachments)",
+      "group": "g-waste-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Left behind after test VM was deleted 45 days ago; billing $340/month."
+    },
+    {
+      "id": "idle-static-ip",
+      "label": "Unassigned External Static IP",
+      "product": "Billing $0.010/hr Unused Fee",
+      "group": "g-waste-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Static external IP reserved but not bound to any forwarding rule or VM."
+    },
+    {
+      "id": "recommender-scan",
+      "label": "Recommender Idle Resource Scan",
+      "product": "google.compute.disk.IdleResourceRecommender",
+      "group": "g-reclaim-engine",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Identifies zero disk read/write IOPS for past 30 days."
+    },
+    {
+      "id": "reclaim-handler",
+      "label": "Snapshot & Purge Function",
+      "product": "Create Backup Snapshot & Delete Disk",
+      "group": "g-reclaim-engine",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Creates final backup snapshot in Standard GCS and releases unattached SSD and IP."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "unattached-ssd",
+      "to": "recommender-scan",
+      "label": "1. Ingest Zero IOPS Metric",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "idle-static-ip",
+      "to": "recommender-scan",
+      "label": "2. Flag Unassigned Static IP",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "recommender-scan",
+      "to": "reclaim-handler",
+      "label": "3. Execute Automated Reclamation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Idle Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Recommender identifies persistent disks with zero I/O and unattached IPs.",
+      "why_traversal": "Automates detection of invisible cloud financial waste.",
+      "protocol": "Recommender REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Safe Snapshot & Deletion",
+      "edges": [
+        "e3"
+      ],
+      "action": "Function creates safety backup snapshot before deleting disk and releases IP.",
+      "why_traversal": "Saves $340/mo per disk while retaining ability to restore data if needed.",
+      "protocol": "Compute Engine Admin API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "accidental-db-disk-purge",
+      "label": "Reclamation Purges Offline Database Standby",
+      "changes": {
+        "failedNodes": [
+          "reclaim-handler"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Cold standby database disk was intentionally detached; automation lacked exclusion tag.",
+      "diverted_path": "Standby disk deleted; required restoring from snapshot.",
+      "blast_radius": "Delayed DR test.",
+      "recovery": "Add exclusion tag finops:skip-reclaim on intentional cold standby disks."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "unattached-ssd"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "unattached-ssd"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Orphaned Resource Leak & Automated Reclamation: detects unattached Persistent Disks and unassigned External IPs and reclaims them."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

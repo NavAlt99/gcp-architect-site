@@ -1,0 +1,43 @@
+{
+  "topic_no": "039",
+  "roadmap_id": "5.5b",
+  "title": "Cloud City: Application & Supply-Chain Security: Binary Authorization & SLSA",
+  "city_concept": "City Guild Assay Marks & Food Purity Seals",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Street vendors were selling flour tainted with chalk dust, stamping fake merchant logos on sacks to fool consumers.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The Guildmaster introduced the Assay Purity Seal (Binary Authorization): every flour sack was stamped with a wax seal signed by the master inspector.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "City market guards checked the wax seal at the gate; any unstamped sack was immediately seized and burned.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical wax seals can be forged; digital cryptographic attestations use asymmetric 4096-bit RSA keys that are impossible to counterfeit.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "id": "topic-017-d3",
+  "title": "Cloud Load Balancing, Cloud CDN, and Cloud Armor \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "017",
+  "roadmap_id": "2.5",
+  "kind": "failure",
+  "purpose": "Simulates volumetric Layer 7 DDoS attack: demonstrates Cloud Armor rate-limiting rules detecting malicious IP floods and dropping packets at the edge.",
+  "routing_rationale": "Cloud Armor filters millions of malicious requests per second at Google's edge, preventing upstream application servers from suffering CPU or memory exhaustion.",
+  "groups": [
+    {
+      "id": "g-ddos-source",
+      "label": "Botnet DDoS Ingress (10,000 IPs)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-edge-drop",
+      "label": "Google Edge Cloud Armor Shield",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "botnet-flood",
+      "label": "Botnet HTTP Flood",
+      "product": "100k QPS Layer 7 Attack",
+      "group": "g-ddos-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Distributed malicious nodes hammering /api/login endpoint with randomized headers."
+    },
+    {
+      "id": "rate-limit-rule",
+      "label": "Cloud Armor Rate Limiter",
+      "product": "Rule: 100 req/min per IP",
+      "group": "g-ddos-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Monitors per-client request frequency; flags clients breaching 100 req/min threshold."
+    },
+    {
+      "id": "edge-blocker",
+      "label": "Edge Drop Engine (GFE)",
+      "product": "HTTP 429 Dropper",
+      "group": "g-edge-drop",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Drops malicious TCP sockets directly at edge PoPs; returns HTTP 429 Too Many Requests."
+    },
+    {
+      "id": "protected-origin",
+      "label": "Healthy Application Origin",
+      "product": "Backend VM Cluster",
+      "group": "g-edge-drop",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Origin backend servers remain at 12% CPU, serving legitimate users seamlessly."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "botnet-flood",
+      "to": "rate-limit-rule",
+      "label": "1. Flood Request Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limit-rule",
+      "to": "edge-blocker",
+      "label": "2. Activate Rate-Limit Drop",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "edge-blocker",
+      "to": "protected-origin",
+      "label": "3. Forward Filtered Valid Traffic",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Attack Influx",
+      "edges": [
+        "e1"
+      ],
+      "action": "Botnet opens 100,000 HTTP requests per second across worldwide Anycast PoPs.",
+      "why_traversal": "Anycast distributes the attack across hundreds of Google edge facilities.",
+      "protocol": "HTTP/1.1 Flood",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Edge Rate-Limiting",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud Armor rate limiting triggers immediately, rejecting attacking IPs with HTTP 429.",
+      "why_traversal": "Filtering happens in Google edge silicon; zero malicious packets reach backends.",
+      "protocol": "Cloud Armor Edge Rule",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Protected Operations",
+      "edges": [
+        "e3"
+      ],
+      "action": "Clean customer transactions pass through unharmed; origin backends operate normally.",
+      "why_traversal": "Maintains 99.99% availability during severe volumetric cyber attacks.",
+      "protocol": "Clean HTTPS Traffic",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "false-positive-lockout",
+      "label": "NAT Gateway False Positive Block",
+      "changes": {
+        "failedNodes": [
+          "rate-limit-rule"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Rate limit rule grouped all enterprise corporate office users behind a single egress IP.",
+      "diverted_path": "Legitimate corporate employees blocked by Cloud Armor threshold.",
+      "blast_radius": "All employees on corporate WiFi receive HTTP 429.",
+      "recovery": "Configure Cloud Armor rate limiting based on Session Cookie or User-Agent instead of raw IP."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "botnet-flood"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "botnet-flood"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates volumetric Layer 7 DDoS attack: demonstrates Cloud Armor rate-limiting rules detecting malicious IP floods and dropping packets at the edge."
+}

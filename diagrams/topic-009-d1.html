@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Identity Basics: IAM, Principals, and Service Accounts — Scope &amp; Architecture Map</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-009.html">← Topic page</a><span>1.3 · TOPIC-009-D1</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-009-d1",
+  "title": "Identity Basics: IAM, Principals, and Service Accounts \u2014 Scope & Architecture Map",
+  "topic_no": "009",
+  "roadmap_id": "1.3",
+  "kind": "map",
+  "purpose": "Maps Google Cloud Identity architecture: details how Cloud Identity, IAM Policy Engine, and Service Accounts control resource access across projects.",
+  "routing_rationale": "Identity is separated from permissions. Cloud Identity manages principals (users/groups), IAM maps roles to principals, and Service Accounts act as identities for workloads.",
+  "groups": [
+    {
+      "id": "g-idp",
+      "label": "Identity Provider (Cloud Identity & STS)",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-iam",
+      "label": "Cloud IAM Policy Evaluation Boundary",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-workload",
+      "label": "Workload Perimeter (GKE & Cloud Storage)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "workload-pod",
+      "label": "GKE Microservice Pod",
+      "product": "Kubernetes Pod",
+      "group": "g-workload",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Application container needing to read sensitive objects from Cloud Storage."
+    },
+    {
+      "id": "gke-meta",
+      "label": "GKE Metadata Server",
+      "product": "Workload Identity Agent",
+      "group": "g-workload",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Interprets pod identity requests; proxies to Google STS without downloaded JSON keys."
+    },
+    {
+      "id": "gsa-identity",
+      "label": "Google Service Account (GSA)",
+      "product": "IAM Service Account",
+      "group": "g-iam",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Dedicated least-privilege identity: backend-sa@proj.iam.gserviceaccount.com."
+    },
+    {
+      "id": "iam-policy",
+      "label": "IAM Role Binding",
+      "product": "roles/storage.objectViewer",
+      "group": "g-iam",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Grants read-only access strictly to bucket gs://brightloaf-customer-data."
+    },
+    {
+      "id": "cloud-storage",
+      "label": "Cloud Storage Bucket",
+      "product": "Cloud Storage",
+      "group": "g-idp",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Target data resource validating incoming OAuth bearer token permissions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "workload-pod",
+      "to": "gke-meta",
+      "label": "1. Request Token for KSA",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "gke-meta",
+      "to": "gsa-identity",
+      "label": "2. Workload Identity Federation",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "gsa-identity",
+      "to": "iam-policy",
+      "label": "3. Evaluate Role Bindings",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "workload-pod",
+      "to": "cloud-storage",
+      "label": "4. Read Object with Short-Lived Token",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Pod Token Request",
+      "edges": [
+        "e1"
+      ],
+      "action": "Pod queries local metadata server 169.254.169.254 for OAuth access token.",
+      "why_traversal": "Eliminates hard-coded JSON service account keys stored on pod disks.",
+      "protocol": "HTTP GET /metadata",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "STS Token Exchange",
+      "edges": [
+        "e2"
+      ],
+      "action": "Metadata server exchanges Kubernetes Service Account token for short-lived Google OAuth token.",
+      "why_traversal": "Cryptographic Workload Identity links Kubernetes RBAC directly to Google IAM.",
+      "protocol": "Google STS RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Permission Binding Check",
+      "edges": [
+        "e3"
+      ],
+      "action": "IAM validates that GSA possesses roles/storage.objectViewer on bucket.",
+      "why_traversal": "Least privilege principle ensures pod cannot write or delete records.",
+      "protocol": "Cloud IAM API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Secure Object Access",
+      "edges": [
+        "e4"
+      ],
+      "action": "Pod presents short-lived bearer token to Cloud Storage API and reads object payload.",
+      "why_traversal": "Direct API access over private Google fiber with full audit logging.",
+      "protocol": "HTTPS REST / OAuth2",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "token-revocation",
+      "label": "Workload Identity Binding Revocation",
+      "changes": {
+        "failedNodes": [
+          "gsa-identity"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Security team removed iam.workloadIdentityUser role binding during credential rotation.",
+      "diverted_path": "Metadata server returns HTTP 403 Forbidden; pod cannot acquire Google access token.",
+      "blast_radius": "Storage access blocked for this pod; other services remain healthy.",
+      "recovery": "Re-apply Terraform workload identity binding between KSA and GSA."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "workload-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "workload-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Maps Google Cloud Identity architecture: details how Cloud Identity, IAM Policy Engine, and Service Accounts control resource access across projects."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

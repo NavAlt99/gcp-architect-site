@@ -1,0 +1,210 @@
+{
+  "id": "topic-028-d4",
+  "title": "Reliability Fundamentals: Availability Math & Failure Domains \u2014 D4",
+  "topic_no": "028",
+  "roadmap_id": "4.1",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Serial architectures multiply availability (0.999 * 0.999 = 0.998), degrading overall uptime. Parallel architectures multiply unavailabilities (1 - (0.001)^2 = 0.999999), dramatically increasing fault tolerance.",
+  "groups": [
+    {
+      "id": "g-serial-trap",
+      "label": "Serial Dependency Antipattern (Fragile)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-parallel-mesh",
+      "label": "Parallel Redundant Architecture (Resilient)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-quorum-zone",
+      "label": "Quorum & Failure Domain Isolation",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "serial-node-1",
+      "label": "Single Web Server (99.9%)",
+      "product": "Compute Engine",
+      "group": "g-serial-trap",
+      "plane": "data",
+      "x": 150,
+      "y": 140,
+      "detail": "Single point of failure; failure causes immediate complete service outage."
+    },
+    {
+      "id": "serial-node-2",
+      "label": "Single Database (99.9%)",
+      "product": "Standalone DB",
+      "group": "g-serial-trap",
+      "plane": "data",
+      "x": 150,
+      "y": 280,
+      "detail": "Compound availability drops to 99.8% (8.7 hours downtime per year)."
+    },
+    {
+      "id": "parallel-alb",
+      "label": "Redundant Ingress LB",
+      "product": "Global ALB (99.99%)",
+      "group": "g-parallel-mesh",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "Distributes requests across independent availability zones."
+    },
+    {
+      "id": "parallel-vm-a",
+      "label": "Active Replica (Zone A)",
+      "product": "Compute Engine",
+      "group": "g-parallel-mesh",
+      "plane": "data",
+      "x": 450,
+      "y": 280,
+      "detail": "Serving active production load in zone us-central1-a."
+    },
+    {
+      "id": "parallel-vm-b",
+      "label": "Standby Replica (Zone B)",
+      "product": "Compute Engine",
+      "group": "g-quorum-zone",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Independent failure domain; combined availability jumps to 99.9999% (31s downtime/yr)."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "serial-node-1",
+      "to": "serial-node-2",
+      "label": "1. Serial Failure Multiplier",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "parallel-alb",
+      "to": "parallel-vm-a",
+      "label": "2a. Route Zone A",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "parallel-alb",
+      "to": "parallel-vm-b",
+      "label": "2b. Route Zone B",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Serial Risk Demonstration",
+      "edges": [
+        "e1"
+      ],
+      "action": "A single crash on either server takes down entire application.",
+      "why_traversal": "Serial dependencies compound failure probabilities.",
+      "protocol": "Direct Unprotected TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Parallel Fault Isolation",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Load balancer distributes across Zone A and Zone B simultaneously.",
+      "why_traversal": "Unavailability of Zone A does not impact Zone B serving capability.",
+      "protocol": "Multi-Zone Health Checked Load Balancing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "zone-loss-scenario",
+      "label": "Complete Datacenter Zone Loss",
+      "changes": {
+        "failedNodes": [
+          "parallel-vm-a"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Major power substation explosion takes entire us-central1-a zone offline.",
+      "diverted_path": "Load balancer directs 100% traffic to Zone B; users experience zero downtime.",
+      "blast_radius": "Confined to Zone A; service availability SLA preserved.",
+      "recovery": "Regional MIG automatically scales up additional instances in Zone C."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "serial-node-1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "serial-node-1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

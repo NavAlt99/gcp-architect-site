@@ -1,0 +1,205 @@
+{
+  "id": "topic-012-d3",
+  "title": "Support, Governance Basics, and Asset Inventory \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "012",
+  "roadmap_id": "1.6",
+  "kind": "failure",
+  "purpose": "Simulates regional cloud infrastructure outage: demonstrates Personalized Service Health broadcasting disruption notices and triggering automated multi-region DR.",
+  "routing_rationale": "Service Health alerts deliver project-specific incident feeds, allowing automated orchestration to shift traffic away from impacted cloud facilities.",
+  "groups": [
+    {
+      "id": "g-disrupt",
+      "label": "Impacted Primary Region (us-east1)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-dr-target",
+      "label": "Secondary DR Region (us-central1)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "psh-feed",
+      "label": "Personalized Service Health",
+      "product": "servicehealth.googleapis.com",
+      "group": "g-disrupt",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Broadcasts targeted incident: us-east1-b power disruption impacting 4 project VMs."
+    },
+    {
+      "id": "dr-orchestrator",
+      "label": "Automated DR Orchestrator",
+      "product": "Cloud Workflows",
+      "group": "g-disrupt",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Listens for critical PSH incident; initiates automated regional traffic migration."
+    },
+    {
+      "id": "cloud-dns",
+      "label": "Cloud DNS Routing Policy",
+      "product": "Cloud DNS Geolocation",
+      "group": "g-dr-target",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Flips health-checked DNS endpoints to direct 100% traffic to us-central1."
+    },
+    {
+      "id": "dr-backend",
+      "label": "Standby Regional Backend",
+      "product": "Compute Engine MIG",
+      "group": "g-dr-target",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Scales up warm replicas in healthy region to absorb full production load."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "psh-feed",
+      "to": "dr-orchestrator",
+      "label": "1. Project Impact Notice",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "dr-orchestrator",
+      "to": "cloud-dns",
+      "label": "2. Switch DNS Routing Weights",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dr-orchestrator",
+      "to": "dr-backend",
+      "label": "3. Scale Out Standby Capacity",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Targeted Incident Notice",
+      "edges": [
+        "e1"
+      ],
+      "action": "Service Health alerts orchestrator of confirmed power event in primary datacenter.",
+      "why_traversal": "Personalized alerts eliminate manual triage during high-stress cloud disruptions.",
+      "protocol": "Service Health Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "DNS Failover Execution",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud DNS updates routing policy, directing new user queries to us-central1.",
+      "why_traversal": "TTL of 30 seconds ensures rapid worldwide client DNS convergence.",
+      "protocol": "Cloud DNS API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Capacity Scaling",
+      "edges": [
+        "e3"
+      ],
+      "action": "Target region MIG scales from 10 to 50 instances to absorb redirected customer traffic.",
+      "why_traversal": "Pre-warmed secondary region achieves RTO under 5 minutes.",
+      "protocol": "Compute Engine Autoscaler",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "split-dns",
+      "label": "Stale DNS Client Caching",
+      "changes": {
+        "failedNodes": [
+          "cloud-dns"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Upstream client ISP ignored 30s TTL and cached failed IP for 2 hours.",
+      "diverted_path": "Users on non-compliant ISP experience connection timeouts.",
+      "blast_radius": "Limited to customers behind non-compliant recursive resolvers.",
+      "recovery": "Deploy Global Anycast Load Balancers which handle failover at Google Edge PoPs."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "psh-feed"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "psh-feed"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates regional cloud infrastructure outage: demonstrates Personalized Service Health broadcasting disruption notices and triggering automated multi-region DR."
+}

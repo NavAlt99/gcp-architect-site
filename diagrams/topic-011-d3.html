@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Global Infrastructure &amp; Network Tiers — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-011.html">← Topic page</a><span>1.5 · TOPIC-011-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-011-d3",
+  "title": "Google Global Infrastructure & Network Tiers \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "011",
+  "roadmap_id": "1.5",
+  "kind": "failure",
+  "purpose": "Simulates subsea cable fiber cuts and regional failover: demonstrates dynamic BGP and Andromeda SDN traffic rerouting across redundant transatlantic links.",
+  "routing_rationale": "Google's software-defined WAN (B4) automatically redirects packets around fiber cuts in milliseconds without dropping established TCP sessions.",
+  "groups": [
+    {
+      "id": "g-us-eu",
+      "label": "Transatlantic Subsea Cable Route",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-backup-fiber",
+      "label": "Redundant South Atlantic & Terrestrial Path",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cable-dunant",
+      "label": "Dunant Subsea Cable",
+      "product": "Primary Transatlantic Link",
+      "group": "g-us-eu",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "High-capacity 250Tbps subsea cable connecting Virginia to France."
+    },
+    {
+      "id": "sdn-telem",
+      "label": "B4 Optical SDN Controller",
+      "product": "Network Telemetry",
+      "group": "g-us-eu",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Monitors optical signal-to-noise ratio (OSNR); detects physical fiber break instantly."
+    },
+    {
+      "id": "cable-grace",
+      "label": "Grace Hopper Cable",
+      "product": "Secondary Subsea Link",
+      "group": "g-backup-fiber",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Redundant subsea fiber connecting New York to United Kingdom and Spain."
+    },
+    {
+      "id": "andromeda-core",
+      "label": "Global Andromeda Fabric",
+      "product": "Andromeda Controller",
+      "group": "g-backup-fiber",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Updates flow labels across all edge switches worldwide in under 15ms."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cable-dunant",
+      "to": "sdn-telem",
+      "label": "1. Optical Signal Loss Alert",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "sdn-telem",
+      "to": "andromeda-core",
+      "label": "2. Trigger Fast Reroute (FRR)",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "andromeda-core",
+      "to": "cable-grace",
+      "label": "3. Shift Global Flows to Grace Hopper",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "cable-dunant",
+      "to": "cable-grace",
+      "label": "4. Drain Degraded Link",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Optical Break Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Dunant subsea fiber encounters physical anchor cut; optical transponders drop signal.",
+      "why_traversal": "Hardware optical monitoring detects breaks in microseconds.",
+      "protocol": "Optical Telemetry",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "SDN Fast Reroute",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "B4 SDN controller reprogrammes ingress edge routers to divert transatlantic flows to Grace Hopper cable.",
+      "why_traversal": "Pre-computed backup paths enable sub-second failover without route oscillation.",
+      "protocol": "B4 Flow Update",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Traffic Continuity",
+      "edges": [
+        "e4"
+      ],
+      "action": "All established customer TCP sessions continue without reset or dropped connections.",
+      "why_traversal": "Google private WAN capacity headroom guarantees redundant links absorb 100% load.",
+      "protocol": "Encapsulated TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "global-capacity-crunch",
+      "label": "Dual Cable Cut Capacity Throttling",
+      "changes": {
+        "failedNodes": [
+          "cable-dunant",
+          "cable-grace"
+        ],
+        "failedEdges": [
+          "e1",
+          "e3"
+        ]
+      },
+      "root_cause": "Simultaneous physical cuts on multiple transatlantic subsea cable systems.",
+      "diverted_path": "B4 SDN prioritizes high-priority user traffic; deprioritizes background backup replication.",
+      "blast_radius": "Batch storage replication between US and EU delayed by several hours.",
+      "recovery": "B4 Quality of Service (QoS) guarantees user customer traffic remains unaffected."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cable-dunant"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cable-dunant"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates subsea cable fiber cuts and regional failover: demonstrates dynamic BGP and Andromeda SDN traffic rerouting across redundant transatlantic links."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

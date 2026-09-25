@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Warehousing: BigQuery Architecture &amp; Looker Studio — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-051.html">← Topic page</a><span>D.1 · TOPIC-051-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-051-d4",
+  "title": "Data Warehousing: BigQuery Architecture & Looker Studio \u2014 D4",
+  "topic_no": "051",
+  "roadmap_id": "D.1",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "BigQuery's foundational superpower is the total decoupling of compute from storage: scale storage infinitely at commodity prices while scaling query compute dynamically from 0 to tens of thousands of slots on demand.",
+  "groups": [
+    {
+      "id": "g-storage-colossus",
+      "label": "Colossus Distributed Storage (Capacitor)",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-dremel",
+      "label": "Dremel Query Execution Engine (Borg)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-bi-looker",
+      "label": "BI Engine & Looker Semantic Layer",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "capacitor-files",
+      "label": "Capacitor Columnar Storage",
+      "product": "Partitioned & Clustered Tables",
+      "group": "g-storage-colossus",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Stores data organized by column; prune partitions to scan only relevant date blocks."
+    },
+    {
+      "id": "jupiter-network",
+      "label": "Jupiter Petabit Network",
+      "product": "1 Petabit/sec Bisection Bandwidth",
+      "group": "g-storage-colossus",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Connects thousands of compute slots to storage disks with zero network bottleneck."
+    },
+    {
+      "id": "dremel-slots",
+      "label": "Dremel Slot Worker Fleet",
+      "product": "Dynamic Slot Autoscaling (Borg)",
+      "group": "g-compute-dremel",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Executes parallel tree aggregation; scales from 100 to 2,000 slots in seconds."
+    },
+    {
+      "id": "bi-engine-cache",
+      "label": "BigQuery BI Engine",
+      "product": "In-Memory Vectorized Execution",
+      "group": "g-bi-looker",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Sub-second SQL acceleration caching frequently queried analytical aggregations."
+    },
+    {
+      "id": "looker-dashboard",
+      "label": "Looker Enterprise BI",
+      "product": "LookML Semantic Modeling",
+      "group": "g-bi-looker",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Governed business intelligence dashboards used by 5,000 corporate business analysts."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "looker-dashboard",
+      "to": "bi-engine-cache",
+      "label": "1. Execute Analytical Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "bi-engine-cache",
+      "to": "dremel-slots",
+      "label": "2. Fallback on Cache Miss",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dremel-slots",
+      "to": "jupiter-network",
+      "label": "3. Stream Columns via Jupiter",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "jupiter-network",
+      "to": "capacitor-files",
+      "label": "4. Read Partitioned Data",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Decoupled Storage & Compute Querying",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Looker submits SQL query; BI Engine serves from memory or falls back to Dremel slots.",
+      "why_traversal": "Delivers sub-second dashboard performance for 90% of business queries.",
+      "protocol": "LookML / BigQuery REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Petabit Shuffling & Aggregation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Jupiter streams columnar data from Colossus disks into Dremel slots in parallel.",
+      "why_traversal": "Scans petabytes of data in seconds without disk I/O bottlenecks.",
+      "protocol": "Jupiter Bisection Network",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "full-table-scan-shock",
+      "label": "Unpartitioned Table Triggers $1,200 Query",
+      "changes": {
+        "failedNodes": [
+          "capacitor-files"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Analyst ran 'SELECT *' on an unpartitioned 200TB table, scanning all columns and rows.",
+      "diverted_path": "Query scanned 200TB, incurring $1,250 on-demand cost for a single run.",
+      "blast_radius": "Runaway analytical cost spike.",
+      "recovery": "Enforce table partitioning on date and clustering on user_id, and configure maximum bytes billed limits."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "capacitor-files"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "capacitor-files"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

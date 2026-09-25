@@ -1,0 +1,43 @@
+{
+  "topic_no": "004",
+  "roadmap_id": "0.4",
+  "title": "Cloud City Utilities & Civic Responsibility Agreements",
+  "city_concept": "Municipal Water Grid vs Tenant Fixtures",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery was confused about who fixes what. When a faucet broke inside Bea's bakery kitchen, she blamed Mayor Meridian. When the city reservoir pipeline burst, Bea tried digging up the street with a kitchen spoon.",
+      "analogy_elements": [
+        "Broken Kitchen Faucet",
+        "Burst City Water Main"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian published the Civic Charter (Shared Responsibility Matrix). The City guarantees pristine pressurized water to the building meter (Google Cloud Infrastructure). Bea is responsible for the kitchen pipes, interior faucets, and turning off taps before leaving (Customer Domain).",
+      "analogy_elements": [
+        "Civic Water Meter (Service Boundary)",
+        "City Aqueduct (Google Backbone)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "During a city festival, Bea needed 10x more baking ovens. Instead of buying a mammoth single oven that took 6 months to forge (Vertical Scale), Bea rented 10 modular bakery booths that opened within minutes (Horizontal Elasticity).",
+      "analogy_elements": [
+        "Mammoth Oven (Scale Up)",
+        "Fleet of Modular Kiosks (Scale Out)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In a physical city, if a tenant leaves their storefront door wide open, physical locks and neighbors might deter burglary. In Cloud Storage, leaving an object permission set to 'allUsers' immediately indexes private files to every automated crawler on earth within seconds.",
+      "analogy_elements": [
+        "Public Bucket Misconfiguration"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "id": "topic-037-d3",
+  "title": "Compliance, Governance & Assured Workloads \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "037",
+  "roadmap_id": "5.4",
+  "kind": "failure",
+  "purpose": "Simulates Sovereign Boundary Breach Prevention: demonstrates Organization Policy blocking unauthorized cross-border replication of EU medical records.",
+  "routing_rationale": "Org policy constraints enforce absolute territorial sovereignty, terminating data replication jobs that attempt to egress data outside legal jurisdictions.",
+  "groups": [
+    {
+      "id": "g-eu-perimeter",
+      "label": "Sovereign European Data Boundary (europe-west3)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-illegal-egress",
+      "label": "Non-Compliant Destination (us-central1)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gdpr-patient-db",
+      "label": "EU GDPR Patient Database",
+      "product": "europe-west3 Cloud Spanner",
+      "group": "g-eu-perimeter",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Contains 10 million European electronic health records governed by GDPR Article 44."
+    },
+    {
+      "id": "sovereign-guardrail",
+      "label": "Sovereignty Org Policy",
+      "product": "constraints/gcp.restrictNonEUDataTransfer",
+      "group": "g-eu-perimeter",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Strictly forbids data replication outside European Union data centers."
+    },
+    {
+      "id": "cross-border-backup",
+      "label": "Unauthorized US Replication Job",
+      "product": "Storage Transfer Service Job",
+      "group": "g-illegal-egress",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Misconfigured disaster recovery job attempted to mirror database to us-central1."
+    },
+    {
+      "id": "rejection-enforce",
+      "label": "Data Transfer Blocked (403)",
+      "product": "Sovereign Perimeter Shield",
+      "group": "g-illegal-egress",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Terminates replication pipeline; dispatches high-urgency compliance incident."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cross-border-backup",
+      "to": "gdpr-patient-db",
+      "label": "1. Attempt Cross-Border Read",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "gdpr-patient-db",
+      "to": "sovereign-guardrail",
+      "label": "2. Evaluate Transfer Boundary",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sovereign-guardrail",
+      "to": "rejection-enforce",
+      "label": "3. Block Transfer & Alert CISO",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Boundary Enforcement",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Replication job queries patient database; Org Policy intercepts destination parameter.",
+      "why_traversal": "Validates legal jurisdiction boundaries before transferring any byte.",
+      "protocol": "Cloud Resource Policy Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Hard Block & Compliance Containment",
+      "edges": [
+        "e3"
+      ],
+      "action": "Transfer aborted; Security Command Center files high-severity sovereignty incident.",
+      "why_traversal": "Prevents catastrophic GDPR regulatory fines ($20M+ or 4% of global turnover).",
+      "protocol": "Security Policy Enforcement",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "manual-export-leak",
+      "label": "Manual Cloud Shell GCS Download Attempt",
+      "changes": {
+        "failedNodes": [
+          "rejection-enforce"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Developer attempted to download patient CSV using Cloud Shell outside EU.",
+      "diverted_path": "VPC Service Controls and Org Policy deny Cloud Shell egress.",
+      "blast_radius": "Zero data leaked.",
+      "recovery": "Mandate access to sensitive data exclusively via sovereign virtual desktops in Europe."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gdpr-patient-db"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gdpr-patient-db"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Sovereign Boundary Breach Prevention: demonstrates Organization Policy blocking unauthorized cross-border replication of EU medical records."
+}

@@ -1,0 +1,43 @@
+{
+  "topic_no": "058",
+  "roadmap_id": "cheat-4",
+  "title": "Cloud City: Cheat Sheet: Hybrid Connectivity (HA VPN vs Interconnect)",
+  "city_concept": "City Regional Aqueducts & Covered Mountain Tunnels",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Caravans between Cloud City and the mountain mining village were frequently robbed by bandits on open dirt roads.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Warden Ward built two secure transport paths: Armed Courier Convoys (HA VPN) and a Private Paved Highway with stone guardrails (Interconnect).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a rockslide blocked Tunnel 1, automated signal towers (BGP) routed wagons through Tunnel 2 without delay.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Digging mountain tunnels takes years; Cloud HA VPN tunnels can be deployed and validated in 30 minutes.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

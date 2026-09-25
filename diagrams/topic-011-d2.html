@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Global Infrastructure &amp; Network Tiers — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-011.html">← Topic page</a><span>1.5 · TOPIC-011-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-011-d2",
+  "title": "Google Global Infrastructure & Network Tiers \u2014 Request & Control Flow",
+  "topic_no": "011",
+  "roadmap_id": "1.5",
+  "kind": "flow",
+  "purpose": "Contrasts Premium Tier networking (routing entirely over Google's private fiber) versus Standard Tier networking (routing over public internet to destination region).",
+  "routing_rationale": "Premium Tier optimizes latency and packet reliability by traversing Google's private fiber; Standard Tier trades performance for lower egress costs.",
+  "groups": [
+    {
+      "id": "g-client-loc",
+      "label": "Client Location (Tokyo)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-tiers",
+      "label": "Network Service Tiers Comparison",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dest-dc",
+      "label": "Destination Region (us-central1 Iowa)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tokyo-client",
+      "label": "Tokyo Client Browser",
+      "product": "User Client",
+      "group": "g-client-loc",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "User sending HTTPS payload destined for US datacenter."
+    },
+    {
+      "id": "premium-path",
+      "label": "Premium Tier (Google Fiber)",
+      "product": "Global Private Backbone",
+      "group": "g-tiers",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Enters Tokyo Edge PoP immediately; rides Google private subsea fiber to Iowa (110ms)."
+    },
+    {
+      "id": "standard-path",
+      "label": "Standard Tier (Public Transit)",
+      "product": "Public ISP Internet",
+      "group": "g-tiers",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Hops across 12 third-party ISPs across Pacific; enters Google network only in Iowa (175ms)."
+    },
+    {
+      "id": "us-backend",
+      "label": "Backend Compute Instance",
+      "product": "us-central1 VM",
+      "group": "g-dest-dc",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Workload receiving payload and responding to client."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "tokyo-client",
+      "to": "premium-path",
+      "label": "1a. Ingress Tokyo PoP (Premium)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "tokyo-client",
+      "to": "standard-path",
+      "label": "1b. Public ISP Hops (Standard)",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "premium-path",
+      "to": "us-backend",
+      "label": "2a. Private Fiber Delivery (Low Jitter)",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "standard-path",
+      "to": "us-backend",
+      "label": "2b. Variable Ingress Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Network Tier Selection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "DNS resolves to either Global Anycast IP (Premium) or Regional Public IP (Standard).",
+      "why_traversal": "Premium Tier uses Anycast; Standard Tier uses standard regional IP routing.",
+      "protocol": "BGP Anycast vs Unicast",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Transit Comparison",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Premium packet traverses Google fiber directly; Standard packet hops multiple commercial transit carriers.",
+      "why_traversal": "Premium Tier guarantees SLA, low latency, and zero congested ISP peering points.",
+      "protocol": "Private Backbone vs Public BGP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "public-isp-congestion",
+      "label": "Standard Tier ISP Congestion",
+      "changes": {
+        "failedNodes": [
+          "standard-path"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Third-party ISP link in California suffers packet loss due to transit peer saturation.",
+      "diverted_path": "Standard Tier requests experience 20% retransmission rate and latency spikes.",
+      "blast_radius": "Only Standard Tier workloads impacted; Premium Tier continues running clean.",
+      "recovery": "Switch project network tier default to Premium Tier in Cloud Console."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "tokyo-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "tokyo-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Contrasts Premium Tier networking (routing entirely over Google's private fiber) versus Standard Tier networking (routing over public internet to destination region)."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

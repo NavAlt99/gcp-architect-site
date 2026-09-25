@@ -1,0 +1,43 @@
+{
+  "topic_no": "059",
+  "roadmap_id": "cheat-5",
+  "title": "Cloud City: Cheat Sheet: Storage selection",
+  "city_concept": "City Warehouses, Pneumatic Tubes & Courier Desks",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Merchants were storing summer wheat and 100-year historical stone monuments in prime heated city-center storefronts.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Warehouse Master Wendy established tiered storage: Active Storefronts (Standard), Deep Cold Cellars (Archive), and Fast Pneumatic Tubes for telegrams (Pub/Sub).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Old stone monuments were moved to dry mountain caves (Archive), freeing up downtown storefronts.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Moving physical furniture between warehouses takes days; Cloud Storage Autoclass transitions digital objects automatically based on access.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

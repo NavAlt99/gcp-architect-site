@@ -1,0 +1,43 @@
+{
+  "topic_no": "042",
+  "roadmap_id": "6.3",
+  "title": "Cloud City: Infrastructure as Code: Terraform, GitOps & Config Connector",
+  "city_concept": "City Master Schematics & Municipal Building Stamps",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Carpenters were adding balconies and knocking down load-bearing walls without recording changes on the city master architectural plans.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Architect Arthur declared that no brick could be laid without an approved Master Blueprint Stamp (Infrastructure as Code).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a rogue builder tried to add an unapproved staircase, inspectors compared the house to the master blueprint and dismantled the stairs.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Updating paper blueprints requires drafting tables and erasers; Terraform HCL code is version-controlled, testable, and repeatable.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

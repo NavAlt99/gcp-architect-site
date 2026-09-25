@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>030 (4.3) High Availability by Layer: Compute, Network, Storage & Database | GCP Architect Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
+  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+</head>
+<body>
+
+    <!-- Navigation -->
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-link">
+        <span style="font-size:16px;">☁</span>
+        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
+      </a>
+
+      <!-- Quick Topic Navigator -->
+      <div class="nav-topic-switcher">
+        <a href="topic-029.html" class="nav-topic-arrow prev" title="Previous Topic: SRE Concepts: SLIs, SLOs & Error Budgets [Key: P]">‹</a>
+        <div class="nav-select-wrapper">
+          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
+            <optgroup label="Phase 0 — Prerequisites">
+              <option value="topic-001.html">001 [0.1] Networking Fundamentals</option>
+              <option value="topic-002.html">002 [0.2] Linux & Command Line for Archi…</option>
+              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
+              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
+              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
+              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
+            </optgroup>
+            <optgroup label="Phase 1 — GCP Foundations">
+              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
+              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
+              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
+              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
+              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
+              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
+            </optgroup>
+            <optgroup label="Phase 2 — Core Services">
+              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
+              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
+              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
+              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
+              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
+              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
+              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
+              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
+              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
+            </optgroup>
+            <optgroup label="Phase 3 — Architecture Thinking">
+              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
+              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
+              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
+              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
+              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
+              <option value="topic-027.html">027 [3.5] Diagramming & Docs: C4 Model</option>
+            </optgroup>
+            <optgroup label="Phase 4 — Reliability & HA">
+              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
+              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
+              <option value="topic-030.html" selected>030 [4.3] High Availability by Layer</option>
+              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
+              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
+              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
+            </optgroup>
+            <optgroup label="Phase 5 — Security & Compliance">
+              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
+              <option value="topic-035.html">035 [5.2] Network Security: VPC-SC & Clo…</option>
+              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
+              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
+              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
+              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
+            </optgroup>
+            <optgroup label="Phase 6 — Optimization & Ops">
+              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
+              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
+              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
+              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
+              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
+            </optgroup>
+            <optgroup label="Phase 7 — Case Studies & Exam">
+              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
+              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
+              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
+              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
+              <option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing …</option>
+              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
+            </optgroup>
+            <optgroup label="Data, Analytics & ML">
+              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
+              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
+              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
+              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
+            </optgroup>
+            <optgroup label="Service Decision Cheat Sheets">
+              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
+              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
+              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
+              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
+              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
+              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
+            </optgroup>
+          </select>
+        </div>
+        <a href="topic-031.html" class="nav-topic-arrow next" title="Next Topic: Disaster Recovery Patterns (RTO & RPO) [Key: N]">›</a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html" class="nav-link">Overview</a>
+        <a href="#diagrams" class="nav-link">Diagrams</a>
+        <a href="#demo-or-practice" class="nav-link">Labs</a>
+        <a href="#quiz" class="nav-link">Knowledge Check</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Topic Sub-Navigation Strip -->
+    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
+      <div class="subnav-breadcrumbs">
+        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-phase">Phase 4 — Reliability & HA</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Topic 030</span>
+        <span class="crumb-progress">(30 of 60)</span>
+      </div>
+      <div class="subnav-actions">
+        <a href="topic-029.html" class="subnav-nav-btn prev" title="SRE Concepts: SLIs, SLOs & Error Budgets">← Prev (029)</a>
+        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
+        <a href="topic-031.html" class="subnav-nav-btn next" title="Disaster Recovery Patterns (RTO & RPO)">Next (031) →</a>
+      </div>
+    </nav>
+
+    
+    <!-- Topic Header -->
+    <header class="page-header">
+      <div class="page-meta">
+        <span class="badge">Topic 030</span>
+        <span class="badge badge-type">Roadmap ID: 4.3</span>
+        <span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 4 — Reliability and High Availability</span>
+        <span class="badge badge-type">Type: service</span>
+        <span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
+      </div>
+      <h1 class="page-title">High Availability by Layer: Compute, Network, Storage & Database</h1>
+      <p class="page-lead">Architecting multi-layer redundancy: Regional MIGs with autohealing, GKE multi-zone node pools, HA VPN dual tunnels, Spanner multi-region Paxos, and Cloud DNS failover routing.</p>
+    </header>
+
+    <!-- Part 1: Real-World Explanation -->
+    <nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Hands-On Demo</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world">
+      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+      
+        <h3>The Situation: Eliminating Single Points of Failure (SPOFs)</h3>
+        <p>
+          High availability (HA) cannot be achieved by focusing on a single layer. An application with a perfectly resilient Kubernetes cluster will still experience total downtime if it connects to a single-zone database, or if its DNS provider has an outage.
+        </p>
+        <p>
+          A true enterprise architect applies <strong>defense-in-depth redundancy</strong> across every layer of the technology stack:
+        </p>
+        <div class="callout">
+          <div class="callout-title">The Four Layers of High Availability</div>
+          <ul>
+            <li><strong>Network Layer:</strong> Cloud DNS (100% SLA guarantee), Global External Application Load Balancers, Cloud HA VPN (two active tunnels in separate gateway interfaces for 99.99% SLA), redundant Cloud Routers with BGP.</li>
+            <li><strong>Compute Layer:</strong> Regional Managed Instance Groups (MIGs) distributing VMs evenly across 3 zones with autohealing; GKE Regional Clusters with multi-zone node pools and Pod Disruption Budgets (PDBs).</li>
+            <li><strong>Database Layer:</strong> Cloud SQL Regional HA (primary and standby in separate zones with synchronous block-level replication); Cloud Spanner (multi-region synchronous Paxos replication across 3+ regions with 99.999% SLA).</li>
+            <li><strong>Storage & Messaging Layer:</strong> Dual-Region or Multi-Region Cloud Storage buckets with turbo replication; Cloud Pub/Sub with automatic global message replication across multiple zones.</li>
+          </ul>
+        </div>
+        
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate High Availability by Layer: Compute, Network, Storage &amp; Database design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>High Availability by Layer: Compute, Network, Storage &amp; Database gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 4.3 · High Availability by Layer: Compute, Network, Storage &amp; Database; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+    </section>
+
+    <!-- Part 2: Technical Discussion & Diagrams -->
+    <section class="topic-section" id="technical">
+      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
+      
+      
+        <h4>Layer 1 — Foundation: Zonal vs Regional vs Multi-Regional Deployments</h4>
+        <p>Zonal resources (single VM, single persistent disk) fail when the zone fails. Regional resources (Regional MIG, Cloud SQL HA) survive single zone outages. Multi-region resources (Spanner, Multi-Region GCS) survive entire regional disasters.</p>
+        <h4>Layer 2 — Practitioner: Health Checks (Shallow vs Deep) & Autohealing</h4>
+        <p>Configure separate <strong>Readiness Probes</strong> (is the app ready to take traffic?) and <strong>Liveness Probes</strong> (is the app deadlocked and in need of a reboot?). Never let a health check query an external database (deep probe); a database slowdown will cause the LB to kill all app instances simultaneously!</p>
+        <h4>Layer 3 — Architect: GKE High Availability Primitives</h4>
+        <p>Enforce <code>topologySpreadConstraints</code> to balance pods across failure zones; configure <code>PodDisruptionBudgets</code> (PDB) to ensure at least 80% of replicas remain available during node pool upgrades.</p>
+        <h4>Layer 4 — Staff: Multi-Region Active-Active Data Synchronization</h4>
+        <p>Staff architects navigate CAP theorem trade-offs: choosing between external consistency (Cloud Spanner Paxos) or eventual consistency (Bigtable multi-cluster replication with write conflicts resolved by last-write-wins).</p>
+        
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for High Availability by Layer: Compute, Network, Storage &amp; Database must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div id="diagrams" style="margin-top: 32px;">
+        <h3>2B — Interactive Architecture Diagrams</h3>
+        
+        <div class="callout" style="margin-bottom: 24px;">
+          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
+          <p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+        <div class="diagram-suite-nav">
+          <span class="suite-title">VIEWPOINT:</span>
+          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+        </div>
+
+<!-- Diagram 1 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: High Availability by Layer — Scope & Architecture Map</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes Defense-in-Depth High Availability across all 5 infrastructure layers: DNS Anycast, Multi-Region Interconnect, Regional Compute MIGs, Dual-Region Cloud Storage, and Multi-Region Cloud Spanner Paxos.
+          </p>
+        </div>
+        <div id="diagram-d1"></div>
+
+        <!-- Diagram 2 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: High Availability by Layer — Request & Control Flow</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Traces Automatic Zonal Failover within a Regional Managed Instance Group: health check failure detection, instance draining, and traffic shifting to healthy zones.
+          </p>
+        </div>
+        <div id="diagram-d2"></div>
+
+        <!-- Diagram 3 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: High Availability by Layer — Failure Injection & Auto-Healing</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Simulates Multi-Zone Power Outage: demonstrates cross-zone failover resilience and automated capacity rebalancing.
+          </p>
+        </div>
+        <div id="diagram-d3"></div>
+      </div>
+    
+      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — High Availability by Layer: Compute, Network, Storage &amp; Database — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — High Availability by Layer: Compute, Network, Storage &amp; Database — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — High Availability by Layer: Compute, Network, Storage &amp; Database — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
+    </section>
+
+    <!-- Part 3: Explained by Analogy -->
+    <section class="topic-section" id="analogy">
+      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+      <p>In Cloud City, Nora ensures hospitals have solar panels, backup diesel generators, and two separate municipal grid connections.</p>
+
+      <div class="analogy-stepper" style="margin-top: 20px;">
+        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+      </div>
+
+      <div class="analogy-box" id="analogy-display"></div>
+      <div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div>
+      <div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<tr><td>Brightloaf city campus</td><td>High Availability by Layer: Compute, Network, Storage &amp; Database</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
+<tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
+<tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
+<tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
+</tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div>
+    </section>
+
+    <!-- Part 4: Demo or Practice Exercise -->
+    <section class="topic-section" id="demo-or-practice">
+      <h2 class="section-title"><span class="section-number">4</span> Hands-On Demo</h2>
+      
+        <div class="callout">
+          <div class="callout-title">Hands-On Demo: Creating a Regional Managed Instance Group with Autohealing</div>
+          <p>Deploy a resilient regional compute cluster across 3 zones with automated health monitoring.</p>
+        </div>
+        <pre><code class="language-bash"># 1. Create a health check for autohealing
+gcloud compute health-checks create http hc-web-autohealing \
+    --port=80 \
+    --request-path="/healthz" \
+    --check-interval=5s \
+    --timeout=5s \
+    --unhealthy-threshold=3 \
+    --healthy-threshold=2
+
+# 2. Create an instance template
+gcloud compute instance-templates create template-web-v1 \
+    --machine-type=e2-medium \
+    --image-family=debian-12 \
+    --image-project=debian-cloud \
+    --tags=http-server \
+    --metadata=startup-script='#!/bin/bash
+      apt-get update && apt-get install -y nginx
+      echo "Healthy" > /var/www/html/healthz'
+
+# 3. Create a Regional MIG distributing instances across 3 zones
+gcloud compute instance-groups managed create mig-web-regional \
+    --template=template-web-v1 \
+    --size=6 \
+    --region=us-central1 \
+    --health-check=hc-web-autohealing \
+    --initial-delay=60s</code></pre>
+        
+      <div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
+gcloud services list --enabled
+: "Guard: DEMO_PROJECT_ID must be set"
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+terraform fmt -check
+terraform validate
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in
+terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
+terraform output
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+gcloud projects describe "$DEMO_PROJECT_ID"
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
+    </section>
+
+    <!-- Footer 1: Knowledge Check -->
+    <section class="topic-section" id="quiz">
+      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+      
+        <div class="quiz-card">
+          <span class="quiz-badge">Band: HA Architecture (Question 1)</span>
+          <p><strong>You are designing a mission-critical web application on Compute Engine that must survive the complete loss of an availability zone with zero human intervention and no downtime. Which configuration is required?</strong></p>
+          <ul class="quiz-options">
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! Regional Managed Instance Groups automatically distribute VMs across multiple zones and provision replacements if a zone suffers an outage.')">A) A Regional Managed Instance Group (MIG) configured across 3 zones behind an External Application Load Balancer with autohealing enabled.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'A zonal instance group resides in one zone and will fail completely if that zone has an outage.')">B) A Zonal Managed Instance Group with 10 instances in us-central1-a.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Unmanaged instance groups lack autohealing and automated multi-zone capacity rebalancing.')">C) An unmanaged instance group with VMs in two separate zones.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Standalone VMs require manual script intervention and cannot participate in automated regional load balancing health checks.')">D) Two standalone VMs in different zones managed by cron shell scripts.</button>
+          </ul>
+          <div class="quiz-explanation"></div>
+        </div>
+        
+      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
+    </section>
+
+    <!-- Footer 2: Further Reading -->
+    <section class="topic-section" id="reading">
+      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
+      <ul><li><a href='https://cloud.google.com/compute/docs/instance-groups/distributing-instances-with-regional-migs' target='_blank'>Distributing Instances with Regional MIGs</a></li><li><a href='https://cloud.google.com/kubernetes-engine/docs/concepts/regional-clusters' target='_blank'>GKE Regional Clusters Architecture</a></li></ul>
+    </section>
+    <!-- Topic Pagination Footer -->
+    <nav class="topic-pagination" aria-label="Topic Pagination">
+      <!-- Previous Topic -->
+      <a href="topic-029.html" class="pagination-card prev">
+        <div class="pagination-direction">← PREVIOUS TOPIC</div>
+        <div class="pagination-topic-meta">Phase 4 — Reliability & HA • [4.2]</div>
+        <div class="pagination-title">029: SRE Concepts: SLIs, SLOs & Error Budgets</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div>
+      </a>
+
+      <!-- Roadmap Overview -->
+      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
+        <div class="pagination-direction">ROADMAP OVERVIEW</div>
+        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-title">Architecture Explorer</div>
+        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
+      </a>
+
+      <!-- Next Topic -->
+      <a href="topic-031.html" class="pagination-card next">
+        <div class="pagination-direction">NEXT TOPIC →</div>
+        <div class="pagination-topic-meta">Phase 4 — Reliability & HA • [4.4]</div>
+        <div class="pagination-title">031: Disaster Recovery Patterns (RTO & RPO)</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
+      </a>
+    </nav>
+
+
+  </main>
+
+  <footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
+    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static & Offline Compatible
+  </footer>
+
+  <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+  <script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-030-d1",
+  "title": "High Availability by Layer \u2014 Scope & Architecture Map",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "map",
+  "purpose": "Visualizes Defense-in-Depth High Availability across all 5 infrastructure layers: DNS Anycast, Multi-Region Interconnect, Regional Compute MIGs, Dual-Region Cloud Storage, and Multi-Region Cloud Spanner Paxos.",
+  "routing_rationale": "System availability is only as strong as its weakest link; true high availability requires redundancy, automated failover, and isolation at every single layer of the stack.",
+  "groups": [
+    {
+      "id": "g-dns-net",
+      "label": "Layer 1 & 2: DNS & Network Layer",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-migs",
+      "label": "Layer 3: Regional Compute Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-db",
+      "label": "Layer 4 & 5: Storage & Database HA",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "anycast-dns",
+      "label": "Cloud DNS Anycast Routing",
+      "product": "Global 100% SLA DNS",
+      "group": "g-dns-net",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Anycast BGP routes client to closest healthy edge PoP worldwide with 100% SLA."
+    },
+    {
+      "id": "dual-interconnect",
+      "label": "Dual Cloud Interconnects",
+      "product": "99.99% Enterprise Interconnect",
+      "group": "g-dns-net",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dual redundant 10Gbps links across two distinct metropolitan colocation facilities."
+    },
+    {
+      "id": "regional-mig",
+      "label": "Regional MIG (3 Zones)",
+      "product": "Compute Engine MIG (a, b, c)",
+      "group": "g-compute-migs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Spreads instances evenly across zones a, b, and c with auto-healing health checks."
+    },
+    {
+      "id": "dual-gcs",
+      "label": "Dual-Region Cloud Storage",
+      "product": "Dual-Region (nam4) Bucket",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Replicates objects across us-central1 and us-east4 with turbo replication."
+    },
+    {
+      "id": "multi-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA Relational DB",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Replicated across 3 regions with Paxos consensus, surviving full regional loss."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "anycast-dns",
+      "to": "regional-mig",
+      "label": "1. Anycast Route to Closest Region",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dual-interconnect",
+      "to": "regional-mig",
+      "label": "2. Redundant Hybrid Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "regional-mig",
+      "to": "dual-gcs",
+      "label": "3. Access Replicated Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "regional-mig",
+      "to": "multi-spanner",
+      "label": "4. Multi-Region Synchronous Writes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Redundancy",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anycast DNS and dual interconnects guarantee zero-downtime client packet ingress.",
+      "why_traversal": "Eliminates single point of failure before traffic reaches cloud compute.",
+      "protocol": "BGP Anycast / 802.1q",
+      "plane": "Data Plane"
+    },
+    {
+      "n": 2,
+      "title": "Compute & Data Resiliency",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG distributes traffic across 3 zones; data persists across dual-region storage and Spanner.",
+      "why_traversal": "Ensures entire physical datacenter loss results in zero data loss and zero downtime.",
+      "protocol": "HTTPS / Spanner Paxos",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-zone-db-trap",
+      "label": "Single-Zone Cloud SQL Bottleneck",
+      "changes": {
+        "failedNodes": [
+          "regional-mig"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "System used multi-zone compute but pointed to a single-zone non-HA database.",
+      "diverted_path": "Zone outage takes down database; all compute pods crash due to database timeouts.",
+      "blast_radius": "100% application outage despite multi-zone compute.",
+      "recovery": "Upgrade database to Cloud SQL High Availability with automatic failover replica."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-030-d2",
+  "title": "High Availability by Layer \u2014 Request & Control Flow",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "flow",
+  "purpose": "Traces Automatic Zonal Failover within a Regional Managed Instance Group: health check failure detection, instance draining, and traffic shifting to healthy zones.",
+  "routing_rationale": "Regional Managed Instance Groups continuously monitor instance health via application HTTP endpoints, automatically evicting failing nodes without dropping connections.",
+  "groups": [
+    {
+      "id": "g-ingress-lb",
+      "label": "Regional Application Load Balancer",
+      "type": "external",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-zone-a",
+      "label": "Zone A: Degraded Compute Zone",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 170
+    },
+    {
+      "id": "g-zone-b",
+      "label": "Zone B: Healthy Compute Zone",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 300,
+      "y": 220,
+      "width": 310,
+      "height": 170
+    },
+    {
+      "id": "g-auto-heal",
+      "label": "MIG Auto-Healing Controller",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "regional-alb",
+      "label": "Regional Backend Service",
+      "product": "Traffic Health Router",
+      "group": "g-ingress-lb",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Monitors backend health check status across all zones."
+    },
+    {
+      "id": "vm-zone-a",
+      "label": "VM Instance A1 (Failing)",
+      "product": "Kernel Panic / Health 503",
+      "group": "g-zone-a",
+      "plane": "data",
+      "x": 440,
+      "y": 100,
+      "detail": "Fails 3 consecutive /healthz checks; ALB stops dispatching new traffic."
+    },
+    {
+      "id": "vm-zone-b",
+      "label": "VM Instance B1 (Healthy)",
+      "product": "Handling 100% of Requests",
+      "group": "g-zone-b",
+      "plane": "data",
+      "x": 440,
+      "y": 290,
+      "detail": "Autoscaling triggers; adds VM B2 to handle additional load from Zone A."
+    },
+    {
+      "id": "mig-controller",
+      "label": "Compute Engine MIG Manager",
+      "product": "Auto-Healing Orchestrator",
+      "group": "g-auto-heal",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Recreates unhealthy VM A1 in Zone A or Zone C automatically."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "regional-alb",
+      "to": "vm-zone-a",
+      "label": "1. Health Probe Fails (HTTP 503)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "regional-alb",
+      "to": "vm-zone-b",
+      "label": "2. Shift 100% Traffic to Zone B",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "vm-zone-a",
+      "to": "mig-controller",
+      "label": "3. Signal Unhealthy Instance",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "mig-controller",
+      "to": "vm-zone-b",
+      "label": "4. Scale Up Capacity to Absorb Load",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Health Check Failure Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Regional ALB detects 3 consecutive failed health checks on VM A1.",
+      "why_traversal": "Prevents sending user traffic to dead or corrupted backend instances.",
+      "protocol": "HTTP Health Check Probe",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Traffic Redirection & Healing",
+      "edges": [
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "action": "ALB shifts all traffic to Zone B; MIG controller destroys VM A1 and provisions fresh replacement.",
+      "why_traversal": "Delivers zero-downtime auto-recovery without human intervention.",
+      "protocol": "Compute Engine Control API",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "flapping-health-cascade",
+      "label": "Flapping Health Check Cascade",
+      "changes": {
+        "failedNodes": [
+          "vm-zone-b"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Health check timeout set too low (1s); shifting load to Zone B caused Zone B health checks to timeout.",
+      "diverted_path": "ALB marks ALL zones unhealthy; returns HTTP 502 Bad Gateway to all users.",
+      "blast_radius": "Complete cluster failure due to overly aggressive health check thresholds.",
+      "recovery": "Tune health check thresholds: increase timeout to 5s and check interval to 10s with 3 failure thresholds."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-030-d3",
+  "title": "High Availability by Layer \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "failure",
+  "purpose": "Simulates Multi-Zone Power Outage: demonstrates cross-zone failover resilience and automated capacity rebalancing.",
+  "routing_rationale": "Testing complete zone loss proves that regional topologies can sustain 33% physical capacity loss without degrading customer experience.",
+  "groups": [
+    {
+      "id": "g-outage-zone",
+      "label": "Zone us-central1-a (Total Power Loss)",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-surviving-zones",
+      "label": "Surviving Zones: us-central1-b & us-central1-c",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "zone-a-cluster",
+      "label": "Zone A Instances (Dead)",
+      "product": "Unresponsive Hardware",
+      "group": "g-outage-zone",
+      "plane": "data",
+      "x": 220,
+      "y": 200,
+      "detail": "Physical substation transformer failure drops all servers in us-central1-a."
+    },
+    {
+      "id": "zone-b-cluster",
+      "label": "Zone B Instances (Healthy)",
+      "product": "Operating at 75% Capacity",
+      "group": "g-surviving-zones",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Absorbs 50% of redirected traffic; autoscaler provisions additional nodes."
+    },
+    {
+      "id": "zone-c-cluster",
+      "label": "Zone C Instances (Healthy)",
+      "product": "Operating at 75% Capacity",
+      "group": "g-surviving-zones",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Absorbs remaining 50% of redirected traffic with zero dropped transactions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "zone-a-cluster",
+      "to": "zone-b-cluster",
+      "label": "1. Redirect 50% Ingress Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "zone-a-cluster",
+      "to": "zone-c-cluster",
+      "label": "2. Redirect 50% Ingress Traffic",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Zonal Evacuation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Regional load balancer immediately routes all traffic away from dead Zone A into Zones B and C.",
+      "why_traversal": "Regional architecture absorbs zonal catastrophes seamlessly.",
+      "protocol": "Maglev Dynamic Flow Table",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "insufficient-headroom",
+      "label": "Capacity Starvation in Surviving Zones",
+      "changes": {
+        "failedNodes": [
+          "zone-b-cluster",
+          "zone-c-cluster"
+        ],
+        "failedEdges": [
+          "e1",
+          "e2"
+        ]
+      },
+      "root_cause": "Cluster was running at 90% utilization before outage; surviving zones hit CPU saturation.",
+      "diverted_path": "Latency spikes from 25ms to 4,200ms; requests queue and timeout.",
+      "blast_radius": "Severe degradation across all users.",
+      "recovery": "Maintain N+1 capacity headroom: never exceed 66% baseline CPU utilization in a 3-zone regional cluster."
+    }
+  ]
+}
+  </script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-030-d4",
+  "title": "High Availability by Layer: Compute, Network, Storage & Database \u2014 D4",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "System availability is only as strong as its weakest link; true high availability requires redundancy, automated failover, and isolation at every single layer of the stack.",
+  "groups": [
+    {
+      "id": "g-dns-net",
+      "label": "Layer 1 & 2: DNS & Network Layer",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-migs",
+      "label": "Layer 3: Regional Compute Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-db",
+      "label": "Layer 4 & 5: Storage & Database HA",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "anycast-dns",
+      "label": "Cloud DNS Anycast Routing",
+      "product": "Global 100% SLA DNS",
+      "group": "g-dns-net",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Anycast BGP routes client to closest healthy edge PoP worldwide with 100% SLA."
+    },
+    {
+      "id": "dual-interconnect",
+      "label": "Dual Cloud Interconnects",
+      "product": "99.99% Enterprise Interconnect",
+      "group": "g-dns-net",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dual redundant 10Gbps links across two distinct metropolitan colocation facilities."
+    },
+    {
+      "id": "regional-mig",
+      "label": "Regional MIG (3 Zones)",
+      "product": "Compute Engine MIG (a, b, c)",
+      "group": "g-compute-migs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Spreads instances evenly across zones a, b, and c with auto-healing health checks."
+    },
+    {
+      "id": "dual-gcs",
+      "label": "Dual-Region Cloud Storage",
+      "product": "Dual-Region (nam4) Bucket",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Replicates objects across us-central1 and us-east4 with turbo replication."
+    },
+    {
+      "id": "multi-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA Relational DB",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Replicated across 3 regions with Paxos consensus, surviving full regional loss."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "anycast-dns",
+      "to": "regional-mig",
+      "label": "1. Anycast Route to Closest Region",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dual-interconnect",
+      "to": "regional-mig",
+      "label": "2. Redundant Hybrid Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "regional-mig",
+      "to": "dual-gcs",
+      "label": "3. Access Replicated Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "regional-mig",
+      "to": "multi-spanner",
+      "label": "4. Multi-Region Synchronous Writes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Redundancy",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anycast DNS and dual interconnects guarantee zero-downtime client packet ingress.",
+      "why_traversal": "Eliminates single point of failure before traffic reaches cloud compute.",
+      "protocol": "BGP Anycast / 802.1q",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Compute & Data Resiliency",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG distributes traffic across 3 zones; data persists across dual-region storage and Spanner.",
+      "why_traversal": "Ensures entire physical datacenter loss results in zero data loss and zero downtime.",
+      "protocol": "HTTPS / Spanner Paxos",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-zone-db-trap",
+      "label": "Single-Zone Cloud SQL Bottleneck",
+      "changes": {
+        "failedNodes": [
+          "regional-mig"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "System used multi-zone compute but pointed to a single-zone non-HA database.",
+      "diverted_path": "Zone outage takes down database; all compute pods crash due to database timeouts.",
+      "blast_radius": "100% application outage despite multi-zone compute.",
+      "recovery": "Upgrade database to Cloud SQL High Availability with automatic failover replica."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-030-d5",
+  "title": "High Availability by Layer: Compute, Network, Storage & Database \u2014 D5",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "System availability is only as strong as its weakest link; true high availability requires redundancy, automated failover, and isolation at every single layer of the stack.",
+  "groups": [
+    {
+      "id": "g-dns-net",
+      "label": "Layer 1 & 2: DNS & Network Layer",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-migs",
+      "label": "Layer 3: Regional Compute Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-db",
+      "label": "Layer 4 & 5: Storage & Database HA",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "anycast-dns",
+      "label": "Cloud DNS Anycast Routing",
+      "product": "Global 100% SLA DNS",
+      "group": "g-dns-net",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Anycast BGP routes client to closest healthy edge PoP worldwide with 100% SLA."
+    },
+    {
+      "id": "dual-interconnect",
+      "label": "Dual Cloud Interconnects",
+      "product": "99.99% Enterprise Interconnect",
+      "group": "g-dns-net",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dual redundant 10Gbps links across two distinct metropolitan colocation facilities."
+    },
+    {
+      "id": "regional-mig",
+      "label": "Regional MIG (3 Zones)",
+      "product": "Compute Engine MIG (a, b, c)",
+      "group": "g-compute-migs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Spreads instances evenly across zones a, b, and c with auto-healing health checks."
+    },
+    {
+      "id": "dual-gcs",
+      "label": "Dual-Region Cloud Storage",
+      "product": "Dual-Region (nam4) Bucket",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Replicates objects across us-central1 and us-east4 with turbo replication."
+    },
+    {
+      "id": "multi-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA Relational DB",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Replicated across 3 regions with Paxos consensus, surviving full regional loss."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "anycast-dns",
+      "to": "regional-mig",
+      "label": "1. Anycast Route to Closest Region",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dual-interconnect",
+      "to": "regional-mig",
+      "label": "2. Redundant Hybrid Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "regional-mig",
+      "to": "dual-gcs",
+      "label": "3. Access Replicated Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "regional-mig",
+      "to": "multi-spanner",
+      "label": "4. Multi-Region Synchronous Writes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Redundancy",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anycast DNS and dual interconnects guarantee zero-downtime client packet ingress.",
+      "why_traversal": "Eliminates single point of failure before traffic reaches cloud compute.",
+      "protocol": "BGP Anycast / 802.1q",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Compute & Data Resiliency",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG distributes traffic across 3 zones; data persists across dual-region storage and Spanner.",
+      "why_traversal": "Ensures entire physical datacenter loss results in zero data loss and zero downtime.",
+      "protocol": "HTTPS / Spanner Paxos",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-zone-db-trap",
+      "label": "Single-Zone Cloud SQL Bottleneck",
+      "changes": {
+        "failedNodes": [
+          "regional-mig"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "System used multi-zone compute but pointed to a single-zone non-HA database.",
+      "diverted_path": "Zone outage takes down database; all compute pods crash due to database timeouts.",
+      "blast_radius": "100% application outage despite multi-zone compute.",
+      "recovery": "Upgrade database to Cloud SQL High Availability with automatic failover replica."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-030-d6",
+  "title": "High Availability by Layer: Compute, Network, Storage & Database \u2014 D6",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "System availability is only as strong as its weakest link; true high availability requires redundancy, automated failover, and isolation at every single layer of the stack.",
+  "groups": [
+    {
+      "id": "g-dns-net",
+      "label": "Layer 1 & 2: DNS & Network Layer",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-migs",
+      "label": "Layer 3: Regional Compute Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-db",
+      "label": "Layer 4 & 5: Storage & Database HA",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "anycast-dns",
+      "label": "Cloud DNS Anycast Routing",
+      "product": "Global 100% SLA DNS",
+      "group": "g-dns-net",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Anycast BGP routes client to closest healthy edge PoP worldwide with 100% SLA."
+    },
+    {
+      "id": "dual-interconnect",
+      "label": "Dual Cloud Interconnects",
+      "product": "99.99% Enterprise Interconnect",
+      "group": "g-dns-net",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dual redundant 10Gbps links across two distinct metropolitan colocation facilities."
+    },
+    {
+      "id": "regional-mig",
+      "label": "Regional MIG (3 Zones)",
+      "product": "Compute Engine MIG (a, b, c)",
+      "group": "g-compute-migs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Spreads instances evenly across zones a, b, and c with auto-healing health checks."
+    },
+    {
+      "id": "dual-gcs",
+      "label": "Dual-Region Cloud Storage",
+      "product": "Dual-Region (nam4) Bucket",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Replicates objects across us-central1 and us-east4 with turbo replication."
+    },
+    {
+      "id": "multi-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA Relational DB",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Replicated across 3 regions with Paxos consensus, surviving full regional loss."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "anycast-dns",
+      "to": "regional-mig",
+      "label": "1. Anycast Route to Closest Region",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dual-interconnect",
+      "to": "regional-mig",
+      "label": "2. Redundant Hybrid Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "regional-mig",
+      "to": "dual-gcs",
+      "label": "3. Access Replicated Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "regional-mig",
+      "to": "multi-spanner",
+      "label": "4. Multi-Region Synchronous Writes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Redundancy",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anycast DNS and dual interconnects guarantee zero-downtime client packet ingress.",
+      "why_traversal": "Eliminates single point of failure before traffic reaches cloud compute.",
+      "protocol": "BGP Anycast / 802.1q",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Compute & Data Resiliency",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG distributes traffic across 3 zones; data persists across dual-region storage and Spanner.",
+      "why_traversal": "Ensures entire physical datacenter loss results in zero data loss and zero downtime.",
+      "protocol": "HTTPS / Spanner Paxos",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-zone-db-trap",
+      "label": "Single-Zone Cloud SQL Bottleneck",
+      "changes": {
+        "failedNodes": [
+          "regional-mig"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "System used multi-zone compute but pointed to a single-zone non-HA database.",
+      "diverted_path": "Zone outage takes down database; all compute pods crash due to database timeouts.",
+      "blast_radius": "100% application outage despite multi-zone compute.",
+      "recovery": "Upgrade database to Cloud SQL High Availability with automatic failover replica."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}
+</script>
+  <script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">
+{
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "title": "Cloud City: High Availability by Layer: Compute, Network, Storage & Database",
+  "city_concept": "City Civil Defense & Multi-Grid Redundancy",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "A transformer explosion at the central power plant plunged the entire metropolitan transit, hospital, and water systems into darkness.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Planner Nora divided the city into three independent power districts connected by automated cross-tie switches.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When Substation B flooded, Substation A and C automatically doubled their output, keeping hospitals and traffic lights running seamlessly.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "High-voltage city grid switching takes mechanical relays and minutes; software-defined cloud routing balances load in seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script src="../assets/diagram-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
+      const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
+      const specD3 = JSON.parse(document.getElementById('spec-d3-data').textContent);
+      window.analogyData = JSON.parse(document.getElementById('analogy-data').textContent);
+
+      new DiagramEngine('diagram-d1', specD1);
+      new DiagramEngine('diagram-d2', specD2);
+      new DiagramEngine('diagram-d3', specD3);
+      new DiagramEngine('diagram-d4', JSON.parse(document.getElementById('spec-d4-data').textContent));
+      new DiagramEngine('diagram-d5', JSON.parse(document.getElementById('spec-d5-data').textContent));
+      new DiagramEngine('diagram-d6', JSON.parse(document.getElementById('spec-d6-data').textContent));
+
+      showAnalogyBeat(1);
+    });
+
+    function showAnalogyBeat(stepNum) {
+      if (!window.analogyData) return;
+      const beat = window.analogyData.beats.find(b => b.step === stepNum);
+      if (!beat) return;
+
+      const container = document.getElementById('analogy-display');
+      container.innerHTML = `
+        <h4 style="margin-top:0; color:var(--accent);">Beat ${beat.step}: ${beat.name}</h4>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--text-main);">${beat.story}</p>
+        <div style="font-size:11.5px; color:var(--text-dim);">
+          <strong style="color:#fb923c;">Analogy Tokens:</strong> ${beat.analogy_elements.join(' • ')}
+        </div>
+      `;
+
+      document.querySelectorAll('.stepper-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === stepNum);
+      });
+    }
+
+    function toggleSolution() {
+      const block = document.getElementById('solution-block');
+      const btn = document.getElementById('toggle-solution-btn');
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = '🙈 Hide Solution & Rubric';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = '👁 Show Solution & Rubric';
+      }
+    }
+
+    function checkQuiz(element, isCorrect, explanation) {
+      const card = element.closest('.quiz-card');
+      const options = card.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.style.borderColor = 'var(--panel-border)';
+        opt.style.background = 'var(--panel)';
+      });
+
+      element.style.borderColor = isCorrect ? 'var(--accent-green)' : 'var(--accent-red)';
+      element.style.background = isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+      const explEl = card.querySelector('.quiz-explanation');
+      explEl.style.display = 'block';
+      explEl.innerHTML = `<strong style="color:${isCorrect ? '#34d399' : '#f87171'};">${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
+    }
+  </script>
+  <!-- Floating Quick Navigation Dock -->
+  <div class="floating-topic-dock" id="floating-topic-dock">
+    <a href="topic-029.html" class="dock-btn prev" title="Previous Topic: SRE Concepts: SLIs, SLOs & Error Budgets [Key: P]">← 029</a>
+    <span class="dock-indicator" title="Topic 030 of 60">030 / 060</span>
+    <a href="topic-031.html" class="dock-btn next" title="Next Topic: Disaster Recovery Patterns (RTO & RPO) [Key: N]">031 →</a>
+    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
+  </div>
+
+  <script>
+    // Global Keyboard Navigation between topics
+    (function() {
+      const prevUrl = "topic-029.html";
+      const nextUrl = "topic-031.html";
+      document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
+          if (prevUrl) window.location.href = prevUrl;
+        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
+          if (nextUrl) window.location.href = nextUrl;
+        } else if (e.key === 'i' || e.key === 'I') {
+          window.location.href = '../index.html';
+        }
+      });
+    })();
+  </script>
+  <!-- End Floating Quick Navigation Dock -->
+
+  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "topic_no": "006",
+  "roadmap_id": "0.6",
+  "title": "Cloud City: Cloud Digital Leader & Business Foundations",
+  "city_concept": "City Modernization Vision & Council Appropriations",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "The City Council was spending millions maintaining decaying brick municipal warehouses that took two years to approve.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian drafted the Modern City Charter (Cloud Digital Leader), moving funds from rigid real estate purchases to flexible municipal services.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Department directors overspent their monthly budgets because electricity was now metered on-demand. Tomas the Treasurer set hard spending alerts.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In government, budgets are locked in annual cycles; in cloud FinOps, unit economics adjust dynamically every hour.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

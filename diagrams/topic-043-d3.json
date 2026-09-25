@@ -1,0 +1,190 @@
+{
+  "id": "topic-043-d3",
+  "title": "CI/CD & Release Engineering: Cloud Deploy \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "043",
+  "roadmap_id": "6.4",
+  "kind": "failure",
+  "purpose": "Simulates Automated Canary Rollback: Cloud Monitoring detects HTTP 500 error spike in canary pods and triggers instant 100% traffic diversion back to baseline.",
+  "routing_rationale": "Automated rollback removes human panic during bad deployments, returning the system to a known good state in seconds.",
+  "groups": [
+    {
+      "id": "g-failing-canary",
+      "label": "Failing Canary Pods (v1.1)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-stable-fallback",
+      "label": "Stable Baseline Fallback (v1.0)",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "canary-500-surge",
+      "label": "Canary HTTP 500 Errors",
+      "product": "Error Rate: 8.2% Spike",
+      "group": "g-failing-canary",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Canary microservice throws NullPointerException on real customer shopping carts."
+    },
+    {
+      "id": "slo-watchdog-alert",
+      "label": "Cloud Monitoring MQL Alert",
+      "product": "Alert: CANARY_SLO_BREACH",
+      "group": "g-failing-canary",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects canary error rate > 1% threshold within 15 seconds."
+    },
+    {
+      "id": "deploy-rollback-cmd",
+      "label": "Cloud Deploy Auto-Rollback",
+      "product": "gcloud deploy rollouts rollback",
+      "group": "g-stable-fallback",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Reverts Gateway API route weights: 100% to v1.0, 0% to canary."
+    },
+    {
+      "id": "recovered-stable-pods",
+      "label": "Stable Pods Absorb 100% Traffic",
+      "product": "100% Healthy Traffic Flow",
+      "group": "g-stable-fallback",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Error rate drops back to 0.01% immediately; customer impact resolved."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "canary-500-surge",
+      "to": "slo-watchdog-alert",
+      "label": "1. Ingest Canary Error Telemetry",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "slo-watchdog-alert",
+      "to": "deploy-rollback-cmd",
+      "label": "2. Trigger Automated Rollback",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "deploy-rollback-cmd",
+      "to": "recovered-stable-pods",
+      "label": "3. Restore 100% Baseline Routing",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Defect Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Watchdog detects 8.2% error rate in canary and signals Cloud Deploy rollback.",
+      "why_traversal": "Catches application regressions before they reach the general user population.",
+      "protocol": "Cloud Monitoring Alert Policy",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Instantaneous Rollback Execution",
+      "edges": [
+        "e3"
+      ],
+      "action": "Gateway route weight shifts 100% traffic back to v1.0; defective pods terminated.",
+      "why_traversal": "Restores production reliability in under 15 seconds.",
+      "protocol": "Gateway API Weight Update",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "db-migration-rollback-failure",
+      "label": "Destructive DB Schema Change Prevents Rollback",
+      "changes": {
+        "failedNodes": [
+          "recovered-stable-pods"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "v1.1 executed destructive SQL migration dropping a column required by v1.0.",
+      "diverted_path": "Rollback failed; v1.0 pods crashed because required column was missing.",
+      "blast_radius": "Full production outage requiring manual database restoration.",
+      "recovery": "Enforce expand-and-contract database migration pattern: never drop columns in the same release as code changes."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "canary-500-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "canary-500-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Automated Canary Rollback: Cloud Monitoring detects HTTP 500 error spike in canary pods and triggers instant 100% traffic diversion back to baseline."
+}

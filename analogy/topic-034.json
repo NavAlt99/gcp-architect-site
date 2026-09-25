@@ -1,0 +1,43 @@
+{
+  "topic_no": "034",
+  "roadmap_id": "5.1",
+  "title": "Cloud City: Advanced IAM, Identity Federation & Zero Trust",
+  "city_concept": "City Security Badges & Biometric Checkpoints",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Civic workers were carrying brass master keys that could open any city warehouse, bank vault, or subway tunnel. Keys were constantly lost.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Warden Ward replaced brass keys with dynamic biometric badges (Zero Trust & Workload Identity) that expire after 60 minutes.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a rogue clerk attempted to enter the municipal vault at midnight, automated time-based locks (IAM Conditions) rejected the badge.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical brass keys must be re-keyed by locksmiths; cloud identity keys are completely eliminated through token federation.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

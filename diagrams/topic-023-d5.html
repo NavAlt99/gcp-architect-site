@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Cloud Architecture Framework: The Six Pillars — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-023.html">← Topic page</a><span>3.2 · TOPIC-023-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-023-d5",
+  "title": "Google Cloud Architecture Framework: The Six Pillars \u2014 D5",
+  "topic_no": "023",
+  "roadmap_id": "3.2",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "A well-architected cloud footprint balances all five pillars simultaneously; over-optimizing one pillar (e.g. cost) without honoring security guardrails or reliability targets creates severe technical debt.",
+  "groups": [
+    {
+      "id": "g-gov",
+      "label": "Enterprise Governance & Security Pillar",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ops",
+      "label": "System Design & Operational Excellence",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-rel-cost",
+      "label": "Reliability & Cost Optimization Tier",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pillar-sec",
+      "label": "Security & Zero Trust Guardrail",
+      "product": "Org Policy & IAM",
+      "group": "g-gov",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Restricts public IPs, enforces CMEK encryption keys, and enforces VPC Service Controls."
+    },
+    {
+      "id": "pillar-ops",
+      "label": "Operational Excellence Pipeline",
+      "product": "Cloud Build & Deploy",
+      "group": "g-ops",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Automated GitOps CI/CD with progressive delivery, canary validation, and health checks."
+    },
+    {
+      "id": "pillar-sys",
+      "label": "System Design Architecture",
+      "product": "Stateless Microservices",
+      "group": "g-ops",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Loosely-coupled event-driven microservices communicating over asynchronous Pub/Sub."
+    },
+    {
+      "id": "pillar-rel",
+      "label": "Reliability & Multi-Zone HA",
+      "product": "Regional MIG & Cloud SQL HA",
+      "group": "g-rel-cost",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Redundant active-standby instances with automatic cross-zone failover < 60 seconds."
+    },
+    {
+      "id": "pillar-cost",
+      "label": "FinOps Cost Guardrails",
+      "product": "Budgets, CUDs & Recommender",
+      "group": "g-rel-cost",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Continuous rightsizing recommendations, 3-year committed use discounts, and autoscaling caps."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "pillar-sec",
+      "to": "pillar-ops",
+      "label": "1. Enforce Security Policies in CI/CD",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "pillar-ops",
+      "to": "pillar-sys",
+      "label": "2. Deploy Validated Microservices",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "pillar-sys",
+      "to": "pillar-rel",
+      "label": "3. Provision Multi-Zone Redundancy",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "pillar-rel",
+      "to": "pillar-cost",
+      "label": "4. Apply Cost Optimization & CUDs",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Security Guardrail Verification",
+      "edges": [
+        "e1"
+      ],
+      "action": "Architecture Framework validates IAM least-privilege and VPC-SC perimeters.",
+      "why_traversal": "Security posture must be validated before operational deployment.",
+      "protocol": "Policy as Code",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Operational Delivery",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud Build applies container security scanning and deploys stateless containers.",
+      "why_traversal": "Ensures reproducible, immutable artifacts across dev, stage, and prod.",
+      "protocol": "GitOps Delivery",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Reliability & Cost Synthesis",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG instances paired with 1-year CUDs satisfy uptime target within budget.",
+      "why_traversal": "Balances high availability with financial predictability.",
+      "protocol": "FinOps Analysis",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pillar-conflict",
+      "label": "Cost Cutting Compromises Disaster Recovery",
+      "changes": {
+        "failedNodes": [
+          "pillar-rel"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Team disabled cross-zone standby database to save 40% compute costs.",
+      "diverted_path": "Zone failure causes 6-hour catastrophic outage with data loss.",
+      "blast_radius": "Production database down during zonal incident.",
+      "recovery": "Re-enable multi-zone HA and leverage Committed Use Discounts (CUDs) to achieve cost goals safely."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "pillar-sec"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "pillar-sec"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

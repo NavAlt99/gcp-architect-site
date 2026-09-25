@@ -1,0 +1,200 @@
+{
+  "id": "topic-055-d2",
+  "title": "Compute Decision Cheat Sheet \u2014 Request & Control Flow",
+  "topic_no": "055",
+  "roadmap_id": "cheat-1",
+  "kind": "flow",
+  "purpose": "Traces Step-by-Step Compute Selection Flow: question prompt analysis -> container status -> protocol check -> execution duration -> optimal compute product.",
+  "routing_rationale": "Following the structured compute decision tree eliminates hesitation on exam scenarios.",
+  "groups": [
+    {
+      "id": "g-input-check",
+      "label": "Step 1: Container & Protocol Check",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-scaling-check",
+      "label": "Step 2: Operational Overhead & Scaling",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-final-verdict",
+      "label": "Step 3: Optimal Compute SKU Selection",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "q-check-container",
+      "label": "Is Application Containerized?",
+      "product": "OCI Container Image Available",
+      "group": "g-input-check",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Yes: Application packaged as Docker container."
+    },
+    {
+      "id": "q-check-protocol",
+      "label": "Protocol: HTTP/gRPC or Custom TCP?",
+      "product": "HTTPS REST API Endpoint",
+      "group": "g-input-check",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Responds to HTTPS webhooks within 60 minutes."
+    },
+    {
+      "id": "q-check-ops",
+      "label": "Operational Requirement: Minimal Ops",
+      "product": "No Cluster or OS Management",
+      "group": "g-scaling-check",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Eliminates GKE Standard and Compute Engine due to node maintenance."
+    },
+    {
+      "id": "verdict-cloud-run",
+      "label": "Result: Cloud Run Fully Managed",
+      "product": "Winner: 100% Constraint Match",
+      "group": "g-final-verdict",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Optimal GCP compute choice meeting all requirements with zero idle cost."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "q-check-container",
+      "to": "q-check-protocol",
+      "label": "1. Confirmed Containerized",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "q-check-protocol",
+      "to": "q-check-ops",
+      "label": "2. Confirmed HTTPS Protocol",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "q-check-ops",
+      "to": "verdict-cloud-run",
+      "label": "3. Confirmed Minimal Ops Requirement",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Constraint Verification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Verifies containerization and protocol compatibility.",
+      "why_traversal": "Quickly filters out incompatible runtimes.",
+      "protocol": "Decision Filter",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Final Selection",
+      "edges": [
+        "e3"
+      ],
+      "action": "Applies operational filter: selects Cloud Run as winning product.",
+      "why_traversal": "Aligns with PCA exam scoring rubric.",
+      "protocol": "PCA Answer Key",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "batch-duration-timeout",
+      "label": "Workload Exceeds 60-Minute Cloud Run Timeout",
+      "changes": {
+        "failedNodes": [
+          "verdict-cloud-run"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Job was an 8-hour batch video render; Cloud Run killed execution at 60-minute limit.",
+      "diverted_path": "Batch jobs aborted mid-stream.",
+      "blast_radius": "Application failure.",
+      "recovery": "Route long-running batch jobs to Cloud Batch or Cloud Run Jobs with extended execution timeouts."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "q-check-container"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "q-check-container"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Step-by-Step Compute Selection Flow: question prompt analysis -> container status -> protocol check -> execution duration -> optimal compute product."
+}

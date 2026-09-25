@@ -1,0 +1,228 @@
+{
+  "id": "topic-028-d2",
+  "title": "Reliability Fundamentals: Availability Math & Failure Domains \u2014 Request & Control Flow",
+  "topic_no": "028",
+  "roadmap_id": "4.1",
+  "kind": "flow",
+  "purpose": "Traces request routing across independent multi-zone failure domains, showing load balancing health checks isolating degraded instances.",
+  "routing_rationale": "Active health check probing detects instance latency anomalies and routes production transactions exclusively to healthy compute domains.",
+  "groups": [
+    {
+      "id": "g-client-lane",
+      "label": "Production User Requests",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-zone-a-lane",
+      "label": "Zone A Failure Domain",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-zone-b-lane",
+      "label": "Zone B Failure Domain",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-traffic",
+      "label": "Customer Traffic Flow",
+      "product": "HTTP Requests",
+      "group": "g-client-lane",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Continuous incoming streams of user shopping transactions."
+    },
+    {
+      "id": "health-checker",
+      "label": "Regional Health Prober",
+      "product": "Monitoring Probes",
+      "group": "g-client-lane",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Validates application status across all zones every 5 seconds."
+    },
+    {
+      "id": "zone-a-srv",
+      "label": "Zone A Application Server",
+      "product": "Compute Engine",
+      "group": "g-zone-a-lane",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Processing 50% of active user sessions."
+    },
+    {
+      "id": "zone-a-db",
+      "label": "Zone A Local Cache",
+      "product": "Memorystore Redis",
+      "group": "g-zone-a-lane",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "In-memory cache isolated within Zone A power domain."
+    },
+    {
+      "id": "zone-b-srv",
+      "label": "Zone B Application Server",
+      "product": "Compute Engine",
+      "group": "g-zone-b-lane",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Independent server running on separate physical hardware and cooling."
+    },
+    {
+      "id": "zone-b-db",
+      "label": "Zone B Local Cache",
+      "product": "Memorystore Redis",
+      "group": "g-zone-b-lane",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Synchronized cache replica ready for instantaneous failover."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-traffic",
+      "to": "zone-a-srv",
+      "label": "1a. Balance to Zone A",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "user-traffic",
+      "to": "zone-b-srv",
+      "label": "1b. Balance to Zone B",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "zone-a-srv",
+      "to": "zone-a-db",
+      "label": "2a. Local Cache Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "zone-b-srv",
+      "to": "zone-b-db",
+      "label": "2b. Local Cache Query",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Domain Partitioned Routing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Traffic is distributed evenly across Zone A and Zone B failure domains.",
+      "why_traversal": "Isolates hardware blast radius: an outage in Zone A cannot affect Zone B.",
+      "protocol": "Anycast Round-Robin",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Low Latency Local Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Servers query intra-zone caches over Andromeda SDN at <1ms latency.",
+      "why_traversal": "Eliminates cross-zone network charges while maintaining high throughput.",
+      "protocol": "Redis RESP Protocol",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cross-zone-egress-spike",
+      "label": "Accidental Cross-Zone Traffic Leaks",
+      "changes": {
+        "failedNodes": [
+          "zone-a-srv"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Misconfiguration routed Zone A compute to query Zone B database for every request.",
+      "diverted_path": "Cross-zone latency added 2.5ms per query; network billing costs surged.",
+      "blast_radius": "Elevated latency and unnecessary inter-zone egress expenses.",
+      "recovery": "Configure client load balancer session affinity and zonal DNS endpoints."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-traffic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-traffic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces request routing across independent multi-zone failure domains, showing load balancing health checks isolating degraded instances."
+}

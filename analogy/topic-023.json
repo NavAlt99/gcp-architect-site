@@ -1,0 +1,43 @@
+{
+  "topic_no": "023",
+  "roadmap_id": "3.2",
+  "title": "Cloud City: Google Cloud Architecture Framework: The Six Pillars",
+  "city_concept": "The Six Municipal Building Standards",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Cloud City grew haphazardly: bridges were strong but too narrow, water pipes leaked, and building permits took six months.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian established the Six Standards of Civic Design: Structural Safety, Fire Defense, Clean Water, Budget Balance, Fast Transit, and Public Parks.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a gold-plated fountain drained the city treasury, the Finance Bureau invoked the Budget Pillar to substitute sustainable local stone.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Civic construction requires decades of physical re-engineering; in GCP, architectural pillars are maintained through automated policy guardrails.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

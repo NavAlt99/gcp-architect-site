@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infrastructure as Code: Terraform, GitOps &amp; Config Connector — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-042.html">← Topic page</a><span>6.3 · TOPIC-042-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-042-d6",
+  "title": "Infrastructure as Code: Terraform, GitOps & Config Connector \u2014 D6",
+  "topic_no": "042",
+  "roadmap_id": "6.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Infrastructure as Code must be managed with software engineering rigor: version control, automated static analysis, speculative planning on pull requests, and automated deployment with state locking.",
+  "groups": [
+    {
+      "id": "g-git-repo",
+      "label": "GitOps Version Control (GitHub)",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ci-runner",
+      "label": "Cloud Build Terraform Runner",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-cloud-state",
+      "label": "Encrypted Remote State & Lock Vault",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "git-pr-code",
+      "label": "Terraform PR (main.tf)",
+      "product": "Feature Branch Infrastructure",
+      "group": "g-git-repo",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Proposes new VPC peering and GKE Autopilot cluster configurations."
+    },
+    {
+      "id": "tf-sec-scan",
+      "label": "Policy as Code (checkov)",
+      "product": "Static Security Analysis",
+      "group": "g-git-repo",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Validates Terraform against CIS GCP Benchmark; fails PR if public IPs are enabled."
+    },
+    {
+      "id": "tf-plan-exec",
+      "label": "terraform plan Runner",
+      "product": "Speculative Execution",
+      "group": "g-ci-runner",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes exact delta: +3 to add, ~1 to change, 0 to destroy; comments on PR."
+    },
+    {
+      "id": "tf-apply-exec",
+      "label": "terraform apply (Merged)",
+      "product": "Least-Privilege Deployer SA",
+      "group": "g-ci-runner",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Applies validated infrastructure upon PR merge to main branch."
+    },
+    {
+      "id": "gcs-state-lock",
+      "label": "GCS Remote State Bucket",
+      "product": "Object Versioning + CMEK",
+      "group": "g-cloud-state",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Stores default.tfstate with object versioning and strong consistent locking."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "git-pr-code",
+      "to": "tf-sec-scan",
+      "label": "1. Run Security Linter on PR",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "tf-sec-scan",
+      "to": "tf-plan-exec",
+      "label": "2. Generate Speculative Plan",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "tf-plan-exec",
+      "to": "gcs-state-lock",
+      "label": "3. Read Remote State File",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "tf-apply-exec",
+      "to": "gcs-state-lock",
+      "label": "4. Acquire Lock & Write New State",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Speculative Verification",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Pull request triggers static security check and generates speculative plan using GCS state.",
+      "why_traversal": "Provides visual diff to reviewers before any cloud changes are committed.",
+      "protocol": "GitOps CI Automation",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Atomic Apply & State Locking",
+      "edges": [
+        "e4"
+      ],
+      "action": "Upon merge, Cloud Build acquires state lock, applies changes, and releases lock.",
+      "why_traversal": "Prevents concurrent execution conflicts and eliminates state corruption.",
+      "protocol": "Terraform GCS Backend",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "stuck-state-lock",
+      "label": "State Lock Contention Halts Pipeline",
+      "changes": {
+        "failedNodes": [
+          "gcs-state-lock"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "A previous runner crashed mid-execution, leaving lock.tflock orphaned in GCS.",
+      "diverted_path": "All subsequent CI runs fail with 'Error acquiring the state lock'.",
+      "blast_radius": "Infrastructure deployments blocked.",
+      "recovery": "Verify runner is terminated and execute 'terraform force-unlock <LOCK_ID>'."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "git-pr-code"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "git-pr-code"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

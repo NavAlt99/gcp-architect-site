@@ -1,0 +1,43 @@
+{
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "title": "Cloud City: High Availability by Layer: Compute, Network, Storage & Database",
+  "city_concept": "City Civil Defense & Multi-Grid Redundancy",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "A transformer explosion at the central power plant plunged the entire metropolitan transit, hospital, and water systems into darkness.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Planner Nora divided the city into three independent power districts connected by automated cross-tie switches.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When Substation B flooded, Substation A and C automatically doubled their output, keeping hospitals and traffic lights running seamlessly.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "High-voltage city grid switching takes mechanical relays and minutes; software-defined cloud routing balances load in seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

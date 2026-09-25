@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cheat Sheet: Compute Engine vs GKE vs Cloud Run vs Functions — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-055.html">← Topic page</a><span>cheat-1 · TOPIC-055-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-055-d5",
+  "title": "Cheat Sheet: Compute Engine vs GKE vs Cloud Run vs Functions \u2014 D5",
+  "topic_no": "055",
+  "roadmap_id": "cheat-1",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Mastering Google Cloud compute selection requires evaluating three core dimensions: abstraction level (IaaS vs CaaS vs FaaS), scaling characteristics (scale-to-zero vs pre-warmed), and protocol support (HTTP vs raw TCP/UDP).",
+  "groups": [
+    {
+      "id": "g-workload-profile",
+      "label": "Workload Architecture Constraints",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-serverless-tier",
+      "label": "Serverless Compute (Zero Ops)",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-infra-tier",
+      "label": "Container & Infrastructure Compute",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "req-stateless-http",
+      "label": "Stateless HTTP / gRPC Container?",
+      "product": "Containerized Request-Response",
+      "group": "g-workload-profile",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Standard microservices responding to web and mobile API requests."
+    },
+    {
+      "id": "req-heavy-infra",
+      "label": "Custom OS / Raw TCP / Bare Metal?",
+      "product": "Non-HTTP / Complex Cluster",
+      "group": "g-workload-profile",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Legacy Windows, kernel modules, high-performance computing, or game servers."
+    },
+    {
+      "id": "cloud-run-pick",
+      "label": "Cloud Run (First Choice)",
+      "product": "Fully Managed Serverless Container",
+      "group": "g-serverless-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Fastest time-to-market; scales from 0 to 1,000 instances; zero cluster maintenance."
+    },
+    {
+      "id": "cloud-fn-pick",
+      "label": "Cloud Functions (2nd Gen)",
+      "product": "Eventarc Single-Purpose Glue Code",
+      "group": "g-serverless-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Lightweight event handlers triggered by Cloud Storage uploads or Pub/Sub events."
+    },
+    {
+      "id": "gke-autopilot-pick",
+      "label": "GKE Autopilot",
+      "product": "Managed Kubernetes Orchestration",
+      "group": "g-infra-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Complex multi-container pods, stateful workloads, service mesh, and custom networking."
+    },
+    {
+      "id": "gce-mig-pick",
+      "label": "Compute Engine MIGs",
+      "product": "IaaS Virtual Machine Fleets",
+      "group": "g-infra-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Full root access, custom kernel extensions, Windows Server, and local NVMe SSDs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "req-stateless-http",
+      "to": "cloud-run-pick",
+      "label": "1. Yes -> Route to Cloud Run",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "req-stateless-http",
+      "to": "cloud-fn-pick",
+      "label": "2. Single Event Handler -> Cloud Functions",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "req-heavy-infra",
+      "to": "gke-autopilot-pick",
+      "label": "3. Complex Container Ecosystem -> GKE",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "req-heavy-infra",
+      "to": "gce-mig-pick",
+      "label": "4. Monolith / Custom OS -> Compute Engine",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Serverless-First Evaluation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Google recommends Cloud Run as default compute for all containerized HTTP services.",
+      "why_traversal": "Delivers highest developer velocity and lowest total cost of ownership.",
+      "protocol": "Decision Rubric",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Orchestration & Infrastructure Path",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Non-HTTP, multi-container, or stateful systems route to GKE Autopilot or Compute Engine.",
+      "why_traversal": "Provides granular infrastructure control when serverless constraints are breached.",
+      "protocol": "Infrastructure Sizing",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "wrong-compute-cost-penalty",
+      "label": "Selected Compute Engine for Idle Microservice",
+      "changes": {
+        "failedNodes": [
+          "gce-mig-pick"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Deployed low-traffic internal webhook on 3 always-on Compute Engine VMs.",
+      "diverted_path": "Cost $220/month for 15 requests/day; Cloud Run would have cost $0.00/month.",
+      "blast_radius": "Unnecessary ongoing cloud expenditure.",
+      "recovery": "Migrate stateless idle microservices to Cloud Run scale-to-zero."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "req-stateless-http"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "req-stateless-http"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

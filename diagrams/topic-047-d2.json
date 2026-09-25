@@ -1,0 +1,200 @@
+{
+  "id": "topic-047-d2",
+  "title": "Case Study: Mountkirk Games \u2014 Request & Control Flow",
+  "topic_no": "047",
+  "roadmap_id": "7.4b",
+  "kind": "flow",
+  "purpose": "Traces Matchmaking & Session Lifecycle Flow: player match request -> matchmaker allocation -> game server provisioning -> live gameplay -> match completion rewards.",
+  "routing_rationale": "Decoupling the stateless matchmaking engine from stateful game servers allows independent scaling during sudden viral game launch surges.",
+  "groups": [
+    {
+      "id": "g-player-match",
+      "label": "Matchmaking Client Ingress",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-agones-lifecycle",
+      "label": "Agones Pod Lifecycle Orchestration",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-rewards-commit",
+      "label": "Player Inventory & Leaderboard Commit",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "matchmaker-svc",
+      "label": "Open Match Service",
+      "product": "Cloud Run Matchmaker",
+      "group": "g-player-match",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Groups 100 players with similar skill rating (MMR) into match ticket."
+    },
+    {
+      "id": "agones-allocator",
+      "label": "Agones Allocator Service",
+      "product": "gRPC Fleet Allocator",
+      "group": "g-agones-lifecycle",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Finds Ready game pod; marks state as 'Allocated' in 15ms."
+    },
+    {
+      "id": "active-match-pod",
+      "label": "Active Game Session Pod",
+      "product": "Playing State (15 min)",
+      "group": "g-agones-lifecycle",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Hosts multiplayer match; streams game physics updates over UDP."
+    },
+    {
+      "id": "spanner-loot-commit",
+      "label": "Cloud Spanner Transaction",
+      "product": "Atomic In-App Purchase & XP",
+      "group": "g-rewards-commit",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Transacts player rewards and updates global leaderboard ranking atomically."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "matchmaker-svc",
+      "to": "agones-allocator",
+      "label": "1. Request Match Server Assignment",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "agones-allocator",
+      "to": "active-match-pod",
+      "label": "2. Transition Pod to 'Allocated'",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "active-match-pod",
+      "to": "spanner-loot-commit",
+      "label": "3. Commit Final Match Rewards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Game Pod Allocation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Open Match requests server; Agones transitions warm pod from Ready to Allocated.",
+      "why_traversal": "Provides instantaneous sub-second match connection for waiting players.",
+      "protocol": "gRPC Stream",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Atomic Economy Finalization",
+      "edges": [
+        "e3"
+      ],
+      "action": "Upon victory, match rewards write to Cloud Spanner with serializable isolation.",
+      "why_traversal": "Eliminates cheating and virtual inventory desynchronization.",
+      "protocol": "Spanner 2PC Commit",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "allocation-timeout-burst",
+      "label": "Fleet Pool Depleted (All Pods Allocated)",
+      "changes": {
+        "failedNodes": [
+          "agones-allocator"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Traffic spike exhausted pre-warmed Ready buffer; allocator returned 404.",
+      "diverted_path": "Matchmaking queue times increase from 2s to 45s.",
+      "blast_radius": "Delayed matchmaking for new players.",
+      "recovery": "Increase Agones Fleet bufferSize to maintain 25% pre-warmed Ready pods during peak hours."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "matchmaker-svc"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "matchmaker-svc"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Matchmaking & Session Lifecycle Flow: player match request -> matchmaker allocation -> game server provisioning -> live gameplay -> match completion rewards."
+}

@@ -1,0 +1,190 @@
+{
+  "id": "topic-053-d3",
+  "title": "Data Lake, Lakehouse & BigLake \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "053",
+  "roadmap_id": "D.3",
+  "kind": "failure",
+  "purpose": "Simulates Dataplex Data Quality & Quarantine Pipeline: automated data profiling catches 15% missing null values and diverts dirty data into quarantine bucket.",
+  "routing_rationale": "Dataplex automated data quality tasks inspect analytical datasets before downstream consumption, quarantining bad data to prevent corrupting executive dashboards.",
+  "groups": [
+    {
+      "id": "g-raw-land-zone",
+      "label": "Incoming Data Batch Landing Zone",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-dataplex-guard",
+      "label": "Dataplex Quality & Quarantine Engine",
+      "type": "organization",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "corrupted-csv-batch",
+      "label": "Corrupted Vendor CSV Upload",
+      "product": "Null Customer_ID in 15% of Rows",
+      "group": "g-raw-land-zone",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Third-party vendor uploaded daily sales batch missing primary key values."
+    },
+    {
+      "id": "dataplex-profiler",
+      "label": "Dataplex Auto Data Profiling",
+      "product": "Quality Rule: Customer_ID NOT NULL",
+      "group": "g-raw-land-zone",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Profiles batch; detects 15% null values violating quality rule DQ_089."
+    },
+    {
+      "id": "quarantine-bucket",
+      "label": "Quarantine Bucket (GCS)",
+      "product": "gs://analytics-lake/quarantine/",
+      "group": "g-dataplex-guard",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Isolates rejected records and alerts vendor data engineering team in Slack."
+    },
+    {
+      "id": "clean-lakehouse-table",
+      "label": "Clean Production Lakehouse",
+      "product": "100% Validated Clean Data",
+      "group": "g-dataplex-guard",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Downstream executive dashboards only ingest 100% verified clean data."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "corrupted-csv-batch",
+      "to": "dataplex-profiler",
+      "label": "1. Scan Upload for Quality Rules",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "dataplex-profiler",
+      "to": "quarantine-bucket",
+      "label": "2. Divert Corrupted Records to Quarantine",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataplex-profiler",
+      "to": "clean-lakehouse-table",
+      "label": "3. Promote Clean Verified Records",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Quality Profiling",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Dataplex inspects rows against declarative rules and catches 15% null violations.",
+      "why_traversal": "Prevents dirty data from contaminating downstream analytics.",
+      "protocol": "Dataplex Data Quality Task",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Quarantine & Clean Ingestion",
+      "edges": [
+        "e3"
+      ],
+      "action": "Diverts corrupt rows to quarantine while allowing valid records to proceed to BigQuery.",
+      "why_traversal": "Maintains pipeline flow without halting entire enterprise data ingestion.",
+      "protocol": "Cloud Storage Object Routing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unquarantined-bad-data",
+      "label": "Dirty Data Corrupts Executive Revenue Dashboard",
+      "changes": {
+        "failedNodes": [
+          "clean-lakehouse-table"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Quality check was configured in 'alert only' mode without active quarantine routing.",
+      "diverted_path": "Corrupt null records loaded into production; revenue reports showed 15% false dip.",
+      "blast_radius": "C-suite alarmed by false financial drop.",
+      "recovery": "Enable automated quarantine routing in Dataplex quality task definitions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "corrupted-csv-batch"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "corrupted-csv-batch"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Dataplex Data Quality & Quarantine Pipeline: automated data profiling catches 15% missing null values and diverts dirty data into quarantine bucket."
+}

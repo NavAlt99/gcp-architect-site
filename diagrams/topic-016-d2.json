@@ -1,0 +1,233 @@
+{
+  "id": "topic-016-d2",
+  "title": "Virtual Private Cloud (VPC) Networking & Security \u2014 Request & Control Flow",
+  "topic_no": "016",
+  "roadmap_id": "2.4",
+  "kind": "flow",
+  "purpose": "Traces private VM outbound internet egress: from private RFC 1918 compute instance through Cloud NAT gateway to external SaaS APIs.",
+  "routing_rationale": "Cloud NAT provides managed outbound source IP translation, allowing private VMs to download software updates without exposing inbound attack surfaces.",
+  "groups": [
+    {
+      "id": "g-client-vm",
+      "label": "Private Subnet (us-central1-a)",
+      "type": "subnet",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-andromeda-core",
+      "label": "VPC Andromeda Routing Mesh",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-ext-gateway",
+      "label": "Internet Gateway & External SaaS",
+      "type": "external",
+      "scope": "external",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "private-vm",
+      "label": "Private VM (10.1.0.5)",
+      "product": "Compute Instance",
+      "group": "g-client-vm",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Application instance without external public IP address."
+    },
+    {
+      "id": "firewall-engine",
+      "label": "VPC Firewall Egress Rule",
+      "product": "Hierarchical Firewall",
+      "group": "g-client-vm",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Evaluates allow-egress-to-saas rule (TCP 443 priority 1000)."
+    },
+    {
+      "id": "andromeda-sw",
+      "label": "Andromeda vSwitch",
+      "product": "VPC Virtual Switch",
+      "group": "g-andromeda-core",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Encapsulates packet; consults VPC route table for 0.0.0.0/0 default route."
+    },
+    {
+      "id": "nat-engine",
+      "label": "Cloud NAT Gateway",
+      "product": "NAT IP 34.120.80.5",
+      "group": "g-andromeda-core",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Replaces private source IP and port with public NAT IP and allocated port."
+    },
+    {
+      "id": "saas-endpoint",
+      "label": "External SaaS Service",
+      "product": "api.stripe.com",
+      "group": "g-ext-gateway",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Receives authorized API call originating from verified Cloud NAT static IP."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "private-vm",
+      "to": "firewall-engine",
+      "label": "1. Check Egress Firewall",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "private-vm",
+      "to": "andromeda-sw",
+      "label": "2. Forward Packet to vSwitch",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "andromeda-sw",
+      "to": "nat-engine",
+      "label": "3. Match Default Internet Route",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "nat-engine",
+      "to": "saas-endpoint",
+      "label": "4. SNAT Egress to Public Internet",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Firewall Rule Validation",
+      "edges": [
+        "e1"
+      ],
+      "action": "VPC firewall verifies outbound TCP port 443 is permitted.",
+      "why_traversal": "Egress firewall rules enforce defense-in-depth against data exfiltration.",
+      "protocol": "Stateful Firewall Inspection",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Route Table Lookup",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Andromeda vSwitch matches 0.0.0.0/0 next-hop default internet gateway.",
+      "why_traversal": "Directs outbound packet to Cloud NAT for source address translation.",
+      "protocol": "Internal VPC Route",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "SNAT Translation & Egress",
+      "edges": [
+        "e4"
+      ],
+      "action": "Cloud NAT allocates port 12048 and transmits packet to api.stripe.com.",
+      "why_traversal": "Vendor sees static Google Cloud IP; replies return along stateful reverse mapping.",
+      "protocol": "HTTPS TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "egress-firewall-deny",
+      "label": "Egress Firewall Deny Rule Triggered",
+      "changes": {
+        "failedNodes": [
+          "firewall-engine"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Default egress deny rule blocked unauthorized outbound port 22 / 8080.",
+      "diverted_path": "Packet dropped silently at vNIC boundary; VPC Flow Log captures denial.",
+      "blast_radius": "Only unauthorized ports blocked; approved port 443 traffic continues.",
+      "recovery": "Create explicit egress firewall rule allowing target destination CIDR and port."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "private-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "private-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces private VM outbound internet egress: from private RFC 1918 compute instance through Cloud NAT gateway to external SaaS APIs."
+}

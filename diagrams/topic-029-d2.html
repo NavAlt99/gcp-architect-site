@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SRE Concepts: SLIs, SLOs &amp; Error Budgets — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-029.html">← Topic page</a><span>4.2 · TOPIC-029-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-029-d2",
+  "title": "SRE Concepts: SLIs, SLOs & Error Budgets \u2014 Request & Control Flow",
+  "topic_no": "029",
+  "roadmap_id": "4.2",
+  "kind": "flow",
+  "purpose": "Traces Multi-Window Multi-Burn-Rate Alerting: how SRE alerting detects both rapid catastrophic burn (14x burn rate) and slow chronic leakage (2x burn rate) without false alarms.",
+  "routing_rationale": "Using dual time windows (1-hour short window + 6-hour long window) prevents alert fatigue from transient spikes while alerting on genuine budget exhaustion.",
+  "groups": [
+    {
+      "id": "g-metric-stream",
+      "label": "Real-Time Telemetry Feed",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-burn-eval",
+      "label": "Cloud Monitoring Burn Rate Evaluator",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-action-tier",
+      "label": "SRE Incident Response Routing",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "traffic-stream",
+      "label": "Live Production Traffic",
+      "product": "15,000 QPS Telemetry",
+      "group": "g-metric-stream",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Emits HTTP status codes and response latencies to Cloud Monitoring."
+    },
+    {
+      "id": "error-burst",
+      "label": "500 Error Spike",
+      "product": "5% Failure Rate Surge",
+      "group": "g-metric-stream",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Sudden surge in HTTP 500 errors burns error budget rapidly."
+    },
+    {
+      "id": "short-window",
+      "label": "Short Window (1h) 14x Burn",
+      "product": "Consumes 2% Budget / Hour",
+      "group": "g-burn-eval",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Quickly detects urgent outages that would consume entire monthly budget in 50 hours."
+    },
+    {
+      "id": "long-window",
+      "label": "Long Window (6h) 14x Burn",
+      "product": "Confirms Sustained Breach",
+      "group": "g-burn-eval",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Verifies degradation is persistent rather than a 30-second transient blip."
+    },
+    {
+      "id": "pagerduty-critical",
+      "label": "PagerDuty P1 Escalation",
+      "product": "Immediate Page (SRE Primary)",
+      "group": "g-action-tier",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Fires high-urgency page to primary on-call SRE only when BOTH windows breach."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "traffic-stream",
+      "to": "error-burst",
+      "label": "1. Sudden Outage Influx",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "error-burst",
+      "to": "short-window",
+      "label": "2. Compute 1-Hour Burn Rate",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "error-burst",
+      "to": "long-window",
+      "label": "3. Compute 6-Hour Burn Rate",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "short-window",
+      "to": "pagerduty-critical",
+      "label": "4. Condition A: 1h Burn > 14x",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "long-window",
+      "to": "pagerduty-critical",
+      "label": "5. Condition B: 6h Burn > 14x -> Alert!",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Dual Window Analysis",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Cloud Monitoring MQL evaluates both short-window and long-window error rates simultaneously.",
+      "why_traversal": "Requires sustained failure across both windows before waking engineers up at night.",
+      "protocol": "MQL Alert Policy",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Targeted Incident Dispatch",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Both conditions met; PagerDuty wakes on-call SRE with direct links to dashboard.",
+      "why_traversal": "Eliminates alert fatigue and gives 99% confidence that incident is authentic.",
+      "protocol": "PagerDuty Integration API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "transient-spike-dampening",
+      "label": "Transient Blip Suppressed",
+      "changes": {
+        "failedNodes": [
+          "long-window"
+        ],
+        "failedEdges": [
+          "e5"
+        ]
+      },
+      "root_cause": "A 45-second network glitch caused short-window alert to fire, but long-window remained below threshold.",
+      "diverted_path": "No page sent; on-call engineer sleep protected.",
+      "blast_radius": "Zero false pages.",
+      "recovery": "Dual-window logic successfully absorbed transient blip as designed."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "traffic-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "traffic-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Multi-Window Multi-Burn-Rate Alerting: how SRE alerting detects both rapid catastrophic burn (14x burn rate) and slow chronic leakage (2x burn rate) without false alarms."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

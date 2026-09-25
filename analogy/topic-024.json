@@ -1,0 +1,43 @@
+{
+  "topic_no": "024",
+  "roadmap_id": "3.3",
+  "title": "Cloud City: Reference Architectures & Enterprise Design Patterns",
+  "city_concept": "City Hub, Spoke & Ring Highway Architecture",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Every shop in Brightloaf tried to route delivery trucks directly through the narrow town square, causing complete gridlock.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Planner Nora designed an outer beltway (Global Load Balancer) and neighborhood logistics hubs (Microservice pods with local delivery vans).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a main bridge collapsed, automated traffic lights diverted trucks to the eastern bypass without a single package being dropped.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical city highway expansion takes a decade; software traffic routing topologies can be reconfigured in seconds via software-defined DNS and BGP.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

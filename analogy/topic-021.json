@@ -1,0 +1,43 @@
+{
+  "topic_no": "021",
+  "roadmap_id": "2.9",
+  "title": "Cloud City: Messaging and Integration: Pub/Sub, Cloud Tasks, and Eventarc",
+  "city_concept": "City Postal Sorting Facility & Pneumatic Tube Dispatch",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "When a customer ordered bread, the baker had to sprint across town to the flour mill, wait for grinding, sprint to the packaging plant, and sprint back. The store was paralyzed.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian installed a Central Pneumatic Tube Mail Dispatch (Cloud Pub/Sub). When an order is placed, a dispatch capsule drops into the system.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "One delivery address had an invalid street name. After 5 failed delivery attempts, the letter was filed in the Lost Letter Registry (Dead-Letter Topic).",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical mail, letters get lost or waterlogged; Cloud Pub/Sub guarantees at-least-once delivery with global durability.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

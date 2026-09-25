@@ -1,0 +1,218 @@
+{
+  "id": "topic-059-d2",
+  "title": "Storage & Messaging Decision Cheat Sheet \u2014 Request & Control Flow",
+  "topic_no": "059",
+  "roadmap_id": "cheat-5",
+  "kind": "flow",
+  "purpose": "Traces Messaging Selection Flow: Pub/Sub vs Cloud Tasks vs Pub/Sub Lite evaluated on fan-out, rate-limiting, dedup, and message ordering requirements.",
+  "routing_rationale": "Choosing between Pub/Sub and Cloud Tasks is simple: Pub/Sub for many-to-many broadcast streaming; Cloud Tasks for point-to-point rate-limited task execution.",
+  "groups": [
+    {
+      "id": "g-msg-input",
+      "label": "Step 1: Messaging Pattern Requirement",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-delivery-ctl",
+      "label": "Step 2: Delivery & Rate-Limiting Controls",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-msg-winner",
+      "label": "Step 3: Optimal Messaging Technology",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "q-fanout-pattern",
+      "label": "Pattern: 1 Publisher, 5 Independent Services",
+      "product": "Many-to-Many Fan-Out",
+      "group": "g-msg-input",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Order created event must be consumed independently by Billing, Inventory, and Shipping."
+    },
+    {
+      "id": "q-rate-limit-pattern",
+      "label": "Pattern: Protect Legacy Backend (Max 20 req/s)",
+      "product": "Explicit Rate-Limiting",
+      "group": "g-msg-input",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Must throttle requests so legacy database is not overwhelmed."
+    },
+    {
+      "id": "match-pubsub",
+      "label": "Selected: Cloud Pub/Sub",
+      "product": "Topics + Multiple Subscriptions",
+      "group": "g-delivery-ctl",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Each downstream microservice has independent subscription and ACK state."
+    },
+    {
+      "id": "match-tasks",
+      "label": "Selected: Cloud Tasks",
+      "product": "Queue Dispatch Rate: 20/sec",
+      "group": "g-delivery-ctl",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Guarantees dispatch rate never exceeds 20 requests/sec with exponential retry backoff."
+    },
+    {
+      "id": "winner-messaging",
+      "label": "Architectural Synergy",
+      "product": "Pub/Sub Ingress + Tasks Dispatch",
+      "group": "g-msg-winner",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Combines broadcast fan-out with protective downstream rate-limiting."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "q-fanout-pattern",
+      "to": "match-pubsub",
+      "label": "1. Fan-Out -> Route to Pub/Sub",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "q-rate-limit-pattern",
+      "to": "match-tasks",
+      "label": "2. Rate Limiting -> Route to Cloud Tasks",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "match-pubsub",
+      "to": "winner-messaging",
+      "label": "3. Broadcast Notification",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "match-tasks",
+      "to": "winner-messaging",
+      "label": "4. Throttled Downstream Invocation",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Pattern Evaluation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Directs broadcast requirements to Pub/Sub and rate-throttling to Cloud Tasks.",
+      "why_traversal": "Applies the exact messaging service designed for each architectural pattern.",
+      "protocol": "Decision Filter",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Integrated Delivery",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Combines both systems for end-to-end reliability and downstream database protection.",
+      "why_traversal": "Prevents downstream microservices from crashing under upstream surges.",
+      "protocol": "Pub/Sub + Tasks Orchestration",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pubsub-flood-crashes-db",
+      "label": "Pub/Sub Subscriber Floods Legacy Database",
+      "changes": {
+        "failedNodes": [
+          "match-pubsub"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Used Pub/Sub without rate limiting to call legacy database; 50,000 concurrent push deliveries crashed DB.",
+      "diverted_path": "Database offline for 2 hours.",
+      "blast_radius": "Full system crash.",
+      "recovery": "Introduce Cloud Tasks or Pull subscriber with concurrency throttling in front of fragile databases."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "q-fanout-pattern"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "q-fanout-pattern"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Messaging Selection Flow: Pub/Sub vs Cloud Tasks vs Pub/Sub Lite evaluated on fan-out, rate-limiting, dedup, and message ordering requirements."
+}

@@ -1,0 +1,222 @@
+{
+  "id": "topic-004-d3",
+  "title": "Stateless vs Stateful Application Failure Modes",
+  "topic_no": "004",
+  "roadmap_id": "0.4",
+  "kind": "failure",
+  "groups": [
+    {
+      "id": "g-stateless",
+      "label": "Stateless Tier (Cloud Run / MIG)",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    },
+    {
+      "id": "g-stateful",
+      "label": "Stateful Tier (Database / Storage)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app1",
+      "label": "Web Instance (Stateless)",
+      "product": "Compute Engine",
+      "group": "g-stateless",
+      "plane": "data",
+      "x": 160,
+      "y": 140,
+      "detail": "Stores no local sessions or uploads. Can be terminated at any second."
+    },
+    {
+      "id": "app2",
+      "label": "Replacement Instance",
+      "product": "Compute Engine",
+      "group": "g-stateless",
+      "plane": "data",
+      "x": 160,
+      "y": 280,
+      "detail": "Autohealed instantly; takes over traffic seamlessly."
+    },
+    {
+      "id": "bad-db",
+      "label": "Monolithic Local DB",
+      "product": "PostgreSQL on Root Disk",
+      "group": "g-stateful",
+      "plane": "data",
+      "x": 680,
+      "y": 140,
+      "detail": "Stores database state on non-replicated local filesystem."
+    },
+    {
+      "id": "cloud-sql",
+      "label": "Cloud SQL HA Standby",
+      "product": "Cloud SQL",
+      "group": "g-stateful",
+      "plane": "data",
+      "x": 680,
+      "y": 280,
+      "detail": "Synchronous regional replication with automated sub-minute failover."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-crash-heal",
+      "from": "app1",
+      "to": "app2",
+      "label": "Instance Dies -> Autoheal",
+      "plane": "control"
+    },
+    {
+      "id": "e-fail-state",
+      "from": "app1",
+      "to": "bad-db",
+      "label": "Write to Local Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e-safe-state",
+      "from": "app2",
+      "to": "cloud-sql",
+      "label": "Externalized State",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Steady-State Health Monitoring",
+      "edges": [
+        "e-crash-heal"
+      ],
+      "action": "Health check probe sends heartbeat polling requests every 5 seconds to Web Instance (Stateless).",
+      "why_traversal": "Continuous active probing verifies that the instance is not merely powered on, but capable of processing application requests and database queries.",
+      "protocol": "HTTP / TCP Port 8080",
+      "plane": "Control Plane",
+      "narration": "Hop 1: Health check probe continuously validates Web Instance (Stateless) response codes.",
+      "check": {
+        "commands": "gcloud compute health-checks describe hc-app-probe",
+        "metrics": "compute.googleapis.com/health_check/probe_count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Outage Trigger & Anomaly Detection",
+      "edges": [
+        "e-crash-heal"
+      ],
+      "action": "Failure Trigger: Web Instance (Stateless) encounters threshold saturation or crash. Health check records 3 consecutive timeouts.",
+      "why_traversal": "Multi-probe threshold prevents transient network blips from triggering premature, expensive failovers.",
+      "protocol": "Internal Control Signal",
+      "plane": "Control Plane",
+      "narration": "Hop 2: Failure occurs on Web Instance (Stateless). Probe signals unhealthy threshold breach to Load Balancer.",
+      "check": {
+        "commands": "gcloud compute health-checks list",
+        "metrics": "health/is_healthy = 0"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated Failover & Traffic Eviction",
+      "edges": [
+        "e-fail-state"
+      ],
+      "action": "Control plane withdraws Web Instance (Stateless) from forwarding table and redirects incoming traffic to standby unit Monolithic Local DB.",
+      "why_traversal": "Traffic reroutes in under 5 seconds across Google Andromeda SDN without DNS TTL delay or client reconfiguration.",
+      "protocol": "SDN Flow Table Update",
+      "plane": "Control Plane",
+      "narration": "Hop 3: Load balancer evicts Web Instance (Stateless) and reroutes active traffic to Monolithic Local DB.",
+      "check": {
+        "commands": "gcloud compute backend-services get-health bs-app",
+        "logs": "Instance marked UNHEALTHY; traffic diverted"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Capacity Recovery & Auto-Healing",
+      "edges": [
+        "e-safe-state"
+      ],
+      "action": "Auto-Healing: Managed Instance Group recreates failed instance and synchronizes state with Monolithic Local DB.",
+      "why_traversal": "MIG auto-healing restores full multi-zone redundancy, returning the cluster to balanced multi-active serving capacity.",
+      "protocol": "Instance Lifecycle Re-creation",
+      "plane": "Data Plane",
+      "narration": "Hop 4: Auto-healing restores capacity; Monolithic Local DB serves traffic while new unit initializes.",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "logs": "Auto-healing repair completed"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "zonal-blackout",
+      "label": "Zone us-central1-a Complete Outage",
+      "changes": {
+        "failedNodes": [
+          "app1",
+          "bad-db"
+        ]
+      },
+      "narration": "Datacenter zone loses power. Stateless nodes seamlessly regenerate in Zone B; local database suffers total downtime until zone recovers.",
+      "check": {
+        "command": "gcloud compute instances list",
+        "metric": "Zone outage status alert"
+      },
+      "root_cause": "Datacenter zone loses power. Stateless nodes seamlessly regenerate in Zone B; local database suffers total downtime until zone recovers.",
+      "diverted_path": "Normal request path is interrupted at Web Instance (Stateless), Monolithic Local DB. Downstream components receive timeout errors or drop packets without acknowledgment, forcing client retries or failover redirection.",
+      "blast_radius": "All user sessions dependent on Web Instance (Stateless), Monolithic Local DB experience elevated latency, HTTP 5xx errors, or severed connections.",
+      "recovery": "Deploy multi-region Anycast failover, cross-zone active-standby redundancy, automated health check eviction, and exponential backoff circuit breakers."
+    },
+    {
+      "id": "transient-network-drop",
+      "label": "Replacement Instance Network Degradation",
+      "changes": {
+        "failedNodes": [
+          "app2"
+        ]
+      },
+      "root_cause": "Underlying Andromeda vSwitch queue saturation or hypervisor host maintenance causing 40% packet loss on Replacement Instance.",
+      "diverted_path": "Incoming TCP streams to Replacement Instance experience high retransmission rates and latency spikes up to 4500ms; gateway circuit breaker opens to shed load.",
+      "blast_radius": "Transactions processed by Replacement Instance slow down significantly; client applications encounter timeout errors.",
+      "recovery": "Configure client-side exponential backoff with full jitter; deploy Regional Managed Instance Groups with auto-healing and minimum 3-zone distribution.",
+      "narration": "Packet loss and connection timeouts detected on Replacement Instance. Circuit breaker trips to protect cluster.",
+      "check": {
+        "command": "gcloud compute instances describe app2 --format='yaml(status)'",
+        "metric": "compute.googleapis.com/instance/network/dropped_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app1"
+        ],
+        "failedEdges": [
+          "e-crash-heal"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "purpose": "Analyzes failure dynamics between stateless application tiers and stateful persistence systems, demonstrating graceful crash recovery versus split-brain data corruption risks.",
+  "routing_rationale": "Stateless services can be evicted and recreated immediately across zones; stateful databases require quorum consensus (Paxos/Raft) and synchronous replication to survive node failures safely.",
+  "summary": "Analyzes failure dynamics between stateless application tiers and stateful persistence systems, demonstrating graceful crash recovery versus split-brain data corruption risks."
+}

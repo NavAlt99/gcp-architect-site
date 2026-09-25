@@ -1,0 +1,190 @@
+{
+  "id": "topic-058-d3",
+  "title": "Hybrid Connectivity Decision Cheat Sheet \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "058",
+  "roadmap_id": "cheat-4",
+  "kind": "failure",
+  "purpose": "Simulates Major Metro Facility Blackout: Metro 1 physical colocation experiences catastrophic power failure; BGP withdraws routes and shifts traffic to Metro 2 in 2.4 seconds.",
+  "routing_rationale": "Dynamic BGP route withdrawal ensures seamless hybrid failover during major telecommunications infrastructure disruptions.",
+  "groups": [
+    {
+      "id": "g-blackout-metro",
+      "label": "Metro 1 Colocation (Total Power Loss)",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-surviving-metro",
+      "label": "Metro 2 Colocation & Cloud Router Failover",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dead-colo-1",
+      "label": "Metro 1 Circuits (Dead)",
+      "product": "Substation Transformer Fire",
+      "group": "g-blackout-metro",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Entire Ashburn colocation facility loses municipal and generator power."
+    },
+    {
+      "id": "bgp-keepalive-fail",
+      "label": "BGP Keepalive Timeout",
+      "product": "BGP Peer Down (Hold Time = 3s)",
+      "group": "g-blackout-metro",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Cloud Router A detects missed BGP keepalives and withdraws Metro 1 routes."
+    },
+    {
+      "id": "metro-2-circuits",
+      "label": "Metro 2 Circuits (Active)",
+      "product": "Reston Secondary 10G Link",
+      "group": "g-surviving-metro",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Absorbs 100% of hybrid traffic with zero packet loss."
+    },
+    {
+      "id": "uninterrupted-hybrid",
+      "label": "Continuous Hybrid Workloads",
+      "product": "0 Dropped Database Transactions",
+      "group": "g-surviving-metro",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Core enterprise database sync continues uninterrupted across Google backbone."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dead-colo-1",
+      "to": "bgp-keepalive-fail",
+      "label": "1. Loss of Physical Carrier Signal",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "bgp-keepalive-fail",
+      "to": "metro-2-circuits",
+      "label": "2. BGP Reroutes Traffic to Metro 2",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "metro-2-circuits",
+      "to": "uninterrupted-hybrid",
+      "label": "3. Transmit 100% of Traffic via Reston",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "BGP Route Withdrawal",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BGP session times out in 3 seconds; Cloud Router diverts packets to Metro 2.",
+      "why_traversal": "Demonstrates why dynamic BGP routing is required for enterprise resilience.",
+      "protocol": "BGP Route Withdrawal",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Zero-Loss Failover",
+      "edges": [
+        "e3"
+      ],
+      "action": "Metro 2 carries full production load; enterprise applications experience zero disruption.",
+      "why_traversal": "Proves the resilience of the 99.99% SLA dual-metro architecture.",
+      "protocol": "802.1q VLAN Failover",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "static-routing-blackhole",
+      "label": "Static Route Configuration Blackholes Traffic",
+      "changes": {
+        "failedNodes": [
+          "bgp-keepalive-fail"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Team configured static routes instead of dynamic BGP.",
+      "diverted_path": "Packets continued sending to dead link; all hybrid traffic dropped.",
+      "blast_radius": "Total on-premise to cloud hybrid outage.",
+      "recovery": "Never use static routes for high-availability hybrid cloud networks; enforce dynamic BGP."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dead-colo-1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dead-colo-1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Major Metro Facility Blackout: Metro 1 physical colocation experiences catastrophic power failure; BGP withdraws routes and shifts traffic to Metro 2 in 2.4 seconds."
+}

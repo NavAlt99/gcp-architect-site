@@ -1,0 +1,243 @@
+{
+  "id": "topic-021-d1",
+  "title": "Messaging and Integration: Pub/Sub, Cloud Tasks, and Eventarc \u2014 Scope & Architecture Map",
+  "topic_no": "021",
+  "roadmap_id": "2.9",
+  "kind": "map",
+  "purpose": "Maps Messaging and Integration architecture: details Cloud Pub/Sub at-least-once streaming, Dead-Letter Topics, and Cloud Tasks rate-limiting queues.",
+  "routing_rationale": "Asynchronous messaging decouples producers from consumers. Pub/Sub provides massively scalable broadcast messaging, while Cloud Tasks guarantees rate-controlled dispatch.",
+  "groups": [
+    {
+      "id": "g-producers",
+      "label": "Event Producers & Ingestion",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-pubsub-bus",
+      "label": "Cloud Pub/Sub Asynchronous Message Fabric",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-consumers",
+      "label": "Subscribers & Dead-Letter Isolation",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "order-service",
+      "label": "Order Service Producer",
+      "product": "App Engine / Cloud Run",
+      "group": "g-producers",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Publishes order.created event with JSON payload to orders-topic."
+    },
+    {
+      "id": "cloud-tasks",
+      "label": "Cloud Tasks Rate Queue",
+      "product": "cloudtasks.googleapis.com",
+      "group": "g-producers",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Rate-limits transactional calls to 50 req/sec to protect downstream legacy ERP."
+    },
+    {
+      "id": "orders-topic",
+      "label": "Pub/Sub Topic (Multi-Zone)",
+      "product": "Global Pub/Sub Topic",
+      "group": "g-pubsub-bus",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Replicates message synchronously across 3 zones before returning publish ACK."
+    },
+    {
+      "id": "dlq-topic",
+      "label": "Dead-Letter Topic (DLQ)",
+      "product": "orders-dead-letter",
+      "group": "g-pubsub-bus",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Captures poisoned messages after 5 consecutive subscriber processing failures."
+    },
+    {
+      "id": "billing-sub",
+      "label": "Billing Worker Subscriber",
+      "product": "Push/Pull Subscription",
+      "group": "g-consumers",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Worker fleet pulling messages, processing credit cards, and sending ACK."
+    },
+    {
+      "id": "fraud-sub",
+      "label": "Fraud Detection Subscriber",
+      "product": "Broadcast Fanout Sub",
+      "group": "g-consumers",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Independent subscriber receiving duplicate stream in parallel without contention."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "order-service",
+      "to": "orders-topic",
+      "label": "1. Publish Message (Sync Replicated)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "orders-topic",
+      "to": "billing-sub",
+      "label": "2a. Fanout Subscription A",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "orders-topic",
+      "to": "fraud-sub",
+      "label": "2b. Fanout Subscription B",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "billing-sub",
+      "to": "dlq-topic",
+      "label": "3. Forward Poison Messages to DLQ",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Synchronous Topic Publication",
+      "edges": [
+        "e1"
+      ],
+      "action": "Producer publishes event; Pub/Sub replicates across zones and returns messageID.",
+      "why_traversal": "Multi-zone durability guarantees zero lost messages even if datacenter loses power.",
+      "protocol": "Pub/Sub gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "1-to-Many Fanout",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Pub/Sub delivers identical message copies to Billing and Fraud subscriptions.",
+      "why_traversal": "Decoupled fanout allows adding new consumers without modifying producer code.",
+      "protocol": "StreamingPull / HTTP Push",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Dead-Letter Quarantining",
+      "edges": [
+        "e4"
+      ],
+      "action": "Unprocessable poisoned message fails 5 times; subscription routes it to DLQ topic.",
+      "why_traversal": "Prevents malformed messages from blocking valid transactions in subscriber queue.",
+      "protocol": "DLQ Auto-Forward",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "subscriber-crash",
+      "label": "Subscriber Backlog Accumulation",
+      "changes": {
+        "failedNodes": [
+          "billing-sub"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Downstream payment gateway outage causes Billing Worker pods to crash repeatedly.",
+      "diverted_path": "Messages accumulate in Pub/Sub subscription storage (up to 7-day retention).",
+      "blast_radius": "Order confirmation emails delayed; zero message loss.",
+      "recovery": "Deploy additional subscriber worker pods; messages process rapidly once gateway recovers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "order-service"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "order-service"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Maps Messaging and Integration architecture: details Cloud Pub/Sub at-least-once streaming, Dead-Letter Topics, and Cloud Tasks rate-limiting queues."
+}

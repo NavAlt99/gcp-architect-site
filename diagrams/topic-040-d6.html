@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cost Optimization &amp; FinOps: CUDs, Spot VMs &amp; Billing Analytics — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-040.html">← Topic page</a><span>6.1 · TOPIC-040-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-040-d6",
+  "title": "Cost Optimization & FinOps: CUDs, Spot VMs & Billing Analytics \u2014 D6",
+  "topic_no": "040",
+  "roadmap_id": "6.1",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "FinOps aligns cloud spending with business value; organizations must combine rate optimization (CUDs, Spot VMs) with usage optimization (Recommender rightsizing, auto-sleep dev environments).",
+  "groups": [
+    {
+      "id": "g-billing-export",
+      "label": "Billing Account & BigQuery Data Sink",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-finops-analysis",
+      "label": "FinOps Analytics & CUD Allocation",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-cost-controls",
+      "label": "Automated Cost Controls & Guardrails",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "detailed-billing",
+      "label": "Detailed Cost BigQuery Export",
+      "product": "Hourly Resource Billing Data",
+      "group": "g-billing-export",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Exports granular resource-level cost, SKU, project ID, and label telemetry."
+    },
+    {
+      "id": "budget-alert-pubsub",
+      "label": "Cloud Billing Budget Alerts",
+      "product": "Thresholds: 50%, 80%, 100%",
+      "group": "g-billing-export",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Sends automated JSON notifications when actual or forecasted spend breaches caps."
+    },
+    {
+      "id": "cuds-manager",
+      "label": "Committed Use Discounts (CUDs)",
+      "product": "3-Year Flexible Spend Commits",
+      "group": "g-finops-analysis",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Applies 57% compute discount across baseline VMs across all regions."
+    },
+    {
+      "id": "recommender-api",
+      "label": "Active Assist Recommender",
+      "product": "Idle VM & Sizing Suggestions",
+      "group": "g-finops-analysis",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Identifies overprovisioned instances and unattended disks; estimates $4,200/mo savings."
+    },
+    {
+      "id": "budget-kill-fn",
+      "label": "Programmatic Budget Enforcer",
+      "product": "Cloud Functions Auto-Cap",
+      "group": "g-cost-controls",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Disables billing or stops non-production dev instances when budget exceeds 100%."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "detailed-billing",
+      "to": "cuds-manager",
+      "label": "1. Analyze Baseline Compute Spend",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "detailed-billing",
+      "to": "recommender-api",
+      "label": "2. Scan for Idle/Over-Sized VMs",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "budget-alert-pubsub",
+      "to": "budget-kill-fn",
+      "label": "3. Ingest Budget Breach Notification",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "budget-kill-fn",
+      "to": "cuds-manager",
+      "label": "4. Verify Savings vs Commits",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Billing Ingestion & Optimization Analysis",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BigQuery analyzes billing data; Recommender identifies over-provisioned VMs.",
+      "why_traversal": "Provides granular cost attribution by team, environment, and service.",
+      "protocol": "BigQuery SQL Export",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Budget Action",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Billing alert fires Pub/Sub message; Cloud Function shuts down idle dev environments.",
+      "why_traversal": "Enforces strict financial guardrails to prevent surprise cloud bills.",
+      "protocol": "Eventarc / Cloud Functions",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "over-commit-cud-trap",
+      "label": "Over-Committed Resource CUD Trap",
+      "changes": {
+        "failedNodes": [
+          "cuds-manager"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Purchased 3-year N1 resource-based CUDs right before migrating architecture to N2D/C3.",
+      "diverted_path": "Company pays for unused N1 capacity for 2.5 remaining years.",
+      "blast_radius": "$80,000 in un-offset cloud spend.",
+      "recovery": "Prioritize Flexible Spend-Based CUDs which apply automatically across all VM families and regions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "detailed-billing"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "detailed-billing"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

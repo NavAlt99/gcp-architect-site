@@ -1,0 +1,43 @@
+{
+  "topic_no": "031",
+  "roadmap_id": "4.4",
+  "title": "Cloud City: Disaster Recovery Patterns: RTO, RPO & Multi-Region Strategies",
+  "city_concept": "City Evacuation Drills & Emergency Operations Centers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "When a catastrophic river flood inundated the downtown municipal hall, all emergency communications ceased because all backup radios were stored in the basement.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian established an Emergency Operations Bunker on the southern hill (Standby DR Site) with independent power and synchronized radio logs.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During the annual spring drill (Game Day), the city cut main hall power to prove the southern bunker could assume emergency control in under 15 minutes.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Moving civil emergency personnel requires physical trucks and sirens; cloud DR cutover shifts global network traffic with a DNS route change.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

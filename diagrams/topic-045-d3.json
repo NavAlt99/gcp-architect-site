@@ -1,0 +1,190 @@
+{
+  "id": "topic-045-d3",
+  "title": "Case Analysis Method & Discovery \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "045",
+  "roadmap_id": "7.1",
+  "kind": "failure",
+  "purpose": "Simulates Compliance & Cost Trade-off Conflict: demonstrates resolving tension between extreme availability targets and strict budgetary caps.",
+  "routing_rationale": "Real-world architecture requires negotiating trade-offs: when business availability goals exceed budget reality, architects present quantitative tiered options.",
+  "groups": [
+    {
+      "id": "g-conflict-src",
+      "label": "Requirements Incompatibility Conflict",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-tradeoff-solver",
+      "label": "Architectural Trade-Off Resolution Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "req-5nines",
+      "label": "Demanded 99.999% SLA",
+      "product": "Five-Nines Multi-Region",
+      "group": "g-conflict-src",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Stakeholder demands zero downtime under all circumstances across 3 continents."
+    },
+    {
+      "id": "budget-cap-strict",
+      "label": "Strict $1,500/Month Budget",
+      "product": "Budget Ceiling",
+      "group": "g-conflict-src",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Budget ceiling is mathematically insufficient for multi-region Spanner + Interconnects."
+    },
+    {
+      "id": "tradeoff-matrix",
+      "label": "Tiered Trade-Off Matrix",
+      "product": "Option A vs Option B Analysis",
+      "group": "g-tradeoff-solver",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Presents Tier 1 (99.9% Regional Cloud SQL @ $800/mo) vs Tier 2 (99.999% Spanner @ $4,500/mo)."
+    },
+    {
+      "id": "agreed-compromise",
+      "label": "Approved Realistic Design",
+      "product": "Tier 1: 99.9% Regional HA Approved",
+      "group": "g-tradeoff-solver",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Stakeholders align on Tier 1 Regional HA, saving $3,700/mo while meeting business goals."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "req-5nines",
+      "to": "tradeoff-matrix",
+      "label": "1. Highlight Cost Implication",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "budget-cap-strict",
+      "to": "tradeoff-matrix",
+      "label": "2. Highlight Budget Boundary",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "tradeoff-matrix",
+      "to": "agreed-compromise",
+      "label": "3. Reach Executive Consensus",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Conflict Formalization",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Architect constructs trade-off matrix demonstrating mathematical incompatibility of five-nines at low budget.",
+      "why_traversal": "Reframes subjective emotional debate into objective financial reality.",
+      "protocol": "Trade-off Matrix Evaluation",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Consensus Alignment",
+      "edges": [
+        "e3"
+      ],
+      "action": "Leadership signs off on Regional HA architecture with clear documented RTO/RPO expectations.",
+      "why_traversal": "Protects engineering team from unrealistic SLA commitments.",
+      "protocol": "ADR Stakeholder Sign-Off",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unspoken-sla-failure",
+      "label": "Unspoken Assumption Causes Production Crisis",
+      "changes": {
+        "failedNodes": [
+          "tradeoff-matrix"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Architect silently built single-zone database to stay within budget without informing leadership.",
+      "diverted_path": "Zonal maintenance caused 20-minute outage; CEO furious at lack of 5-nines.",
+      "blast_radius": "Executive loss of trust in engineering.",
+      "recovery": "Always document SLA limitations explicitly in Architecture Decision Records signed by executive sponsors."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "req-5nines"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "req-5nines"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Compliance & Cost Trade-off Conflict: demonstrates resolving tension between extreme availability targets and strict budgetary caps."
+}

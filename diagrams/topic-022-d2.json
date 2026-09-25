@@ -1,0 +1,218 @@
+{
+  "id": "topic-022-d2",
+  "title": "Requirements Analysis: Business & Technical Discovery \u2014 Request & Control Flow",
+  "topic_no": "022",
+  "roadmap_id": "3.1",
+  "kind": "flow",
+  "purpose": "Traces user load estimation and resource sizing: from raw transactions-per-second inputs through compute, bandwidth, and database IOPS calculation.",
+  "routing_rationale": "Sizing equations map p95 request latency and peak concurrency into exact core counts and persistent disk throughput thresholds before provisioning begins.",
+  "groups": [
+    {
+      "id": "g-input-traffic",
+      "label": "Customer Demand Profile",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-calc-engine",
+      "label": "Architectural Sizing Calculator",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-prov-target",
+      "label": "Provisioned Google Cloud Resources",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "raw-qps",
+      "label": "Peak Influx: 20k QPS",
+      "product": "Customer Payload (10KB)",
+      "group": "g-input-traffic",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Average payload 10KB; requires 200MB/sec network ingress bandwidth."
+    },
+    {
+      "id": "cpu-model",
+      "label": "vCPU & Memory Calculator",
+      "product": "Concurrency Math",
+      "group": "g-calc-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Each core handles 200 QPS; 20,000 / 200 = 100 vCPUs required (+30% headroom)."
+    },
+    {
+      "id": "iops-model",
+      "label": "Database IOPS Sizing",
+      "product": "Storage Throughput",
+      "group": "g-calc-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Requires 8,000 write IOPS; mandates Cloud Spanner 3 nodes or SSD persistent disks."
+    },
+    {
+      "id": "gke-pool",
+      "label": "Provisioned GKE Cluster",
+      "product": "130 vCPUs (n2-standard-8)",
+      "group": "g-prov-target",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Autoscaling cluster configured with exact capacity headroom."
+    },
+    {
+      "id": "spanner-nodes",
+      "label": "Cloud Spanner Instance",
+      "product": "3 Nodes (Multi-Region)",
+      "group": "g-prov-target",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Guarantees 30,000 read IOPS and 9,000 write IOPS within 10ms."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "raw-qps",
+      "to": "cpu-model",
+      "label": "1. Ingest QPS & Payload Size",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "raw-qps",
+      "to": "iops-model",
+      "label": "2. Calculate Write IOPS Required",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cpu-model",
+      "to": "gke-pool",
+      "label": "3. Provision Compute Nodes",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "iops-model",
+      "to": "spanner-nodes",
+      "label": "4. Allocate Database Capacity",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Load Math Sizing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Calculate required core count and storage IOPS based on 20,000 QPS peak.",
+      "why_traversal": "Eliminates guessing; sizes capacity mathematically to prevent under-provisioning.",
+      "protocol": "Capacity Modeling Formula",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Infrastructure Instantiation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Terraform provisions 130 vCPUs across GKE and allocates 3 Spanner nodes.",
+      "why_traversal": "Ensures cluster operates at steady-state 65% CPU during peak sales events.",
+      "protocol": "Terraform Automation",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "under-provision-drop",
+      "label": "IOPS Bottleneck Causing Latency Spike",
+      "changes": {
+        "failedNodes": [
+          "spanner-nodes"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Under-provisioned storage to 1,000 IOPS; database write queue backs up.",
+      "diverted_path": "Application threads block on database writes; HTTP 504 Gateway Timeouts.",
+      "blast_radius": "All transaction endpoints degrade.",
+      "recovery": "Dynamically scale Cloud Spanner nodes from 3 to 6 via Cloud Console with zero downtime."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "raw-qps"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "raw-qps"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces user load estimation and resource sizing: from raw transactions-per-second inputs through compute, bandwidth, and database IOPS calculation."
+}

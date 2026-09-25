@@ -1,0 +1,199 @@
+{
+  "id": "topic-003-d1",
+  "title": "Virtual Machines vs Container Isolation Architecture",
+  "topic_no": "003",
+  "roadmap_id": "0.3",
+  "kind": "map",
+  "groups": [
+    {
+      "id": "g-vm",
+      "label": "Hardware Virtualization (VM)",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    },
+    {
+      "id": "g-ctr",
+      "label": "OS-Level Virtualization (Container)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 40,
+      "width": 410,
+      "height": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hyper",
+      "label": "Host Hypervisor (KVM)",
+      "product": "Virtualization",
+      "group": "g-vm",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Emulates physical hardware; runs full separate guest operating system kernels."
+    },
+    {
+      "id": "guest-os",
+      "label": "Guest OS & Kernel",
+      "product": "Virtual OS",
+      "group": "g-vm",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Heavyweight memory footprint, minutes to boot, separate security boundary."
+    },
+    {
+      "id": "shared-kern",
+      "label": "Shared Host Linux Kernel",
+      "product": "Linux Kernel",
+      "group": "g-ctr",
+      "plane": "data",
+      "x": 580,
+      "y": 280,
+      "detail": "Single shared kernel managing cgroups, namespaces, and security seccomp profiles."
+    },
+    {
+      "id": "app-sandbox",
+      "label": "Container Sandbox (CRI)",
+      "product": "containerd / runc",
+      "group": "g-ctr",
+      "plane": "data",
+      "x": 760,
+      "y": 140,
+      "detail": "Lightweight process isolated by PID, mount, and network namespaces. Boots in milliseconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-vm-boot",
+      "from": "hyper",
+      "to": "guest-os",
+      "label": "Hardware Emulation",
+      "plane": "data"
+    },
+    {
+      "id": "e-ctr-cgroup",
+      "from": "shared-kern",
+      "to": "app-sandbox",
+      "label": "Namespace Isolation",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Initiation & Perimeter Traversal",
+      "edges": [
+        "e-vm-boot"
+      ],
+      "action": "Client initiates request from Host Hypervisor (KVM) to Guest OS & Kernel over TLS 1.3.",
+      "why_traversal": "Traffic enters through Google Anycast Edge; TLS cryptographic handshake is terminated close to user, mitigating Layer 3/4 volumetric DDoS attacks before internal routing.",
+      "protocol": "TCP / TLS 1.3 (Port 443)",
+      "plane": "Data Plane",
+      "narration": "Hop 1: Ingress traffic arrives from Host Hypervisor (KVM) to Guest OS & Kernel across Google Edge network.",
+      "check": {
+        "commands": "gcloud guestos&kernel list",
+        "metrics": "loadbalancing.googleapis.com/https/request_count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "IAM Validation & Workload Dispatch",
+      "edges": [
+        "e-ctr-cgroup"
+      ],
+      "action": "Guest OS & Kernel evaluates IAM permissions and routes request over Andromeda SDN to Shared Host Linux Kernel.",
+      "why_traversal": "Zero-Trust policy requires verifying cryptographic caller identity and VPC Service Control perimeters before releasing traffic into private compute subnets.",
+      "protocol": "Internal HTTP/2 or gRPC",
+      "plane": "Data Plane",
+      "narration": "Hop 2: Guest OS & Kernel validates request credentials and dispatches payload to Shared Host Linux Kernel.",
+      "check": {
+        "commands": "gcloud logging read 'protoPayload.authenticationInfo.principalEmail:*'",
+        "metrics": "custom.googleapis.com/rpc/latency"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Response Delivery & Acknowledgment",
+      "edges": [
+        "e-vm-boot"
+      ],
+      "action": "Final response payload is returned from Guest OS & Kernel to Host Hypervisor (KVM) with HTTP 200 OK.",
+      "why_traversal": "Client receives cryptographic confirmation of completed transaction across established low-latency HTTP/2 connection.",
+      "protocol": "HTTP/2 Response (Port 443)",
+      "plane": "Data Plane",
+      "narration": "Hop 3: Final response payload returned to Host Hypervisor (KVM) with HTTP 200 OK.",
+      "check": {
+        "commands": "curl -Iv https://service.brightloaf.internal",
+        "metrics": "loadbalancing.googleapis.com/https/response_count"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "kernel-panic",
+      "label": "Host Kernel Panic Impact",
+      "changes": {
+        "failedNodes": [
+          "shared-kern",
+          "app-sandbox"
+        ]
+      },
+      "narration": "A kernel crash on the host takes down all colocated containers instantly. In VMs, a guest kernel panic is isolated strictly to that individual VM.",
+      "check": {
+        "command": "uptime",
+        "metric": "NodeNotReady condition in Kubernetes"
+      },
+      "root_cause": "A kernel crash on the host takes down all colocated containers instantly. In VMs, a guest kernel panic is isolated strictly to that individual VM.",
+      "diverted_path": "Normal request path is interrupted at Shared Host Linux Kernel, Container Sandbox (CRI). Downstream components receive timeout errors or drop packets without acknowledgment, forcing client retries or failover redirection.",
+      "blast_radius": "All user sessions dependent on Shared Host Linux Kernel, Container Sandbox (CRI) experience elevated latency, HTTP 5xx errors, or severed connections.",
+      "recovery": "Deploy multi-region Anycast failover, cross-zone active-standby redundancy, automated health check eviction, and exponential backoff circuit breakers."
+    },
+    {
+      "id": "transient-network-drop",
+      "label": "Guest OS & Kernel Network Degradation",
+      "changes": {
+        "failedNodes": [
+          "guest-os"
+        ]
+      },
+      "root_cause": "Underlying Andromeda vSwitch queue saturation or hypervisor host maintenance causing 40% packet loss on Guest OS & Kernel.",
+      "diverted_path": "Incoming TCP streams to Guest OS & Kernel experience high retransmission rates and latency spikes up to 4500ms; gateway circuit breaker opens to shed load.",
+      "blast_radius": "Transactions processed by Guest OS & Kernel slow down significantly; client applications encounter timeout errors.",
+      "recovery": "Configure client-side exponential backoff with full jitter; deploy Regional Managed Instance Groups with auto-healing and minimum 3-zone distribution.",
+      "narration": "Packet loss and connection timeouts detected on Guest OS & Kernel. Circuit breaker trips to protect cluster.",
+      "check": {
+        "command": "gcloud compute instances describe guest-os --format='yaml(status)'",
+        "metric": "compute.googleapis.com/instance/network/dropped_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "hyper"
+        ],
+        "failedEdges": [
+          "e-vm-boot"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "purpose": "Contrasts hardware virtualization (KVM hypervisor running separate guest kernels) against OS-level virtualization (shared Linux host kernel isolated via cgroups and namespaces).",
+  "routing_rationale": "Virtual machines enforce hardware-level security boundaries at the cost of memory footprint and boot latency. Containers eliminate hypervisor overhead by virtualizing the OS syscall interface directly, sharing the underlying host kernel.",
+  "summary": "Contrasts hardware virtualization (KVM hypervisor running separate guest kernels) against OS-level virtualization (shared Linux host kernel isolated via cgroups and namespaces)."
+}

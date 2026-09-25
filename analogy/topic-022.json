@@ -1,0 +1,43 @@
+{
+  "topic_no": "022",
+  "roadmap_id": "3.1",
+  "title": "Cloud City: Requirements Analysis: Business & Technical Discovery",
+  "city_concept": "City Zoning Board & Municipal Charters",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Residents demanded 'faster streets' and 'better power', but builders poured concrete without knowing if trucks or bicycles would use the roads.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The Zoning Board (Requirements Analysis) established precise civic metrics: roads must support 10-ton vehicles at 40 km/h with 99.9% bridge uptime.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a sudden heatwave, the power grid sagged because air conditioning demand was never captured in the non-functional requirements.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "City road re-zoning takes decades; in software architecture, cloud elastic capacity can be dynamically provisioned in minutes.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

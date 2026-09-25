@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: EHR Healthcare — HIPAA, Legacy DB &amp; Cloud Migration — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-046.html">← Topic page</a><span>7.4a · TOPIC-046-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-046-d6",
+  "title": "Case Study: EHR Healthcare \u2014 HIPAA, Legacy DB & Cloud Migration \u2014 D6",
+  "topic_no": "046",
+  "roadmap_id": "7.4a",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "EHR Healthcare mandates strict HIPAA compliance, continuous patient record synchronization from legacy on-premises hospitals, and sub-second querying of clinical histories with zero downtime.",
+  "groups": [
+    {
+      "id": "g-onprem-hospital",
+      "label": "On-Premises Hospital Clinics & EMRs",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-gcp-healthcare",
+      "label": "Google Cloud Healthcare API & DLP Tier",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-clinical-data",
+      "label": "HIPAA-Compliant Multi-Region Persistence",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hospital-emr",
+      "label": "Epic / Cerner Hospital EMR",
+      "product": "HL7v2 / C-CDA Feeds",
+      "group": "g-onprem-hospital",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Generates real-time patient admission, discharge, and transfer (ADT) messages."
+    },
+    {
+      "id": "vpn-interconnect",
+      "label": "Cloud Interconnect (Encrypted)",
+      "product": "MACsec Dedicated 10Gbps",
+      "group": "g-onprem-hospital",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dedicated private hybrid connection with MACsec L2 wire-speed encryption."
+    },
+    {
+      "id": "healthcare-api",
+      "label": "Cloud Healthcare API",
+      "product": "FHIR Store (R4) & HL7 Ingestion",
+      "group": "g-gcp-healthcare",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Translates legacy HL7 messages into modern FHIR resources with BAA signed."
+    },
+    {
+      "id": "dlp-healthcare",
+      "label": "Cloud DLP De-Identification",
+      "product": "Crypto-Hash Medical Record Numbers",
+      "group": "g-gcp-healthcare",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Pseudonymizes patient identifiers for clinical research pipelines."
+    },
+    {
+      "id": "spanner-ehr",
+      "label": "Cloud Spanner EHR Multi-Region",
+      "product": "99.999% Clinical Relational DB",
+      "group": "g-clinical-data",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Stores core patient charts with continuous multi-region replication and CMEK."
+    },
+    {
+      "id": "bq-clinical-lake",
+      "label": "BigQuery Analytics Lake",
+      "product": "De-Identified Research Data",
+      "group": "g-clinical-data",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Analyzes clinical efficacy and treatment outcomes without exposing patient PHI."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "hospital-emr",
+      "to": "vpn-interconnect",
+      "label": "1. Transmit HL7 Messages",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "vpn-interconnect",
+      "to": "healthcare-api",
+      "label": "2. Ingest into Cloud Healthcare API",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "healthcare-api",
+      "to": "spanner-ehr",
+      "label": "3. Commit FHIR Patient Chart",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "healthcare-api",
+      "to": "dlp-healthcare",
+      "label": "4. Stream for De-Identification",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "dlp-healthcare",
+      "to": "bq-clinical-lake",
+      "label": "5. Load Sanitized Data to BigQuery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Secure Ingestion & Standardization",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Hospital EMR streams HL7 messages over MACsec Interconnect into Cloud Healthcare API.",
+      "why_traversal": "Normalizes disparate legacy healthcare protocols into standardized FHIR format.",
+      "protocol": "HL7v2 over MLLP / TLS",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Dual-Path Clinical Storage & Research",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Writes raw patient chart to Spanner while de-identifying data for research in BigQuery.",
+      "why_traversal": "Satisfies strict HIPAA patient privacy while enabling population health analytics.",
+      "protocol": "FHIR REST API / DLP Streaming",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "phi-exfiltration-blocked",
+      "label": "Unauthorized Direct Clinical Query Blocked",
+      "changes": {
+        "failedNodes": [
+          "spanner-ehr"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "External analytics dashboard attempted to query raw patient charts directly from Cloud Spanner.",
+      "diverted_path": "VPC Service Controls denies request: analytics must query de-identified BigQuery lake.",
+      "blast_radius": "Zero patient PHI exposed.",
+      "recovery": "Re-point analytics tools to BigQuery de-identified dataset."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "hospital-emr"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "hospital-emr"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

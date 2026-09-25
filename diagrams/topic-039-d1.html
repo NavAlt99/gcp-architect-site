@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Application &amp; Supply-Chain Security (SLSA) — Scope &amp; Architecture Map</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-039.html">← Topic page</a><span>5.5b · TOPIC-039-D1</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-039-d1",
+  "title": "Application & Supply-Chain Security (SLSA) \u2014 Scope & Architecture Map",
+  "topic_no": "039",
+  "roadmap_id": "5.5b",
+  "kind": "map",
+  "purpose": "Visualizes SLSA Level 3 Secure Software Supply Chain: hermetic Cloud Build pipelines, Artifact Analysis vulnerability scanning, cryptographic in-toto provenance attestations, and GKE Binary Authorization admission gates.",
+  "routing_rationale": "Software supply chain security mandates cryptographic verification at every step: no container image may execute in production unless it was built by an approved CI pipeline and certified free of critical CVEs.",
+  "groups": [
+    {
+      "id": "g-build-tier",
+      "label": "Hermetic Build & Provenance (SLSA L3)",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-artifact-vault",
+      "label": "Artifact Registry & Attestation Vault",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gke-gate",
+      "label": "Production GKE Admission Gate",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cloud-build-hermetic",
+      "label": "Cloud Build (Isolated Worker)",
+      "product": "SLSA Level 3 Hermetic Build",
+      "group": "g-build-tier",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Builds container in isolated environment without unvetted internet dependencies."
+    },
+    {
+      "id": "kms-provenance-signer",
+      "label": "KMS Attestation Signer",
+      "product": "Cloud KMS Asymmetric Key",
+      "group": "g-build-tier",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Digitally signs in-toto build provenance attestation with enterprise private key."
+    },
+    {
+      "id": "artifact-vuln-scan",
+      "label": "Artifact Analysis Vulnerability Scan",
+      "product": "Continuous CVE Scanner",
+      "group": "g-artifact-vault",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Scans image layers for OS and language package vulnerabilities against CVE databases."
+    },
+    {
+      "id": "attestation-authority",
+      "label": "Binary Authorization Attestor",
+      "product": "Quality & Security Sign-Off",
+      "group": "g-artifact-vault",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Verifies zero Critical/High CVEs exist before writing verified security attestation."
+    },
+    {
+      "id": "binauth-webhook",
+      "label": "Binary Authorization Gatekeeper",
+      "product": "GKE Admission Controller",
+      "group": "g-gke-gate",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Intercepts pod creation requests; verifies cryptographically signed attestations before pod starts."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cloud-build-hermetic",
+      "to": "kms-provenance-signer",
+      "label": "1. Generate Provenance Metadata",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cloud-build-hermetic",
+      "to": "artifact-vuln-scan",
+      "label": "2. Push Container to Registry",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "artifact-vuln-scan",
+      "to": "attestation-authority",
+      "label": "3. Scan Results Clean (0 CVEs)",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "kms-provenance-signer",
+      "to": "binauth-webhook",
+      "label": "4. Verify Provenance Signature",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "attestation-authority",
+      "to": "binauth-webhook",
+      "label": "5. Verify Security Attestation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Hermetic Build & Signing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Build compiles container in private worker pool and signs provenance with KMS.",
+      "why_traversal": "Guarantees container artifact originates from exact immutable Git commit.",
+      "protocol": "in-toto Provenance Spec",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Vulnerability Audit & Attestation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Artifact Analysis scans all packages; attestor attaches signed security certificate.",
+      "why_traversal": "Validates software quality before image is authorized for deployment.",
+      "protocol": "Grafeas / Kritis Protocol",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "GKE Admission Enforcement",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Binary Authorization admission webhook verifies both attestations and admits pod.",
+      "why_traversal": "Guarantees unauthorized or modified images cannot execute in production.",
+      "protocol": "Kubernetes Admission Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "rogue-image-rejection",
+      "label": "Untrusted Public DockerHub Image Blocked",
+      "changes": {
+        "failedNodes": [
+          "binauth-webhook"
+        ],
+        "failedEdges": [
+          "e4",
+          "e5"
+        ]
+      },
+      "root_cause": "Attacker compromised GKE credentials and attempted to deploy unapproved cryptocurrency miner.",
+      "diverted_path": "Binary Authorization blocks deployment: 'Image denied: missing required attestations'.",
+      "blast_radius": "Zero compromise of production cluster.",
+      "recovery": "Rotate compromised Kubernetes service account and audit cluster RBAC bindings."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cloud-build-hermetic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cloud-build-hermetic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes SLSA Level 3 Secure Software Supply Chain: hermetic Cloud Build pipelines, Artifact Analysis vulnerability scanning, cryptographic in-toto provenance attestations, and GKE Binary Authorization admission gates."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

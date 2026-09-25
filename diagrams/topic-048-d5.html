@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: TerramEarth — IoT Fleet, Bigtable &amp; Predictive Maintenance — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-048.html">← Topic page</a><span>7.4c · TOPIC-048-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-048-d5",
+  "title": "Case Study: TerramEarth \u2014 IoT Fleet, Bigtable & Predictive Maintenance \u2014 D5",
+  "topic_no": "048",
+  "roadmap_id": "7.4c",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "TerramEarth requires dual-mode telemetry ingestion: intermittent real-time cellular data (200k vehicles) and bulk historical Wi-Fi uploads (20M vehicles), unified into predictive maintenance models to reduce tractor field downtime.",
+  "groups": [
+    {
+      "id": "g-tractor-fleet",
+      "label": "Global Tractor Fleet & Dealerships",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-dual-ingest",
+      "label": "Dual-Path Telemetry Ingestion Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-lakehouse-analytics",
+      "label": "Bigtable Time-Series & BigQuery ML",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "connected-tractor",
+      "label": "Real-Time Connected Tractors",
+      "product": "Cellular Uplink (200k Units)",
+      "group": "g-tractor-fleet",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams critical engine temperature and oil pressure metrics in real-time."
+    },
+    {
+      "id": "dealer-wifi-upload",
+      "label": "Dealership Maintenance Wi-Fi",
+      "product": "Batch 500MB GCS Dumps (20M Units)",
+      "group": "g-tractor-fleet",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Uploads accumulated 500MB sensor log files when tractor visits dealer for service."
+    },
+    {
+      "id": "pubsub-cellular",
+      "label": "Cloud Pub/Sub Streaming",
+      "product": "Real-time Telemetry Topic",
+      "group": "g-dual-ingest",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Ingests real-time cellular sensor events with millisecond latency."
+    },
+    {
+      "id": "dataflow-pipeline",
+      "label": "Cloud Dataflow (Beam)",
+      "product": "Streaming & Batch Unification",
+      "group": "g-dual-ingest",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Applies 10-minute sliding windows and normalizes disparate sensor schemas."
+    },
+    {
+      "id": "bigtable-timeseries",
+      "label": "Cloud Bigtable (Telemetry)",
+      "product": "Sub-10ms Time-Series Store",
+      "group": "g-lakehouse-analytics",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Stores billions of operational data points keyed by tractor_id#timestamp."
+    },
+    {
+      "id": "bq-predictive-ml",
+      "label": "BigQuery Predictive Maintenance",
+      "product": "BQML Failure Forecasting",
+      "group": "g-lakehouse-analytics",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Predicts component failure 4 weeks before breakdown, dispatching dealer parts automatically."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "connected-tractor",
+      "to": "pubsub-cellular",
+      "label": "1. Stream Real-time Metrics",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dealer-wifi-upload",
+      "to": "dataflow-pipeline",
+      "label": "2. Ingest Batch Sensor Dumps",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "pubsub-cellular",
+      "to": "dataflow-pipeline",
+      "label": "3. Stream Telemetry to Beam",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "dataflow-pipeline",
+      "to": "bigtable-timeseries",
+      "label": "4. Write Time-Series Records",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "bigtable-timeseries",
+      "to": "bq-predictive-ml",
+      "label": "5. Train Predictive ML Models",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Dual-Path Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Pub/Sub handles streaming cellular data; Cloud Storage handles dealer batch uploads.",
+      "why_traversal": "Accommodates both modern connected tractors and legacy offline agricultural equipment.",
+      "protocol": "MQTT / HTTPS Batch Upload",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Time-Series Persistence & Predictive AI",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Dataflow writes to Bigtable for low-latency operational dashboarding; BigQuery trains failure models.",
+      "why_traversal": "Reduces catastrophic in-field tractor breakdowns by 85%.",
+      "protocol": "Bigtable gRPC / BigQuery Storage API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "batch-gcs-parser-crash",
+      "label": "Corrupted CSV Format Crashes Batch Pipeline",
+      "changes": {
+        "failedNodes": [
+          "dataflow-pipeline"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Dealer uploaded corrupted binary file with .csv extension.",
+      "diverted_path": "Dataflow worker threw uncaught parse exception; batch job failed.",
+      "blast_radius": "Delayed dealer maintenance reports.",
+      "recovery": "Add dead-letter queue (DLQ) pattern in Apache Beam pipeline to discard malformed records."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "connected-tractor"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "connected-tractor"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

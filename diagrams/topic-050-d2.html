@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA Exam Strategy &amp; Keyword Elimination — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-050.html">← Topic page</a><span>7.5 · TOPIC-050-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-050-d2",
+  "title": "PCA Exam Strategy & Keyword Elimination \u2014 Request & Control Flow",
+  "topic_no": "050",
+  "roadmap_id": "7.5",
+  "kind": "flow",
+  "purpose": "Traces Step-by-Step Question Deconstruction Traversal: read stem -> identify constraint modifiers -> eliminate distractors -> select Google recommended answer.",
+  "routing_rationale": "Systematic elimination consistently narrows questions down from 4 possibilities to 1 unambiguous winning answer in under 60 seconds.",
+  "groups": [
+    {
+      "id": "g-stem-reading",
+      "label": "Step 1: Read Stem & Highlight Modifiers",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-antipattern-scan",
+      "label": "Step 2: Antipattern Elimination",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-validated-pick",
+      "label": "Step 3: Validated Exam Selection",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "scenario-input",
+      "label": "Question: 'Migrate on-prem VM rapidly'",
+      "product": "Constraint: 'Minimal refactoring'",
+      "group": "g-stem-reading",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Must migrate 200 Windows VMs to Google Cloud within 30 days."
+    },
+    {
+      "id": "discard-rewrite",
+      "label": "Discard: 'Rewrite to Cloud Functions'",
+      "product": "Fails: 30-day timeline impossible",
+      "group": "g-antipattern-scan",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Rewriting 200 applications in 30 days is unrealistic; violates 'minimal refactoring'."
+    },
+    {
+      "id": "discard-manual",
+      "label": "Discard: 'Export OVA & upload to GCS'",
+      "product": "Fails: High manual toil",
+      "group": "g-antipattern-scan",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Manual export/import causes days of downtime per server."
+    },
+    {
+      "id": "select-m4vm",
+      "label": "Select: Migrate to Virtual Machines",
+      "product": "Correct: Automated Replication Engine",
+      "group": "g-validated-pick",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Replicates live VM disks in background; automated cutover with minimal downtime."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "scenario-input",
+      "to": "discard-rewrite",
+      "label": "1. Reject Time-Intensive Refactoring",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "scenario-input",
+      "to": "discard-manual",
+      "label": "2. Reject Manual High-Downtime Toil",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "discard-rewrite",
+      "to": "select-m4vm",
+      "label": "3. Converge on Google Migration Tooling",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "discard-manual",
+      "to": "select-m4vm",
+      "label": "4. Confirm Migrate to Virtual Machines",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Modifier Elimination",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Filters options that violate timeline or require excessive engineering refactoring.",
+      "why_traversal": "Eliminates options that sound technically impressive but violate practical business constraints.",
+      "protocol": "Rubric Elimination",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Tooling Confirmation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Selects Google's purpose-built migration service (M4VM) as the intended solution.",
+      "why_traversal": "Guarantees full alignment with exam grading key.",
+      "protocol": "PCA Scoring Algorithm",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "deprecated-tool-selection",
+      "label": "Selected Deprecated Velostrata / M4CE Name",
+      "changes": {
+        "failedNodes": [
+          "select-m4vm"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Candidate memorized outdated product name (Velostrata) instead of current Migrate to Virtual Machines.",
+      "diverted_path": "Confused on exam terminology.",
+      "blast_radius": "Hesitation and potential lost score.",
+      "recovery": "Study modern Google Cloud product branding: Migrate to Virtual Machines (v5.x)."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "scenario-input"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "scenario-input"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Step-by-Step Question Deconstruction Traversal: read stem -> identify constraint modifiers -> eliminate distractors -> select Google recommended answer."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

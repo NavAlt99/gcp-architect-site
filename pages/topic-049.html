@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>049 (7.4d) Case Study: Helicopter Racing League — Video Streaming & Real-Time ML | GCP Architect Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
+  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+</head>
+<body>
+
+    <!-- Navigation -->
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-link">
+        <span style="font-size:16px;">☁</span>
+        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
+      </a>
+
+      <!-- Quick Topic Navigator -->
+      <div class="nav-topic-switcher">
+        <a href="topic-048.html" class="nav-topic-arrow prev" title="Previous Topic: Case Study: TerramEarth [Key: P]">‹</a>
+        <div class="nav-select-wrapper">
+          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
+            <optgroup label="Phase 0 — Prerequisites">
+              <option value="topic-001.html">001 [0.1] Networking Fundamentals</option>
+              <option value="topic-002.html">002 [0.2] Linux & Command Line for Archi…</option>
+              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
+              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
+              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
+              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
+            </optgroup>
+            <optgroup label="Phase 1 — GCP Foundations">
+              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
+              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
+              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
+              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
+              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
+              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
+            </optgroup>
+            <optgroup label="Phase 2 — Core Services">
+              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
+              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
+              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
+              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
+              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
+              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
+              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
+              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
+              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
+            </optgroup>
+            <optgroup label="Phase 3 — Architecture Thinking">
+              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
+              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
+              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
+              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
+              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
+              <option value="topic-027.html">027 [3.5] Diagramming & Docs: C4 Model</option>
+            </optgroup>
+            <optgroup label="Phase 4 — Reliability & HA">
+              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
+              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
+              <option value="topic-030.html">030 [4.3] High Availability by Layer</option>
+              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
+              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
+              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
+            </optgroup>
+            <optgroup label="Phase 5 — Security & Compliance">
+              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
+              <option value="topic-035.html">035 [5.2] Network Security: VPC-SC & Clo…</option>
+              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
+              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
+              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
+              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
+            </optgroup>
+            <optgroup label="Phase 6 — Optimization & Ops">
+              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
+              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
+              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
+              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
+              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
+            </optgroup>
+            <optgroup label="Phase 7 — Case Studies & Exam">
+              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
+              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
+              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
+              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
+              <option value="topic-049.html" selected>049 [7.4d] Case Study: Helicopter Racing …</option>
+              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
+            </optgroup>
+            <optgroup label="Data, Analytics & ML">
+              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
+              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
+              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
+              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
+            </optgroup>
+            <optgroup label="Service Decision Cheat Sheets">
+              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
+              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
+              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
+              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
+              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
+              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
+            </optgroup>
+          </select>
+        </div>
+        <a href="topic-050.html" class="nav-topic-arrow next" title="Next Topic: PCA Exam Strategy & Keyword Elimination [Key: N]">›</a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html" class="nav-link">Overview</a>
+        <a href="#diagrams" class="nav-link">Diagrams</a>
+        <a href="#demo-or-practice" class="nav-link">Labs</a>
+        <a href="#quiz" class="nav-link">Knowledge Check</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Topic Sub-Navigation Strip -->
+    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
+      <div class="subnav-breadcrumbs">
+        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-phase">Phase 7 — Case Studies & Exam</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Topic 049</span>
+        <span class="crumb-progress">(49 of 60)</span>
+      </div>
+      <div class="subnav-actions">
+        <a href="topic-048.html" class="subnav-nav-btn prev" title="Case Study: TerramEarth">← Prev (048)</a>
+        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
+        <a href="topic-050.html" class="subnav-nav-btn next" title="PCA Exam Strategy & Keyword Elimination">Next (050) →</a>
+      </div>
+    </nav>
+
+    
+    <!-- Topic Header -->
+    <header class="page-header">
+      <div class="page-meta">
+        <span class="badge">Topic 049</span>
+        <span class="badge badge-type">Roadmap ID: 7.4d</span>
+        <span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 7 — Case Studies & Exam Prep</span>
+        <span class="badge badge-type">Type: case-study</span>
+        <span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
+      </div>
+      <h1 class="page-title">Case Study: Helicopter Racing League — Video Streaming & Real-Time ML</h1>
+      <p class="page-lead">Official Case Study Analysis: Helicopter Racing League (HRL) — Global low-latency real-time video streaming, in-flight race telemetry, Transcoder API, Cloud CDN, and Vertex AI real-time prediction models.</p>
+    </header>
+
+    <!-- Part 1: Real-World Explanation -->
+    <nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world">
+      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+      
+        <h3>Case Profile: Helicopter Racing League (HRL)</h3>
+        <p>
+          <strong>Company Background:</strong> The Helicopter Racing League (HRL) is a global sports organization that organizes high-speed helicopter races in diverse locations worldwide. They want to modernize their broadcast platform to deliver ultra-low latency video streaming, real-time telemetry overlays, and predictive race analytics.
+        </p>
+        <div class="callout">
+          <div class="callout-title">HRL Requirements Breakdown</div>
+          <ul>
+            <li><strong>Business Goals:</strong> Increase fan engagement with immersive digital broadcasts; expand viewer base globally; provide real-time predictive telemetry overlays (e.g. probability of pilot overtaking in turn 3).</li>
+            <li><strong>Technical Requirements:</strong> Transcode high-definition live video feeds into multi-bitrate streams with sub-3 second latency; ingest high-frequency telemetry from racing helicopters; support millions of concurrent global viewers.</li>
+            <li><strong>Key Challenge:</strong> Balancing compute-intensive video encoding with low-latency edge caching and real-time machine learning predictions.</li>
+          </ul>
+        </div>
+        
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 7.4d · Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+    </section>
+
+    <!-- Part 2: Technical Discussion & Diagrams -->
+    <section class="topic-section" id="technical">
+      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
+      
+      
+        <h4>Layer 1 — Foundation: Video Ingestion & Transcoder API</h4>
+        <p>Use the <strong>Live Stream API</strong> and <strong>Transcoder API</strong> to convert raw RTMP/SRT video feeds into multi-bitrate HTTP Live Streaming (HLS) and Dynamic Adaptive Streaming over HTTP (DASH) segments.</p>
+        <h4>Layer 2 — Practitioner: Media CDN & Cloud CDN Edge Delivery</h4>
+        <p>Deliver video segments via <strong>Media CDN</strong> (built on Google's YouTube infrastructure). Media CDN provides edge caching at hundreds of metropolitan locations, offloading origin servers and eliminating stream buffering.</p>
+        <h4>Layer 3 — Architect: Real-Time Telemetry Pipeline (Pub/Sub & Dataflow)</h4>
+        <p>In-flight telemetry (speed, G-force, altitude, engine RPM) streams through <strong>Cloud Pub/Sub</strong> into <strong>Dataflow</strong>. Telemetry is joined with live video timestamp metadata to synchronize graphic overlays.</p>
+        <h4>Layer 4 — Staff: Vertex AI Real-Time Prediction Overlays</h4>
+        <p>Deploy trained TensorFlow models to <strong>Vertex AI Endpoints</strong>. The model evaluates current flight trajectories and outputs probability scores for live broadcast overlays with sub-100ms inference latency.</p>
+        
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div id="diagrams" style="margin-top: 32px;">
+        <h3>2B — Interactive Architecture Diagrams</h3>
+        
+        <div class="callout" style="margin-bottom: 24px;">
+          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
+          <p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+        <div class="diagram-suite-nav">
+          <span class="suite-title">VIEWPOINT:</span>
+          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+        </div>
+
+<!-- Diagram 1 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Case Study: Helicopter Racing League — Scope & Architecture Map</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes Helicopter Racing League (HRL) Low-Latency Global Telemetry & Video Streaming Architecture: Helicopter telemetry sensors & HD cameras, Cloud Pub/Sub, Cloud Dataflow, Cloud Spanner, and Cloud CDN video acceleration.
+          </p>
+        </div>
+        <div id="diagram-d1"></div>
+
+        <!-- Diagram 2 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: Case Study: Helicopter Racing League — Request & Control Flow</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Traces Real-Time Predictive AI Graphics Injection Flow: telemetry ingestion -> aerodynamic ML inference -> graphic overlay composition -> Cloud CDN broadcast distribution.
+          </p>
+        </div>
+        <div id="diagram-d2"></div>
+
+        <!-- Diagram 3 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: Case Study: Helicopter Racing League — Failure Injection & Auto-Healing</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Simulates Cloud CDN Video Ingress Failure & Multi-Region Fallback: primary video transcoder facility loses power; traffic fails over to backup regional transcoder with zero stream interruption.
+          </p>
+        </div>
+        <div id="diagram-d3"></div>
+      </div>
+    
+      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
+    </section>
+
+    <!-- Part 3: Explained by Analogy -->
+    <section class="topic-section" id="analogy">
+      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+      <p>In Cloud City, Brian broadcasts airship regattas to thousands of pub lanterns across the valley with zero signal delay.</p>
+
+      <div class="analogy-stepper" style="margin-top: 20px;">
+        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+      </div>
+
+      <div class="analogy-box" id="analogy-display"></div>
+      <div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div>
+      <div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<tr><td>Brightloaf city campus</td><td>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
+<tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
+<tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
+<tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
+</tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div>
+    </section>
+
+    <!-- Part 4: Demo or Practice Exercise -->
+    <section class="topic-section" id="demo-or-practice">
+      <h2 class="section-title"><span class="section-number">4</span> Practice Exercise</h2>
+      
+        <div class="callout">
+          <div class="callout-title">Practice Exercise: Live Video Streaming Architecture Defense</div>
+          <p>
+            An exam scenario asks: <em>"HRL needs to deliver live race video streams to millions of concurrent viewers globally with minimum latency and highest cache hit ratio, while preventing origin server exhaustion. Which edge service should be deployed?"</em>
+          </p>
+          <p>Contrast <strong>Cloud CDN / Media CDN</strong> with self-hosting NGINX reverse proxies on Compute Engine.</p>
+        </div>
+        <button class="btn-de" id="toggle-solution-btn" onclick="toggleSolution()" style="margin-bottom:14px;">👁 Show Solution & Rubric</button>
+        <div id="solution-block" style="display:none; background:#0d1222; padding:18px; border-radius:8px; border:1px solid var(--panel-border);">
+          <h4>Defended Answer</h4>
+          <p><strong>Cloud CDN / Media CDN</strong> leverages Google's global edge network of thousands of Points of Presence (PoPs) connected via private fiber. It automatically caches video chunks (HLS/DASH) at the edge closest to the user, providing over 95% origin cache offload with sub-second latency. Self-hosting NGINX proxies on Compute Engine requires manual autoscaling, cannot match Google's global Anycast edge presence, and introduces severe single-region origin bottlenecks under viral viewer spikes.</p>
+        </div>
+        
+      <div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
+gcloud services list --enabled
+: "Guard: DEMO_PROJECT_ID must be set"
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+terraform fmt -check
+terraform validate
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in
+terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
+terraform output
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+gcloud projects describe "$DEMO_PROJECT_ID"
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
+    </section>
+
+    <!-- Footer 1: Knowledge Check -->
+    <section class="topic-section" id="quiz">
+      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+      
+        <div class="quiz-card">
+          <span class="quiz-badge">Band: Case Study: HRL (Question 1)</span>
+          <p><strong>Helicopter Racing League wants to train a machine learning model to predict race outcomes using historical telemetry from past seasons. The data science team prefers using Python Jupyter notebooks and wants an automated managed pipeline for model training, hyperparameter tuning, and endpoint deployment. Which service should you recommend?</strong></p>
+          <ul class="quiz-options">
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! Vertex AI provides managed Jupyter notebooks (Workbench), automated pipelines, hyperparameter tuning, model registry, and managed deployment endpoints.')">A) Vertex AI with Vertex AI Workbench notebooks and Vertex AI Pipelines.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Compute Engine requires manual GPU driver installation, OS patching, and does not provide managed MLOps pipelines.')">B) Compute Engine VMs with manual NVIDIA GPU driver installations.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Cloud Functions has execution time limits (max 60 min) and lacks GPU support for heavy ML training.')">C) Cloud Functions with local scikit-learn libraries.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'BigQuery ML is suited for SQL models on tabular data, but does not provide Jupyter notebooks or general custom deep learning pipelines.')">D) BigQuery ML only.</button>
+          </ul>
+          <div class="quiz-explanation"></div>
+        </div>
+        
+      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
+    </section>
+
+    <!-- Footer 2: Further Reading -->
+    <section class="topic-section" id="reading">
+      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
+      <ul><li><a href='https://cloud.google.com/media-cdn/docs' target='_blank'>Google Cloud Media CDN Documentation</a></li><li><a href='https://cloud.google.com/vertex-ai/docs' target='_blank'>Vertex AI Machine Learning Platform</a></li></ul>
+    </section>
+    <!-- Topic Pagination Footer -->
+    <nav class="topic-pagination" aria-label="Topic Pagination">
+      <!-- Previous Topic -->
+      <a href="topic-048.html" class="pagination-card prev">
+        <div class="pagination-direction">← PREVIOUS TOPIC</div>
+        <div class="pagination-topic-meta">Phase 7 — Case Studies & Exam • [7.4c]</div>
+        <div class="pagination-title">048: Case Study: TerramEarth</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div>
+      </a>
+
+      <!-- Roadmap Overview -->
+      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
+        <div class="pagination-direction">ROADMAP OVERVIEW</div>
+        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-title">Architecture Explorer</div>
+        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
+      </a>
+
+      <!-- Next Topic -->
+      <a href="topic-050.html" class="pagination-card next">
+        <div class="pagination-direction">NEXT TOPIC →</div>
+        <div class="pagination-topic-meta">Phase 7 — Case Studies & Exam • [7.5]</div>
+        <div class="pagination-title">050: PCA Exam Strategy & Keyword Elimination</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
+      </a>
+    </nav>
+
+
+  </main>
+
+  <footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
+    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static & Offline Compatible
+  </footer>
+
+  <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+  <script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-049-d1",
+  "title": "Case Study: Helicopter Racing League \u2014 Scope & Architecture Map",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "map",
+  "purpose": "Visualizes Helicopter Racing League (HRL) Low-Latency Global Telemetry & Video Streaming Architecture: Helicopter telemetry sensors & HD cameras, Cloud Pub/Sub, Cloud Dataflow, Cloud Spanner, and Cloud CDN video acceleration.",
+  "routing_rationale": "HRL requires sub-second streaming of in-flight race telemetry (G-force, RPM, position) to augment global live video broadcasts with real-time predictive overtake AI graphics.",
+  "groups": [
+    {
+      "id": "g-racing-copters",
+      "label": "Race Helicopters & In-Flight Sensors",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-realtime-processing",
+      "label": "Real-Time Telemetry & AI Prediction",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-viewer-broadcast",
+      "label": "Global Fan Experience & Live Video Tier",
+      "type": "vpc",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "helicopter-telemetry",
+      "label": "Helicopter Sensor Array",
+      "product": "100Hz Telemetry & 4K Camera",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams rotor RPM, airspeed, GPS coordinates, and G-force over private cellular."
+    },
+    {
+      "id": "mobile-edge-cell",
+      "label": "5G Trackside Mobile Edge",
+      "product": "Google Cloud Distributed Edge",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Ultra-low-latency 5G edge compute gateway at racing circuit PoP."
+    },
+    {
+      "id": "dataflow-telemetry",
+      "label": "Dataflow Streaming Engine",
+      "product": "Sliding Window Race Positions",
+      "group": "g-realtime-processing",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes instantaneous race leaderboards and lap split times in under 50ms."
+    },
+    {
+      "id": "vertex-predictive-ai",
+      "label": "Vertex AI Overtake Predictor",
+      "product": "Real-time Probability Engine",
+      "group": "g-realtime-processing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Predicts pass probability based on rotor aerodynamics and entry velocity."
+    },
+    {
+      "id": "cloud-cdn-video",
+      "label": "Cloud CDN Live Video Cache",
+      "product": "Low-Latency HLS / CMAF Stream",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Distributes 4K race video feeds worldwide with sub-second glass-to-glass latency."
+    },
+    {
+      "id": "spanner-race-state",
+      "label": "Cloud Spanner Live Leaderboard",
+      "product": "Global Race Standings",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Delivers globally synchronized race standings to mobile fan apps worldwide."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "helicopter-telemetry",
+      "to": "mobile-edge-cell",
+      "label": "1. 5G Low-Latency Sensor Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mobile-edge-cell",
+      "to": "dataflow-telemetry",
+      "label": "2. Ingest to Dataflow Pipeline",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-telemetry",
+      "to": "vertex-predictive-ai",
+      "label": "3. Feed Real-time Aerodynamic State",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-predictive-ai",
+      "to": "cloud-cdn-video",
+      "label": "4. Inject Dynamic AR Graphic Overlay",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "dataflow-telemetry",
+      "to": "spanner-race-state",
+      "label": "5. Update Global Fan Leaderboards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ultra-Low Latency Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "In-flight sensors stream over 5G edge into Dataflow in under 20 milliseconds.",
+      "why_traversal": "Provides the sub-second baseline needed for augmented reality sports broadcasting.",
+      "protocol": "QUIC / UDP Stream",
+      "plane": "Data Plane"
+    },
+    {
+      "n": 2,
+      "title": "Predictive AI Augmentation & Global Broadcast",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Vertex AI predicts overtakes; overlays probability onto video stream cached via Cloud CDN.",
+      "why_traversal": "Engages 10 million global fans with cutting-edge real-time predictive graphics.",
+      "protocol": "CMAF HLS / Spanner gRPC",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canyon-5g-drop",
+      "label": "Intermittent Track Shadow Signal Loss",
+      "changes": {
+        "failedNodes": [
+          "mobile-edge-cell"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Helicopter dipped into mountain canyon, dropping 5G signal for 4 seconds.",
+      "diverted_path": "Helicopter onboard flash memory buffered telemetry; transmitted burst upon re-emergence.",
+      "blast_radius": "Dataflow event-time watermarking sorted packets correctly with zero distortion.",
+      "recovery": "Dataflow watermark handling absorbed out-of-order data automatically."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-049-d2",
+  "title": "Case Study: Helicopter Racing League \u2014 Request & Control Flow",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "flow",
+  "purpose": "Traces Real-Time Predictive AI Graphics Injection Flow: telemetry ingestion -> aerodynamic ML inference -> graphic overlay composition -> Cloud CDN broadcast distribution.",
+  "routing_rationale": "Synchronizing sensor event timestamps with video presentation timestamps (PTS) ensures augmented reality telemetry overlays align perfectly with live helicopter footage.",
+  "groups": [
+    {
+      "id": "g-raw-sensor",
+      "label": "In-Flight Sensor Telemetry",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ar-composer",
+      "label": "AI Prediction & Video Compositor",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-fan-endpoints",
+      "label": "Global Fan Mobile & TV Broadcast",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rotor-data",
+      "label": "Rotor Pitch & Bank Angle",
+      "product": "Event Timestamp: 14:02:11.450",
+      "group": "g-raw-sensor",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Helicopter #7 banks hard into turn 4 at 160 knots."
+    },
+    {
+      "id": "ai-pass-model",
+      "label": "Vertex AI Prediction Endpoint",
+      "product": "Inference Latency: 12ms",
+      "group": "g-ar-composer",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Predicts 87% probability of overtaking Helicopter #2 in turn 4."
+    },
+    {
+      "id": "transcoder-api",
+      "label": "Live Stream Video Transcoder",
+      "product": "Transcoder API (CMAF)",
+      "group": "g-ar-composer",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Composites dynamic '87% OVERTAKE' graphic onto 4K video frame."
+    },
+    {
+      "id": "fan-screen",
+      "label": "Fan Living Room TV (4K 60FPS)",
+      "product": "Cloud CDN Glass-to-Glass: 850ms",
+      "group": "g-fan-endpoints",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Displays synchronized graphic overlay matching live helicopter banking on screen."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "rotor-data",
+      "to": "ai-pass-model",
+      "label": "1. Send Flight Dynamics to Model",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ai-pass-model",
+      "to": "transcoder-api",
+      "label": "2. Inject Prediction Metadata",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "transcoder-api",
+      "to": "fan-screen",
+      "label": "3. Broadcast Enhanced Stream",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Sub-Second AI Inference",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Vertex AI computes overtake odds in 12ms; passes metadata to Live Stream Transcoder.",
+      "why_traversal": "Enables predictive graphics before the physical maneuver even concludes.",
+      "protocol": "gRPC Inference",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Ultra-Low-Latency CDN Delivery",
+      "edges": [
+        "e3"
+      ],
+      "action": "Transcoder emits CMAF chunks cached at Google edge PoPs; viewers watch with sub-second delay.",
+      "why_traversal": "Creates an immersive real-time viewing experience on par with on-track spectators.",
+      "protocol": "HTTP/3 CMAF over Cloud CDN",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pts-desync-lag",
+      "label": "Video-Telemetry Clock Desynchronization",
+      "changes": {
+        "failedNodes": [
+          "transcoder-api"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Telemetry NTP clock differed from video camera Genlock clock by 400ms.",
+      "diverted_path": "Graphic overlay appeared 400ms after the overtake was already completed on screen.",
+      "blast_radius": "Awkward viewer experience.",
+      "recovery": "Lock telemetry sensor timestamps directly to camera video timecode (SMPTE) at edge."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-049-d3",
+  "title": "Case Study: Helicopter Racing League \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "failure",
+  "purpose": "Simulates Cloud CDN Video Ingress Failure & Multi-Region Fallback: primary video transcoder facility loses power; traffic fails over to backup regional transcoder with zero stream interruption.",
+  "routing_rationale": "Live sports broadcasting demands zero buffering; dual-region active-active transcoding clusters paired with Cloud CDN origin failover eliminate viewer blackouts.",
+  "groups": [
+    {
+      "id": "g-pri-transcode",
+      "label": "Primary Transcoder: us-central1 (Outage)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-sec-transcode",
+      "label": "Secondary Transcoder: us-east4 (Failover)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pri-encoder-dead",
+      "label": "Primary Transcoder (Failed)",
+      "product": "Status: POWER_FAILURE",
+      "group": "g-pri-transcode",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Datacenter power glitch abruptly knocks out primary encoding cluster."
+    },
+    {
+      "id": "cdn-origin-shield",
+      "label": "Cloud CDN Origin Failover",
+      "product": "Automatic Backend Switching",
+      "group": "g-pri-transcode",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects HTTP 502 from primary origin; automatically shifts requests to secondary origin."
+    },
+    {
+      "id": "sec-encoder-live",
+      "label": "Secondary Transcoder (Active)",
+      "product": "Encoding 4K Stream in us-east4",
+      "group": "g-sec-transcode",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Warm standby transcoder picks up stream chunk encoding in < 2 seconds."
+    },
+    {
+      "id": "uninterrupted-fans",
+      "label": "Global Viewers (Zero Buffering)",
+      "product": "Continuous Video Playback",
+      "group": "g-sec-transcode",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Edge cache buffers absorb 2-second switchover; zero dropped frames for 10M viewers."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "pri-encoder-dead",
+      "to": "cdn-origin-shield",
+      "label": "1. Detect Origin Failure",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cdn-origin-shield",
+      "to": "sec-encoder-live",
+      "label": "2. Reroute Origin Traffic",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sec-encoder-live",
+      "to": "uninterrupted-fans",
+      "label": "3. Stream Secondary Video Chunks",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Origin Health Check Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud CDN detects primary origin failure and switches to secondary origin automatically.",
+      "why_traversal": "Eliminates single point of failure in video distribution pipeline.",
+      "protocol": "CDN Origin Failover Policy",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Zero-Buffer Viewer Experience",
+      "edges": [
+        "e3"
+      ],
+      "action": "Secondary origin continues segment stream; player video buffer plays through transition.",
+      "why_traversal": "Protects broadcast integrity and sponsor advertising revenue.",
+      "protocol": "HTTPS CMAF Video Chunks",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "origin-failover-timeout-stall",
+      "label": "Long Health Check Timeout Causes Player Buffering",
+      "changes": {
+        "failedNodes": [
+          "cdn-origin-shield"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Origin timeout set to 15 seconds; player 3-second buffer emptied before switch occurred.",
+      "diverted_path": "Viewers saw spinning loading wheel for 12 seconds.",
+      "blast_radius": "Viewer complaints during final race lap.",
+      "recovery": "Tune Cloud CDN origin timeout to 2 seconds with 2 consecutive retry limits."
+    }
+  ]
+}
+  </script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-049-d4",
+  "title": "Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML \u2014 D4",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "HRL requires sub-second streaming of in-flight race telemetry (G-force, RPM, position) to augment global live video broadcasts with real-time predictive overtake AI graphics.",
+  "groups": [
+    {
+      "id": "g-racing-copters",
+      "label": "Race Helicopters & In-Flight Sensors",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-realtime-processing",
+      "label": "Real-Time Telemetry & AI Prediction",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-viewer-broadcast",
+      "label": "Global Fan Experience & Live Video Tier",
+      "type": "vpc",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "helicopter-telemetry",
+      "label": "Helicopter Sensor Array",
+      "product": "100Hz Telemetry & 4K Camera",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams rotor RPM, airspeed, GPS coordinates, and G-force over private cellular."
+    },
+    {
+      "id": "mobile-edge-cell",
+      "label": "5G Trackside Mobile Edge",
+      "product": "Google Cloud Distributed Edge",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Ultra-low-latency 5G edge compute gateway at racing circuit PoP."
+    },
+    {
+      "id": "dataflow-telemetry",
+      "label": "Dataflow Streaming Engine",
+      "product": "Sliding Window Race Positions",
+      "group": "g-realtime-processing",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes instantaneous race leaderboards and lap split times in under 50ms."
+    },
+    {
+      "id": "vertex-predictive-ai",
+      "label": "Vertex AI Overtake Predictor",
+      "product": "Real-time Probability Engine",
+      "group": "g-realtime-processing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Predicts pass probability based on rotor aerodynamics and entry velocity."
+    },
+    {
+      "id": "cloud-cdn-video",
+      "label": "Cloud CDN Live Video Cache",
+      "product": "Low-Latency HLS / CMAF Stream",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Distributes 4K race video feeds worldwide with sub-second glass-to-glass latency."
+    },
+    {
+      "id": "spanner-race-state",
+      "label": "Cloud Spanner Live Leaderboard",
+      "product": "Global Race Standings",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Delivers globally synchronized race standings to mobile fan apps worldwide."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "helicopter-telemetry",
+      "to": "mobile-edge-cell",
+      "label": "1. 5G Low-Latency Sensor Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mobile-edge-cell",
+      "to": "dataflow-telemetry",
+      "label": "2. Ingest to Dataflow Pipeline",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-telemetry",
+      "to": "vertex-predictive-ai",
+      "label": "3. Feed Real-time Aerodynamic State",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-predictive-ai",
+      "to": "cloud-cdn-video",
+      "label": "4. Inject Dynamic AR Graphic Overlay",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "dataflow-telemetry",
+      "to": "spanner-race-state",
+      "label": "5. Update Global Fan Leaderboards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ultra-Low Latency Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "In-flight sensors stream over 5G edge into Dataflow in under 20 milliseconds.",
+      "why_traversal": "Provides the sub-second baseline needed for augmented reality sports broadcasting.",
+      "protocol": "QUIC / UDP Stream",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Predictive AI Augmentation & Global Broadcast",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Vertex AI predicts overtakes; overlays probability onto video stream cached via Cloud CDN.",
+      "why_traversal": "Engages 10 million global fans with cutting-edge real-time predictive graphics.",
+      "protocol": "CMAF HLS / Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canyon-5g-drop",
+      "label": "Intermittent Track Shadow Signal Loss",
+      "changes": {
+        "failedNodes": [
+          "mobile-edge-cell"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Helicopter dipped into mountain canyon, dropping 5G signal for 4 seconds.",
+      "diverted_path": "Helicopter onboard flash memory buffered telemetry; transmitted burst upon re-emergence.",
+      "blast_radius": "Dataflow event-time watermarking sorted packets correctly with zero distortion.",
+      "recovery": "Dataflow watermark handling absorbed out-of-order data automatically."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-049-d5",
+  "title": "Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML \u2014 D5",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "HRL requires sub-second streaming of in-flight race telemetry (G-force, RPM, position) to augment global live video broadcasts with real-time predictive overtake AI graphics.",
+  "groups": [
+    {
+      "id": "g-racing-copters",
+      "label": "Race Helicopters & In-Flight Sensors",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-realtime-processing",
+      "label": "Real-Time Telemetry & AI Prediction",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-viewer-broadcast",
+      "label": "Global Fan Experience & Live Video Tier",
+      "type": "vpc",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "helicopter-telemetry",
+      "label": "Helicopter Sensor Array",
+      "product": "100Hz Telemetry & 4K Camera",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams rotor RPM, airspeed, GPS coordinates, and G-force over private cellular."
+    },
+    {
+      "id": "mobile-edge-cell",
+      "label": "5G Trackside Mobile Edge",
+      "product": "Google Cloud Distributed Edge",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Ultra-low-latency 5G edge compute gateway at racing circuit PoP."
+    },
+    {
+      "id": "dataflow-telemetry",
+      "label": "Dataflow Streaming Engine",
+      "product": "Sliding Window Race Positions",
+      "group": "g-realtime-processing",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes instantaneous race leaderboards and lap split times in under 50ms."
+    },
+    {
+      "id": "vertex-predictive-ai",
+      "label": "Vertex AI Overtake Predictor",
+      "product": "Real-time Probability Engine",
+      "group": "g-realtime-processing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Predicts pass probability based on rotor aerodynamics and entry velocity."
+    },
+    {
+      "id": "cloud-cdn-video",
+      "label": "Cloud CDN Live Video Cache",
+      "product": "Low-Latency HLS / CMAF Stream",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Distributes 4K race video feeds worldwide with sub-second glass-to-glass latency."
+    },
+    {
+      "id": "spanner-race-state",
+      "label": "Cloud Spanner Live Leaderboard",
+      "product": "Global Race Standings",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Delivers globally synchronized race standings to mobile fan apps worldwide."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "helicopter-telemetry",
+      "to": "mobile-edge-cell",
+      "label": "1. 5G Low-Latency Sensor Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mobile-edge-cell",
+      "to": "dataflow-telemetry",
+      "label": "2. Ingest to Dataflow Pipeline",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-telemetry",
+      "to": "vertex-predictive-ai",
+      "label": "3. Feed Real-time Aerodynamic State",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-predictive-ai",
+      "to": "cloud-cdn-video",
+      "label": "4. Inject Dynamic AR Graphic Overlay",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "dataflow-telemetry",
+      "to": "spanner-race-state",
+      "label": "5. Update Global Fan Leaderboards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ultra-Low Latency Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "In-flight sensors stream over 5G edge into Dataflow in under 20 milliseconds.",
+      "why_traversal": "Provides the sub-second baseline needed for augmented reality sports broadcasting.",
+      "protocol": "QUIC / UDP Stream",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Predictive AI Augmentation & Global Broadcast",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Vertex AI predicts overtakes; overlays probability onto video stream cached via Cloud CDN.",
+      "why_traversal": "Engages 10 million global fans with cutting-edge real-time predictive graphics.",
+      "protocol": "CMAF HLS / Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canyon-5g-drop",
+      "label": "Intermittent Track Shadow Signal Loss",
+      "changes": {
+        "failedNodes": [
+          "mobile-edge-cell"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Helicopter dipped into mountain canyon, dropping 5G signal for 4 seconds.",
+      "diverted_path": "Helicopter onboard flash memory buffered telemetry; transmitted burst upon re-emergence.",
+      "blast_radius": "Dataflow event-time watermarking sorted packets correctly with zero distortion.",
+      "recovery": "Dataflow watermark handling absorbed out-of-order data automatically."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-049-d6",
+  "title": "Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML \u2014 D6",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "HRL requires sub-second streaming of in-flight race telemetry (G-force, RPM, position) to augment global live video broadcasts with real-time predictive overtake AI graphics.",
+  "groups": [
+    {
+      "id": "g-racing-copters",
+      "label": "Race Helicopters & In-Flight Sensors",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-realtime-processing",
+      "label": "Real-Time Telemetry & AI Prediction",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-viewer-broadcast",
+      "label": "Global Fan Experience & Live Video Tier",
+      "type": "vpc",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "helicopter-telemetry",
+      "label": "Helicopter Sensor Array",
+      "product": "100Hz Telemetry & 4K Camera",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams rotor RPM, airspeed, GPS coordinates, and G-force over private cellular."
+    },
+    {
+      "id": "mobile-edge-cell",
+      "label": "5G Trackside Mobile Edge",
+      "product": "Google Cloud Distributed Edge",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Ultra-low-latency 5G edge compute gateway at racing circuit PoP."
+    },
+    {
+      "id": "dataflow-telemetry",
+      "label": "Dataflow Streaming Engine",
+      "product": "Sliding Window Race Positions",
+      "group": "g-realtime-processing",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes instantaneous race leaderboards and lap split times in under 50ms."
+    },
+    {
+      "id": "vertex-predictive-ai",
+      "label": "Vertex AI Overtake Predictor",
+      "product": "Real-time Probability Engine",
+      "group": "g-realtime-processing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Predicts pass probability based on rotor aerodynamics and entry velocity."
+    },
+    {
+      "id": "cloud-cdn-video",
+      "label": "Cloud CDN Live Video Cache",
+      "product": "Low-Latency HLS / CMAF Stream",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Distributes 4K race video feeds worldwide with sub-second glass-to-glass latency."
+    },
+    {
+      "id": "spanner-race-state",
+      "label": "Cloud Spanner Live Leaderboard",
+      "product": "Global Race Standings",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Delivers globally synchronized race standings to mobile fan apps worldwide."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "helicopter-telemetry",
+      "to": "mobile-edge-cell",
+      "label": "1. 5G Low-Latency Sensor Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mobile-edge-cell",
+      "to": "dataflow-telemetry",
+      "label": "2. Ingest to Dataflow Pipeline",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-telemetry",
+      "to": "vertex-predictive-ai",
+      "label": "3. Feed Real-time Aerodynamic State",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-predictive-ai",
+      "to": "cloud-cdn-video",
+      "label": "4. Inject Dynamic AR Graphic Overlay",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "dataflow-telemetry",
+      "to": "spanner-race-state",
+      "label": "5. Update Global Fan Leaderboards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ultra-Low Latency Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "In-flight sensors stream over 5G edge into Dataflow in under 20 milliseconds.",
+      "why_traversal": "Provides the sub-second baseline needed for augmented reality sports broadcasting.",
+      "protocol": "QUIC / UDP Stream",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Predictive AI Augmentation & Global Broadcast",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Vertex AI predicts overtakes; overlays probability onto video stream cached via Cloud CDN.",
+      "why_traversal": "Engages 10 million global fans with cutting-edge real-time predictive graphics.",
+      "protocol": "CMAF HLS / Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canyon-5g-drop",
+      "label": "Intermittent Track Shadow Signal Loss",
+      "changes": {
+        "failedNodes": [
+          "mobile-edge-cell"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Helicopter dipped into mountain canyon, dropping 5G signal for 4 seconds.",
+      "diverted_path": "Helicopter onboard flash memory buffered telemetry; transmitted burst upon re-emergence.",
+      "blast_radius": "Dataflow event-time watermarking sorted packets correctly with zero distortion.",
+      "recovery": "Dataflow watermark handling absorbed out-of-order data automatically."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}
+</script>
+  <script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">
+{
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "title": "Cloud City: Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML",
+  "city_concept": "City Sky Regatta & Signal Mirrors",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Airships were racing across the mountain valley, but spectators in the town square could only see distant specks and had no idea who was winning.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Broadcaster Brian mounted signal mirrors on airships (Video Feeds) and set up relay towers (Cloud CDN) beaming live flags to every street corner.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Brian hired an actuary (Vertex AI) who calculated wind drift to announce the winner 30 seconds before the final turn.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Signal mirrors are obscured by fog; digital video streaming over cloud CDN reaches millions of devices simultaneously in 4K.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script src="../assets/diagram-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
+      const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
+      const specD3 = JSON.parse(document.getElementById('spec-d3-data').textContent);
+      window.analogyData = JSON.parse(document.getElementById('analogy-data').textContent);
+
+      new DiagramEngine('diagram-d1', specD1);
+      new DiagramEngine('diagram-d2', specD2);
+      new DiagramEngine('diagram-d3', specD3);
+      new DiagramEngine('diagram-d4', JSON.parse(document.getElementById('spec-d4-data').textContent));
+      new DiagramEngine('diagram-d5', JSON.parse(document.getElementById('spec-d5-data').textContent));
+      new DiagramEngine('diagram-d6', JSON.parse(document.getElementById('spec-d6-data').textContent));
+
+      showAnalogyBeat(1);
+    });
+
+    function showAnalogyBeat(stepNum) {
+      if (!window.analogyData) return;
+      const beat = window.analogyData.beats.find(b => b.step === stepNum);
+      if (!beat) return;
+
+      const container = document.getElementById('analogy-display');
+      container.innerHTML = `
+        <h4 style="margin-top:0; color:var(--accent);">Beat ${beat.step}: ${beat.name}</h4>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--text-main);">${beat.story}</p>
+        <div style="font-size:11.5px; color:var(--text-dim);">
+          <strong style="color:#fb923c;">Analogy Tokens:</strong> ${beat.analogy_elements.join(' • ')}
+        </div>
+      `;
+
+      document.querySelectorAll('.stepper-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === stepNum);
+      });
+    }
+
+    function toggleSolution() {
+      const block = document.getElementById('solution-block');
+      const btn = document.getElementById('toggle-solution-btn');
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = '🙈 Hide Solution & Rubric';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = '👁 Show Solution & Rubric';
+      }
+    }
+
+    function checkQuiz(element, isCorrect, explanation) {
+      const card = element.closest('.quiz-card');
+      const options = card.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.style.borderColor = 'var(--panel-border)';
+        opt.style.background = 'var(--panel)';
+      });
+
+      element.style.borderColor = isCorrect ? 'var(--accent-green)' : 'var(--accent-red)';
+      element.style.background = isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+      const explEl = card.querySelector('.quiz-explanation');
+      explEl.style.display = 'block';
+      explEl.innerHTML = `<strong style="color:${isCorrect ? '#34d399' : '#f87171'};">${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
+    }
+  </script>
+  <!-- Floating Quick Navigation Dock -->
+  <div class="floating-topic-dock" id="floating-topic-dock">
+    <a href="topic-048.html" class="dock-btn prev" title="Previous Topic: Case Study: TerramEarth [Key: P]">← 048</a>
+    <span class="dock-indicator" title="Topic 049 of 60">049 / 060</span>
+    <a href="topic-050.html" class="dock-btn next" title="Next Topic: PCA Exam Strategy & Keyword Elimination [Key: N]">050 →</a>
+    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
+  </div>
+
+  <script>
+    // Global Keyboard Navigation between topics
+    (function() {
+      const prevUrl = "topic-048.html";
+      const nextUrl = "topic-050.html";
+      document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
+          if (prevUrl) window.location.href = prevUrl;
+        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
+          if (nextUrl) window.location.href = nextUrl;
+        } else if (e.key === 'i' || e.key === 'I') {
+          window.location.href = '../index.html';
+        }
+      });
+    })();
+  </script>
+  <!-- End Floating Quick Navigation Dock -->
+
+  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+</body>
+</html>

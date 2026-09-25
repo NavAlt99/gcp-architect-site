@@ -1,0 +1,43 @@
+{
+  "topic_no": "010",
+  "roadmap_id": "1.4",
+  "title": "Cloud City: Billing, Cost Hygiene, and FinOps Architecture",
+  "city_concept": "City Treasury, Utility Meters, and Emergency Spending Caps",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery left the kitchen water taps running full blast for three weeks. When the utility bill arrived, the bakery was nearly bankrupted.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Tomas the Treasurer installed digital meters (Cloud Billing Export) and set automated alarm bells when water consumption exceeded 50% of budget.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A pipe burst in the basement. The automatic shutoff valve (Pub/Sub + Cloud Function) cut the water main before the building flooded.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical billing, utility companies bill you 30 days late; in Google Cloud, billing data streams to BigQuery in continuous increments.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

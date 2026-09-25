@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Databases: Cloud SQL, Spanner, Firestore, and Bigtable — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-020.html">← Topic page</a><span>2.8 · TOPIC-020-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-020-d4",
+  "title": "Databases: Cloud SQL, Spanner, Firestore, and Bigtable \u2014 D4",
+  "topic_no": "020",
+  "roadmap_id": "2.8",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Relational workloads requiring strict global consistency use Cloud Spanner. Regional enterprise applications use Cloud SQL with synchronous replication.",
+  "groups": [
+    {
+      "id": "g-app-tier",
+      "label": "Application Client Tier",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-relational-db",
+      "label": "Relational Persistence (Cloud SQL & Spanner)",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-nosql-db",
+      "label": "High-Throughput NoSQL (Bigtable & Firestore)",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-client",
+      "label": "Application Workload",
+      "product": "GKE Microservices",
+      "group": "g-app-tier",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Handles customer checkout, inventory updates, and analytical telemetry."
+    },
+    {
+      "id": "cloud-sql-ha",
+      "label": "Cloud SQL (Regional HA)",
+      "product": "PostgreSQL / MySQL",
+      "group": "g-relational-db",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Primary instance with synchronous persistent disk replication to standby zone."
+    },
+    {
+      "id": "cloud-spanner",
+      "label": "Cloud Spanner (Global)",
+      "product": "99.999% Paxos & TrueTime",
+      "group": "g-relational-db",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Horizontally scalable relational database with external consistency worldwide."
+    },
+    {
+      "id": "cloud-bigtable",
+      "label": "Cloud Bigtable",
+      "product": "Low-Latency NoSQL",
+      "group": "g-nosql-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Sub-10ms write throughput for millions of IoT sensor events per second."
+    },
+    {
+      "id": "firestore",
+      "label": "Cloud Firestore",
+      "product": "Serverless Document NoSQL",
+      "group": "g-nosql-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Real-time client synchronization and mobile offline data caching."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-client",
+      "to": "cloud-sql-ha",
+      "label": "1. Regional ACID Transactions",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "app-client",
+      "to": "cloud-spanner",
+      "label": "2. Global Multi-Region Writes",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "app-client",
+      "to": "cloud-bigtable",
+      "label": "3. Streaming High-Volume Events",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "app-client",
+      "to": "firestore",
+      "label": "4. Mobile Profile Document Sync",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Regional ACID Ingestion",
+      "edges": [
+        "e1"
+      ],
+      "action": "Orders service executes SQL transaction on Cloud SQL with automatic failover.",
+      "why_traversal": "Cloud SQL delivers standard relational compatibility with minimal operational toil.",
+      "protocol": "PostgreSQL Protocol TCP 5432",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Global Consistency Commit",
+      "edges": [
+        "e2"
+      ],
+      "action": "Global inventory reservation commits across continents via Spanner Paxos quorum.",
+      "why_traversal": "TrueTime atomic clocks guarantee external consistency without distributed locking bottlenecks.",
+      "protocol": "Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Massive NoSQL Writes",
+      "edges": [
+        "e3"
+      ],
+      "action": "Real-time sensor logs stream into Bigtable tablets on Colossus shared storage.",
+      "why_traversal": "Bigtable handles millions of writes per second with sub-10ms response times.",
+      "protocol": "HBase / Bigtable gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "spanner-hotspot",
+      "label": "Monotonically Increasing Key Hotspotting",
+      "changes": {
+        "failedNodes": [
+          "cloud-spanner"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Application used sequential timestamp primary key (2026-09-24-001) causing write hotspot.",
+      "diverted_path": "Single Spanner split node saturates to 100% CPU; write latency spikes.",
+      "blast_radius": "All insert operations on that table delayed.",
+      "recovery": "Prepend hash prefix or use UUIDv4 to distribute writes across all cluster nodes."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "app-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

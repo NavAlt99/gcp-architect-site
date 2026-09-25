@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GCP Architect Site Setup</title><link rel="stylesheet" href="assets/site.css"></head>
+<body><main class="main-content"><p><a href="index.html">← Roadmap index</a></p><header class="page-header"><h1 class="page-title">Setup and safety</h1><p class="page-lead">Build the static learning site from the roadmap source, then browse without credentials.</p></header>
+<section class="topic-section"><h2 class="section-title">Build</h2><pre><code>python3 scripts/build_site.py --roadmap ../gcp-architect-roadmap.md</code></pre><p>The build writes a manifest and runs content/link/diagram checks.</p></section>
+<section class="topic-section"><h2 class="section-title">Live-demo guardrails</h2><p>Use a disposable project, confirm the active project and region, set a budget alert, keep permissions narrow, review Terraform plans, and clean up named resources. Browsing is free; create/apply operations can incur charges.</p><pre><code>export DEMO_PROJECT_ID="your-disposable-project"
+gcloud config get-value project
+gcloud projects describe "$DEMO_PROJECT_ID"
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in</code></pre></section>
+<section class="topic-section"><h2 class="section-title">Evidence</h2><p>Use Cloud Console, CLI, Terraform, logs, metrics, audit logs, quotas, and current official product documentation as mutually checking evidence. Never commit state files, credentials, tokens, or customer data.</p></section>
+</main><script src="assets/site-interactions.js"></script></body></html>

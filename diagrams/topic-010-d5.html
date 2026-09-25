@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing, Cost Hygiene, and FinOps Architecture — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-010.html">← Topic page</a><span>1.4 · TOPIC-010-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-010-d5",
+  "title": "Billing, Cost Hygiene, and FinOps Architecture \u2014 D5",
+  "topic_no": "010",
+  "roadmap_id": "1.4",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Cost tracking relies on decoupled event streaming. Billing data is continuously streamed into BigQuery for SQL analytics, while budget monitors trigger Pub/Sub automations.",
+  "groups": [
+    {
+      "id": "g-billing",
+      "label": "Cloud Billing Master Account",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-analytics",
+      "label": "FinOps BigQuery Analytics & Budgets",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-action",
+      "label": "Automated Cost Remediation & Capping",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "billing-acct",
+      "label": "Master Billing Account",
+      "product": "Cloud Billing Engine",
+      "group": "g-billing",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Consolidates payments, committed use discounts, and project associations."
+    },
+    {
+      "id": "cost-export",
+      "label": "Detailed Export Stream",
+      "product": "Cloud Billing Export",
+      "group": "g-billing",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Streams resource usage, labels, and pricing data directly into BigQuery daily."
+    },
+    {
+      "id": "bq-finops",
+      "label": "BigQuery FinOps Dataset",
+      "product": "BigQuery Analytics",
+      "group": "g-analytics",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Stores partitioned raw usage data for Looker Studio unit-cost dashboards."
+    },
+    {
+      "id": "budget-alert",
+      "label": "Budget Alert Rule (80% / 100%)",
+      "product": "Cloud Budgets API",
+      "group": "g-analytics",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Monitors monthly forecast; publishes threshold events to Pub/Sub topic."
+    },
+    {
+      "id": "capping-fn",
+      "label": "Cloud Function Cost Capper",
+      "product": "Cloud Functions",
+      "group": "g-action",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Automated remediation: revokes billing permissions or downsizes dev MIGs on 100% breach."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "billing-acct",
+      "to": "cost-export",
+      "label": "1. Stream Line-Item Telemetry",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "cost-export",
+      "to": "bq-finops",
+      "label": "2. Ingest Partitioned Table",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "billing-acct",
+      "to": "budget-alert",
+      "label": "3. Evaluate Spend vs Threshold",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "budget-alert",
+      "to": "capping-fn",
+      "label": "4. Trigger Remediation Pub/Sub",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Billing Stream Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Billing pushes hourly usage and SKU costs directly to BigQuery.",
+      "why_traversal": "Provides granular, SQL-queryable visibility into cost drivers without manual exports.",
+      "protocol": "BigQuery Streaming API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Budget Threshold Trigger",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Budgets evaluates projected spend; detects spend crossing 100% allocation.",
+      "why_traversal": "Continuous automated evaluation prevents unexpected end-of-month cloud bills.",
+      "protocol": "Cloud Budgets API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated Remediation",
+      "edges": [
+        "e4"
+      ],
+      "action": "Budget publishes event to Pub/Sub; Cloud Function scales non-critical instances to zero.",
+      "why_traversal": "Immediate programmatic intervention caps unbounded expenditure during runaways.",
+      "protocol": "Cloud Pub/Sub",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "runaway-bigquery",
+      "label": "Uncapped BigQuery Query Scan Spike",
+      "changes": {
+        "failedNodes": [
+          "budget-alert"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Developer script executed full scan on 50TB unpartitioned table repeatedly.",
+      "diverted_path": "Spend spikes $250/hour; budget alert fires notification within 30 minutes.",
+      "blast_radius": "Development project budget consumed in 4 hours.",
+      "recovery": "Set BigQuery maximum_bytes_billed per query; enforce partitioned and clustered tables."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "billing-acct"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "billing-acct"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

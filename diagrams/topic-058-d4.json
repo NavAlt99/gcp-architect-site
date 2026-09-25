@@ -1,0 +1,228 @@
+{
+  "id": "topic-058-d4",
+  "title": "Cheat Sheet: Hybrid Connectivity (HA VPN vs Interconnect) \u2014 D4",
+  "topic_no": "058",
+  "roadmap_id": "cheat-4",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Choosing hybrid cloud networking requires evaluating bandwidth, encryption, physical colocation presence, and SLA targets: 99.99% high availability mandates dual colocation facilities and four cross-connects.",
+  "groups": [
+    {
+      "id": "g-hybrid-req-eval",
+      "label": "Bandwidth & SLA Requirements",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-interconnect-tier",
+      "label": "Enterprise Dedicated & Partner Interconnect",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpn-peering-tier",
+      "label": "IPsec VPN & Direct Peering",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "req-bandwidth-large",
+      "label": "Bandwidth > 10Gbps Required?",
+      "product": "High-Throughput Data Migration",
+      "group": "g-hybrid-req-eval",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Demands 10Gbps to 100Gbps dedicated pipe without public internet transit."
+    },
+    {
+      "id": "req-quick-budget",
+      "label": "Bandwidth < 3Gbps / Low Budget?",
+      "product": "Encrypted Public Internet Path",
+      "group": "g-hybrid-req-eval",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Fast setup (hours), encrypted IPsec, dynamic BGP routing, lower cost."
+    },
+    {
+      "id": "dedicated-interconnect",
+      "label": "Dedicated Interconnect (10/100G)",
+      "product": "Physical Cross-Connect to Google",
+      "group": "g-interconnect-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Direct fiber connection at Google colocation facility; 99.99% SLA architecture."
+    },
+    {
+      "id": "partner-interconnect",
+      "label": "Partner Interconnect (50M-10G)",
+      "product": "Service Provider Co-location",
+      "group": "g-interconnect-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "For enterprises whose data center is not colocated with a Google facility."
+    },
+    {
+      "id": "ha-vpn-pick",
+      "label": "Cloud HA VPN (99.99% SLA)",
+      "product": "Dual Tunnels over Dynamic BGP",
+      "group": "g-vpn-peering-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "IPsec encrypted tunnels (max 3Gbps per tunnel); supports active-active BGP routing."
+    },
+    {
+      "id": "cross-cloud-pick",
+      "label": "Cross-Cloud Interconnect",
+      "product": "Direct Link to AWS / Azure",
+      "group": "g-vpn-peering-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Pre-provisioned physical connection between Google Cloud and AWS/Azure datacenters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "req-bandwidth-large",
+      "to": "dedicated-interconnect",
+      "label": "1. >10Gbps + Colocated -> Dedicated Interconnect",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "req-bandwidth-large",
+      "to": "partner-interconnect",
+      "label": "2. Sub-10Gbps or Not Colocated -> Partner Interconnect",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "req-quick-budget",
+      "to": "ha-vpn-pick",
+      "label": "3. <3Gbps + IPsec Encryption -> HA VPN",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "req-bandwidth-large",
+      "to": "cross-cloud-pick",
+      "label": "4. Direct AWS/Azure Link -> Cross-Cloud",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Bandwidth & Physical Presence Evaluation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Assesses physical datacenter location and throughput volume.",
+      "why_traversal": "Dedicated Interconnect requires customer presence in Google colocation facility.",
+      "protocol": "Physical 802.1q VLAN",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Encryption & Multi-Cloud Evaluation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Selects HA VPN for IPsec encryption or Cross-Cloud Interconnect for AWS/Azure.",
+      "why_traversal": "Provides secure, high-availability hybrid connectivity matched to budget.",
+      "protocol": "IPsec / BGP Routing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unencrypted-interconnect-audit",
+      "label": "Interconnect Lacks IPsec for Regulated Data",
+      "changes": {
+        "failedNodes": [
+          "dedicated-interconnect"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Compliance auditor rejected standard Interconnect because traffic was unencrypted on wire.",
+      "diverted_path": "Audit finding issued.",
+      "blast_radius": "Delayed migration sign-off.",
+      "recovery": "Deploy Cloud HA VPN over Cloud Interconnect or enable MACsec encryption on Dedicated Interconnect."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "req-bandwidth-large"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "req-bandwidth-large"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

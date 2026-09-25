@@ -1,0 +1,228 @@
+{
+  "id": "topic-025-d1",
+  "title": "Migration Strategies & The 6 Rs \u2014 Scope & Architecture Map",
+  "topic_no": "025",
+  "roadmap_id": "3.4",
+  "kind": "map",
+  "purpose": "Visualizes the 6 Rs Enterprise Migration Framework (Rehost, Replatform, Refactor, Repurchase, Retain, Retire) and Google Cloud migration tooling (Migrate to Virtual Machines, DMS, Storage Transfer Service).",
+  "routing_rationale": "Selecting the proper migration path balances migration velocity, operational refactoring cost, and long-term cloud native agility.",
+  "groups": [
+    {
+      "id": "g-onprem",
+      "label": "Legacy On-Premise Data Center",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-migration-tools",
+      "label": "Google Cloud Migration Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gcp-landing",
+      "label": "Target Cloud Landing Zone",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "legacy-vm",
+      "label": "VMware ESXi Workloads",
+      "product": "On-Prem Virtual Machines",
+      "group": "g-onprem",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Monolithic enterprise applications running on legacy VMware vSphere infrastructure."
+    },
+    {
+      "id": "legacy-oracle",
+      "label": "On-Prem Oracle / MySQL DB",
+      "product": "Enterprise Relational DB",
+      "group": "g-onprem",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Core transaction database holding critical customer transaction history."
+    },
+    {
+      "id": "m4vm-engine",
+      "label": "Migrate to Virtual Machines",
+      "product": "Agentless Replication Engine",
+      "group": "g-migration-tools",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Streams OS disk blocks directly into Google Cloud Persistent Disk with zero downtime."
+    },
+    {
+      "id": "dms-engine",
+      "label": "Database Migration Service",
+      "product": "Continuous CDC Replication",
+      "group": "g-migration-tools",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Serverless streaming replication with schema translation to Cloud SQL / AlloyDB."
+    },
+    {
+      "id": "gce-migrated",
+      "label": "Compute Engine / GKE",
+      "product": "Modernized Cloud Workload",
+      "group": "g-gcp-landing",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Rehosted VMs running on Compute Engine or refactored into GKE containers."
+    },
+    {
+      "id": "cloudsql-target",
+      "label": "Cloud SQL / AlloyDB",
+      "product": "Fully Managed Database",
+      "group": "g-gcp-landing",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Target managed database running with automatic maintenance, HA, and automated backups."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "legacy-vm",
+      "to": "m4vm-engine",
+      "label": "1. Replicate VM Disk Blocks",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "legacy-oracle",
+      "to": "dms-engine",
+      "label": "2. Stream Binlog / CDC Data",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "m4vm-engine",
+      "to": "gce-migrated",
+      "label": "3. Launch Compute Engine Instance",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "dms-engine",
+      "to": "cloudsql-target",
+      "label": "4. Synchronize Target Database",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Continuous Background Replication",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "M4VM and DMS stream data over Dedicated Interconnect while on-prem services remain live.",
+      "why_traversal": "Eliminates multi-day maintenance outages during enterprise data synchronization.",
+      "protocol": "TLS Block Streaming / CDC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Final Cutover & Launch",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Final delta sync completes in < 3 minutes; traffic switches over to GCP with minimal downtime.",
+      "why_traversal": "Provides clean, controlled cutover with verified data consistency.",
+      "protocol": "Cutover Orchestration",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cutover-network-stall",
+      "label": "Interconnect Bandwidth Saturation",
+      "changes": {
+        "failedNodes": [
+          "m4vm-engine"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Under-sized Cloud Interconnect saturated by unthrottled block replication.",
+      "diverted_path": "Production on-prem traffic experiences high packet loss.",
+      "blast_radius": "On-prem user response times degrade.",
+      "recovery": "Enable bandwidth rate limiting on M4VM replication schedules during business hours."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "legacy-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "legacy-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes the 6 Rs Enterprise Migration Framework (Rehost, Replatform, Refactor, Repurchase, Retain, Retire) and Google Cloud migration tooling (Migrate to Virtual Machines, DMS, Storage Transfer Service)."
+}

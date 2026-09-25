@@ -1,0 +1,218 @@
+{
+  "id": "topic-030-d2",
+  "title": "High Availability by Layer \u2014 Request & Control Flow",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "flow",
+  "purpose": "Traces Automatic Zonal Failover within a Regional Managed Instance Group: health check failure detection, instance draining, and traffic shifting to healthy zones.",
+  "routing_rationale": "Regional Managed Instance Groups continuously monitor instance health via application HTTP endpoints, automatically evicting failing nodes without dropping connections.",
+  "groups": [
+    {
+      "id": "g-ingress-lb",
+      "label": "Regional Application Load Balancer",
+      "type": "external",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-zone-a",
+      "label": "Zone A: Degraded Compute Zone",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 170
+    },
+    {
+      "id": "g-zone-b",
+      "label": "Zone B: Healthy Compute Zone",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 300,
+      "y": 220,
+      "width": 310,
+      "height": 170
+    },
+    {
+      "id": "g-auto-heal",
+      "label": "MIG Auto-Healing Controller",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "regional-alb",
+      "label": "Regional Backend Service",
+      "product": "Traffic Health Router",
+      "group": "g-ingress-lb",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Monitors backend health check status across all zones."
+    },
+    {
+      "id": "vm-zone-a",
+      "label": "VM Instance A1 (Failing)",
+      "product": "Kernel Panic / Health 503",
+      "group": "g-zone-a",
+      "plane": "data",
+      "x": 440,
+      "y": 100,
+      "detail": "Fails 3 consecutive /healthz checks; ALB stops dispatching new traffic."
+    },
+    {
+      "id": "vm-zone-b",
+      "label": "VM Instance B1 (Healthy)",
+      "product": "Handling 100% of Requests",
+      "group": "g-zone-b",
+      "plane": "data",
+      "x": 440,
+      "y": 290,
+      "detail": "Autoscaling triggers; adds VM B2 to handle additional load from Zone A."
+    },
+    {
+      "id": "mig-controller",
+      "label": "Compute Engine MIG Manager",
+      "product": "Auto-Healing Orchestrator",
+      "group": "g-auto-heal",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Recreates unhealthy VM A1 in Zone A or Zone C automatically."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "regional-alb",
+      "to": "vm-zone-a",
+      "label": "1. Health Probe Fails (HTTP 503)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "regional-alb",
+      "to": "vm-zone-b",
+      "label": "2. Shift 100% Traffic to Zone B",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "vm-zone-a",
+      "to": "mig-controller",
+      "label": "3. Signal Unhealthy Instance",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "mig-controller",
+      "to": "vm-zone-b",
+      "label": "4. Scale Up Capacity to Absorb Load",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Health Check Failure Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Regional ALB detects 3 consecutive failed health checks on VM A1.",
+      "why_traversal": "Prevents sending user traffic to dead or corrupted backend instances.",
+      "protocol": "HTTP Health Check Probe",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Traffic Redirection & Healing",
+      "edges": [
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "action": "ALB shifts all traffic to Zone B; MIG controller destroys VM A1 and provisions fresh replacement.",
+      "why_traversal": "Delivers zero-downtime auto-recovery without human intervention.",
+      "protocol": "Compute Engine Control API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "flapping-health-cascade",
+      "label": "Flapping Health Check Cascade",
+      "changes": {
+        "failedNodes": [
+          "vm-zone-b"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Health check timeout set too low (1s); shifting load to Zone B caused Zone B health checks to timeout.",
+      "diverted_path": "ALB marks ALL zones unhealthy; returns HTTP 502 Bad Gateway to all users.",
+      "blast_radius": "Complete cluster failure due to overly aggressive health check thresholds.",
+      "recovery": "Tune health check thresholds: increase timeout to 5s and check interval to 10s with 3 failure thresholds."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "regional-alb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "regional-alb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Automatic Zonal Failover within a Regional Managed Instance Group: health check failure detection, instance draining, and traffic shifting to healthy zones."
+}

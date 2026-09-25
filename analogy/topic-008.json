@@ -1,0 +1,43 @@
+{
+  "topic_no": "008",
+  "roadmap_id": "1.2",
+  "title": "Cloud City: Resource Hierarchy and Organization Policies",
+  "city_concept": "City Districts, Neighborhoods, and Building Charters",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Without zoning laws, shops opened inside residential parks, toxic factories dumped waste into bakery water, and nobody knew who governed which street.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian established the Civic Hierarchy: City Hall (Organization) oversees Districts (Folders), which contain individual City Lots (Projects).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A reckless tenant tried building a 50-story skyscraper in a 2-story historic zone. City zoning codes (Organization Policies) blocked the bulldozer.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical cities, corrupt inspectors might look away; in GCP, Organization Policies are enforced mathematically at the API gatekeeper level.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

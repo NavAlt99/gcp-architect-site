@@ -1,0 +1,218 @@
+{
+  "id": "topic-037-d2",
+  "title": "Compliance, Governance & Assured Workloads \u2014 Request & Control Flow",
+  "topic_no": "037",
+  "roadmap_id": "5.4",
+  "kind": "flow",
+  "purpose": "Traces Support Case Elevation with Key Access Justifications: how a Google support engineer requests access, triggering automated KAJ approval and audit logging.",
+  "routing_rationale": "Key Access Justifications provides visibility and automated veto power over every single Google administrative access attempt to your encrypted data.",
+  "groups": [
+    {
+      "id": "g-support-req",
+      "label": "Google Cloud Support Tier",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-kaj-policy",
+      "label": "Customer Key Access Justification Engine",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-audit-trail",
+      "label": "Enterprise Security Information & Event Management",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "support-ticket",
+      "label": "Support Ticket #49102",
+      "product": "Customer Support Investigation",
+      "group": "g-support-req",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Support engineer investigates kernel memory fault reported by customer."
+    },
+    {
+      "id": "access-approval",
+      "label": "Access Approval Request",
+      "product": "Access Transparency Elevation",
+      "group": "g-support-req",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Requests temporary read access to VM diagnostic crash dump."
+    },
+    {
+      "id": "kaj-rule-eval",
+      "label": "KAJ Automated Policy",
+      "product": "Reason: CUSTOMER_INITIATED_SUPPORT",
+      "group": "g-kaj-policy",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Validates reason against open ticket number; approves single-use decryption token."
+    },
+    {
+      "id": "chronicle-siem",
+      "label": "Chronicle SIEM Log Sink",
+      "product": "Access Transparency Audit Log",
+      "group": "g-audit-trail",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Logs exact engineer ID, timestamp, justification string, and affected resource."
+    },
+    {
+      "id": "ciso-alert",
+      "label": "SecOps Notification",
+      "product": "Slack #compliance-alerts",
+      "group": "g-audit-trail",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Notifies enterprise compliance team of approved administrative access."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "support-ticket",
+      "to": "access-approval",
+      "label": "1. Escalate Ticket for Access",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "access-approval",
+      "to": "kaj-rule-eval",
+      "label": "2. Submit Justification Code",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "kaj-rule-eval",
+      "to": "chronicle-siem",
+      "label": "3. Publish Access Transparency Event",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "chronicle-siem",
+      "to": "ciso-alert",
+      "label": "4. Broadcast to SecOps Team",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Support Request Justification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Support engineer requests access with reason CUSTOMER_INITIATED_SUPPORT.",
+      "why_traversal": "Requires clear operational necessity before any administrative access.",
+      "protocol": "Access Approval API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Transparent Audit Logging",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Access Transparency records immutable audit entry; SecOps receives instant notification.",
+      "why_traversal": "Delivers indisputable proof of cloud provider interactions for regulatory auditors.",
+      "protocol": "Cloud Audit Logging",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unjustified-access-denied",
+      "label": "Arbitrary Access Request Denied by KAJ",
+      "changes": {
+        "failedNodes": [
+          "kaj-rule-eval"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Support request had invalid ticket reference code.",
+      "diverted_path": "KAJ automatically rejects key unwrap; engineer blocked from viewing data.",
+      "blast_radius": "Zero data exposure.",
+      "recovery": "Support engineer must associate valid customer ticket and obtain explicit customer sign-off."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "support-ticket"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "support-ticket"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Support Case Elevation with Key Access Justifications: how a Google support engineer requests access, triggering automated KAJ approval and audit logging."
+}

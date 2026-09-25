@@ -1,0 +1,248 @@
+{
+  "id": "topic-006-d2",
+  "title": "Cloud Digital Leader & Business Foundations \u2014 Request & Control Flow",
+  "topic_no": "006",
+  "roadmap_id": "0.6",
+  "kind": "flow",
+  "purpose": "Traces the cloud migration evaluation lifecycle: from initial Total Cost of Ownership (TCO) discovery through Landing Zone setup to iterative application cutover.",
+  "routing_rationale": "Workloads are categorized by migration complexity. Low-risk applications migrate first to establish operational confidence and train engineering squads.",
+  "groups": [
+    {
+      "id": "g-onprem",
+      "label": "On-Premises Datacenter (CapEx)",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-eval",
+      "label": "Discovery & TCO Engine (StrataZone)",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-cloud",
+      "label": "Target Cloud Landing Zone (OpEx)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "legacy-vm",
+      "label": "Legacy On-Prem Fleet",
+      "product": "VMware Cluster",
+      "group": "g-onprem",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Aging physical server hardware with depreciating capital expenditure."
+    },
+    {
+      "id": "strata-tool",
+      "label": "StrataZone Discovery Agent",
+      "product": "Migration Assessment",
+      "group": "g-eval",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Scans CPU, RAM, and IOPS utilization to compute right-sized cloud TCO."
+    },
+    {
+      "id": "finops-review",
+      "label": "Business Value Approval",
+      "product": "TCO Business Case",
+      "group": "g-eval",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Validates 3-year ROI and commits to Google Cloud spend agreement."
+    },
+    {
+      "id": "landing-vpc",
+      "label": "Cloud Landing Zone",
+      "product": "Shared VPC & IAM",
+      "group": "g-cloud",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Enterprise security perimeter configured with least-privilege IAM."
+    },
+    {
+      "id": "migrated-app",
+      "label": "Modernized Cloud Service",
+      "product": "Cloud Run & Cloud SQL",
+      "group": "g-cloud",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Elastic autoscaled cloud workload billed per second of actual usage."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "legacy-vm",
+      "to": "strata-tool",
+      "label": "1. Inventory & Metrics",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "strata-tool",
+      "to": "finops-review",
+      "label": "2. Generate TCO Report",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "finops-review",
+      "to": "landing-vpc",
+      "label": "3. Approve Foundation",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "landing-vpc",
+      "to": "migrated-app",
+      "label": "4. Cutover Production Traffic",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Infrastructure Discovery",
+      "edges": [
+        "e1"
+      ],
+      "action": "StrataZone agent inventories datacenter VMs, memory, and network throughput.",
+      "why_traversal": "Accurate telemetry prevents over-provisioning and establishes sizing baseline.",
+      "protocol": "WMI / SSH Probe",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "TCO Analysis",
+      "edges": [
+        "e2"
+      ],
+      "action": "Financial model maps CapEx hardware refresh cycles to OpEx cloud consumption.",
+      "why_traversal": "Defends architectural decisions with measurable business ROI.",
+      "protocol": "Financial Analysis",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Landing Zone Readiness",
+      "edges": [
+        "e3"
+      ],
+      "action": "Enterprise approves cloud business case and provisions enterprise landing zone.",
+      "why_traversal": "Guarantees governance and compliance guardrails are active prior to cutover.",
+      "protocol": "Terraform Automation",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Workload Cutover",
+      "edges": [
+        "e4"
+      ],
+      "action": "Workload cuts over to Google Cloud managed services, unlocking elastic auto-scaling.",
+      "why_traversal": "Replaces fixed maintenance overhead with on-demand scaling.",
+      "protocol": "DNS Cutover / BGP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "over-provision",
+      "label": "Lift-and-Shift Cost Shock",
+      "changes": {
+        "failedNodes": [
+          "strata-tool"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Migrating on-premises VMs 1:1 without rightsizing over-allocated CPU/RAM.",
+      "diverted_path": "Cloud monthly invoice spikes due to idle compute reservations.",
+      "blast_radius": "FinOps budget ceiling breached within 30 days.",
+      "recovery": "Activate Google Cloud Recommender API; downsize instances based on p95 usage."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "legacy-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "legacy-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the cloud migration evaluation lifecycle: from initial Total Cost of Ownership (TCO) discovery through Landing Zone setup to iterative application cutover."
+}

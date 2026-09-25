@@ -1,0 +1,233 @@
+{
+  "id": "topic-020-d2",
+  "title": "Databases: Cloud SQL, Spanner, Firestore, and Bigtable \u2014 Request & Control Flow",
+  "topic_no": "020",
+  "roadmap_id": "2.8",
+  "kind": "flow",
+  "purpose": "Traces transactional commit lifecycle in Cloud Spanner: from client write across distributed Paxos consensus leader and TrueTime atomic timestamping.",
+  "routing_rationale": "TrueTime uses atomic clocks and GPS receivers to assign globally consistent timestamps, enabling lock-free distributed read transactions across continents.",
+  "groups": [
+    {
+      "id": "g-client-writer",
+      "label": "Application Client",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-paxos-mesh",
+      "label": "Cloud Spanner Distributed Paxos Quorum",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-truetime-sync",
+      "label": "Google TrueTime Atomic Time Fabric",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "writer-app",
+      "label": "Spanner Client App",
+      "product": "Spanner SDK",
+      "group": "g-client-writer",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Initiates read-write transaction to transfer account balances."
+    },
+    {
+      "id": "spanner-frontend",
+      "label": "Spanner API Gateway",
+      "product": "spanner.googleapis.com",
+      "group": "g-client-writer",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Routes transaction to the designated Paxos split leader for this keyspace."
+    },
+    {
+      "id": "paxos-leader",
+      "label": "Paxos Leader Replica",
+      "product": "Split Leader (Zone A)",
+      "group": "g-paxos-mesh",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Acquires lock; coordinates two-phase commit and requests TrueTime commit timestamp."
+    },
+    {
+      "id": "paxos-follower",
+      "label": "Paxos Follower Replica",
+      "product": "Split Follower (Zone B)",
+      "group": "g-paxos-mesh",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Appends transaction log to Colossus storage; votes to accept commit."
+    },
+    {
+      "id": "truetime-engine",
+      "label": "TrueTime Atomic Clock",
+      "product": "GPS & Rubidium Masters",
+      "group": "g-truetime-sync",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Guarantees time uncertainty bound (epsilon < 7ms); enforces commit wait."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "writer-app",
+      "to": "spanner-frontend",
+      "label": "1. Begin Transaction",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "spanner-frontend",
+      "to": "paxos-leader",
+      "label": "2. Route to Split Leader",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "paxos-leader",
+      "to": "truetime-engine",
+      "label": "3. Request Commit Timestamp",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "paxos-leader",
+      "to": "paxos-follower",
+      "label": "4. Paxos Write Quorum (2 of 3)",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Transaction Routing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Client initiates read-write transaction; SDK routes payload directly to Paxos leader.",
+      "why_traversal": "Direct leader routing minimizes consensus coordination latency.",
+      "protocol": "Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "TrueTime Timestamp Assignment",
+      "edges": [
+        "e3"
+      ],
+      "action": "Paxos leader requests TrueTime timestamp [t.earliest, t.latest] and enforces commit wait.",
+      "why_traversal": "Commit wait guarantees past transactions have strictly lower timestamps than future ones.",
+      "protocol": "TrueTime API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Paxos Quorum Consensus",
+      "edges": [
+        "e4"
+      ],
+      "action": "Leader writes mutation log to majority quorum of replicas before committing.",
+      "why_traversal": "Paxos consensus guarantees data survival even if an entire availability zone disappears.",
+      "protocol": "Paxos Protocol RPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "paxos-leader-partition",
+      "label": "Paxos Leader Zone Isolation",
+      "changes": {
+        "failedNodes": [
+          "paxos-leader"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Network partition isolates Zone A leader from remaining 2 zones.",
+      "diverted_path": "Follower replicas in Zone B and C elect new leader in <3 seconds without data loss.",
+      "blast_radius": "In-flight uncommitted transaction retried by SDK on new leader.",
+      "recovery": "TrueTime and Paxos ensure strict serializability is maintained across failovers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "writer-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "writer-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces transactional commit lifecycle in Cloud Spanner: from client write across distributed Paxos consensus leader and TrueTime atomic timestamping."
+}

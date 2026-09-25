@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Databases: Cloud SQL, Spanner, Firestore, and Bigtable — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-020.html">← Topic page</a><span>2.8 · TOPIC-020-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-020-d3",
+  "title": "Databases: Cloud SQL, Spanner, Firestore, and Bigtable \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "020",
+  "roadmap_id": "2.8",
+  "kind": "failure",
+  "purpose": "Simulates Cloud SQL primary zone failure: demonstrates automated health detection, standby promotion, and DNS/IP failover in under 60 seconds.",
+  "routing_rationale": "Cloud SQL Regional HA synchronizes persistent disk writes to a standby zone. When the primary crashes, the standby assumes the primary role automatically.",
+  "groups": [
+    {
+      "id": "g-primary-zone",
+      "label": "Cloud SQL Primary (Zone A)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-standby-zone",
+      "label": "Cloud SQL Standby (Zone B)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "primary-db",
+      "label": "Primary Cloud SQL DB",
+      "product": "Active Master (Zone A)",
+      "group": "g-primary-zone",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Serving all read/write queries via private IP 10.0.1.10."
+    },
+    {
+      "id": "cloudsql-sentinel",
+      "label": "High-Availability Sentinel",
+      "product": "Control Plane Health Monitor",
+      "group": "g-primary-zone",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Heartbeats primary instance every 2s; triggers failover after 30s unresponsive."
+    },
+    {
+      "id": "standby-db",
+      "label": "Standby Cloud SQL DB",
+      "product": "Warm Standby (Zone B)",
+      "group": "g-standby-zone",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Synchronously replicating block-level disk changes; promoted to Primary in <60s."
+    },
+    {
+      "id": "dns-switcher",
+      "label": "Internal Private DNS FQDN",
+      "product": "Private Service Connect / IP",
+      "group": "g-failover",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Flips internal IP address pointer to point customer apps directly to Zone B."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cloudsql-sentinel",
+      "to": "primary-db",
+      "label": "1. Heartbeat Probe Timeout",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cloudsql-sentinel",
+      "to": "standby-db",
+      "label": "2. Promote Standby to Primary",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "standby-db",
+      "to": "dns-switcher",
+      "label": "3. Switchover Private IP",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "primary-db",
+      "to": "standby-db",
+      "label": "4. Synchronous Storage Replication",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Heartbeat Failure",
+      "edges": [
+        "e1"
+      ],
+      "action": "Primary database instance in Zone A experiences hardware failure; heartbeats cease.",
+      "why_traversal": "Sentinel detects host failure without requiring operator intervention.",
+      "protocol": "Internal Sentinel Probe",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Standby Promotion",
+      "edges": [
+        "e2"
+      ],
+      "action": "Control plane promotes standby instance in Zone B; mounts replicated storage.",
+      "why_traversal": "Synchronous replication guarantees zero data loss (RPO = 0).",
+      "protocol": "Cloud SQL Control API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "DNS & Traffic Convergence",
+      "edges": [
+        "e3"
+      ],
+      "action": "Private IP address flips to promoted instance; applications reconnect in <60s.",
+      "why_traversal": "Applications reconnect automatically using standard retry logic (RTO < 60s).",
+      "protocol": "Internal Private DNS",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "split-brain-prevention",
+      "label": "Fencing Stale Primary Instance",
+      "changes": {
+        "failedNodes": [
+          "primary-db"
+        ],
+        "failedEdges": [
+          "e1",
+          "e4"
+        ]
+      },
+      "root_cause": "Network partition caused primary to appear dead while still executing queries.",
+      "diverted_path": "Sentinel uses STONITH fencing; forcibly powers off Zone A instance before promoting Zone B.",
+      "blast_radius": "Prevents split-brain data corruption across dual active primaries.",
+      "recovery": "Automatic fencing guarantees absolute data consistency across failovers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "primary-db"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "primary-db"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cloud SQL primary zone failure: demonstrates automated health detection, standby promotion, and DNS/IP failover in under 60 seconds."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

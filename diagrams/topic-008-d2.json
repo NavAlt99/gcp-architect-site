@@ -1,0 +1,233 @@
+{
+  "id": "topic-008-d2",
+  "title": "Resource Hierarchy and Organization Policies \u2014 Request & Control Flow",
+  "topic_no": "008",
+  "roadmap_id": "1.2",
+  "kind": "flow",
+  "purpose": "Traces Organization Policy inheritance and IAM evaluation: shows how effective permissions are calculated hierarchically from Organization to Project.",
+  "routing_rationale": "IAM evaluation uses union logic (any grant allows access), while Organization Policies enforce restrictive constraints that override child-level permissions.",
+  "groups": [
+    {
+      "id": "g-org",
+      "label": "Organization & Folder Scope",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-eval",
+      "label": "Policy Evaluation Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-target",
+      "label": "Project & Resource Target",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "org-admin",
+      "label": "Org Policy Administrator",
+      "product": "Cloud Identity Admin",
+      "group": "g-org",
+      "plane": "control",
+      "x": 150,
+      "y": 140,
+      "detail": "Sets restrictive org-wide boolean and list constraints."
+    },
+    {
+      "id": "inherited-iam",
+      "label": "Inherited IAM Bindings",
+      "product": "Folder IAM Roles",
+      "group": "g-org",
+      "plane": "control",
+      "x": 150,
+      "y": 280,
+      "detail": "Folder-level role bindings inherited by all child projects."
+    },
+    {
+      "id": "policy-eval",
+      "label": "Effective Policy Evaluator",
+      "product": "Resource Manager Engine",
+      "group": "g-eval",
+      "plane": "control",
+      "x": 450,
+      "y": 200,
+      "detail": "Calculates net effective permissions using union logic for IAM and override for Org Policies."
+    },
+    {
+      "id": "project-iam",
+      "label": "Project-Level IAM",
+      "product": "Project IAM Roles",
+      "group": "g-target",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Granular roles/viewer or roles/compute.instanceAdmin assigned at project level."
+    },
+    {
+      "id": "target-vm",
+      "label": "Provisioned VM Resource",
+      "product": "Compute Engine",
+      "group": "g-target",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Instantiated cloud resource operating strictly within verified constraints."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "org-admin",
+      "to": "policy-eval",
+      "label": "1. Push Restrictive Guardrail",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "inherited-iam",
+      "to": "policy-eval",
+      "label": "2. Aggregate Inherited Roles",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "project-iam",
+      "to": "policy-eval",
+      "label": "3. Evaluate Project Grants",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "policy-eval",
+      "to": "target-vm",
+      "label": "4. Authorize Execution",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Constraint Evaluation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Policy engine loads boolean constraints (e.g. disableSerialPortAccess).",
+      "why_traversal": "Root constraints take absolute precedence over child permissions.",
+      "protocol": "Policy Engine RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Union IAM Calculation",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Engine unions folder-level and project-level role bindings.",
+      "why_traversal": "IAM grants are additive down the hierarchy tree.",
+      "protocol": "Internal IAM Union",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Execution Release",
+      "edges": [
+        "e4"
+      ],
+      "action": "Verified request releases resource creation to Compute Engine backend.",
+      "why_traversal": "Zero-trust verification guarantees complete compliance before CPU boots.",
+      "protocol": "Compute Engine API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "serial-port-denied",
+      "label": "Serial Port Access Blocked",
+      "changes": {
+        "failedNodes": [
+          "target-vm"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Developer attempted to connect to interactive serial console while SerialPortAccess is disabled.",
+      "diverted_path": "Session rejected at project boundary; audit event emitted to Security Command Center.",
+      "blast_radius": "Direct interactive console access denied.",
+      "recovery": "Use Google Cloud IAP TCP forwarding and OS Login instead of serial console."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "org-admin"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "org-admin"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Organization Policy inheritance and IAM evaluation: shows how effective permissions are calculated hierarchically from Organization to Project."
+}

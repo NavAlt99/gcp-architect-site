@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CI/CD &amp; Release Engineering: Cloud Build, Deploy &amp; DORA — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-043.html">← Topic page</a><span>6.4 · TOPIC-043-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-043-d5",
+  "title": "CI/CD & Release Engineering: Cloud Build, Deploy & DORA \u2014 D5",
+  "topic_no": "043",
+  "roadmap_id": "6.4",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Progressive delivery minimizes blast radius; releases must be gradually exposed to real users while automated telemetry monitoring instantly rolls back defective releases before customers notice.",
+  "groups": [
+    {
+      "id": "g-ci-build",
+      "label": "Continuous Integration: Cloud Build",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-deploy-pipe",
+      "label": "Google Cloud Deploy Delivery Pipeline",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-canary-fleet",
+      "label": "Progressive Canary Rollout (GKE)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cloud-build-ci",
+      "label": "Cloud Build Pipeline",
+      "product": "Container Build & Test",
+      "group": "g-ci-build",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Compiles Go binaries, executes unit tests, and packages container images."
+    },
+    {
+      "id": "artifact-reg",
+      "label": "Artifact Registry",
+      "product": "Container Registry Digest",
+      "group": "g-ci-build",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Stores immutable container image tagged with commit SHA and release semver."
+    },
+    {
+      "id": "cloud-deploy-ctl",
+      "label": "Cloud Deploy Pipeline",
+      "product": "Delivery Pipeline: web-app",
+      "group": "g-deploy-pipe",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Orchestrates multi-target progression (Dev -> Staging -> Prod) with canary phases."
+    },
+    {
+      "id": "baseline-v1-pods",
+      "label": "Stable Baseline Pods (v1.0)",
+      "product": "Handling 90% Production Traffic",
+      "group": "g-canary-fleet",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Existing proven release running without error."
+    },
+    {
+      "id": "canary-v2-pods",
+      "label": "Canary Pods (v1.1)",
+      "product": "Handling 10% Production Traffic",
+      "group": "g-canary-fleet",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "New release receiving fractional user traffic under real-time telemetry observation."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cloud-build-ci",
+      "to": "artifact-reg",
+      "label": "1. Push Tested OCI Image",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "artifact-reg",
+      "to": "cloud-deploy-ctl",
+      "label": "2. Create Cloud Deploy Release",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cloud-deploy-ctl",
+      "to": "baseline-v1-pods",
+      "label": "3. Maintain Baseline Traffic (90%)",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "cloud-deploy-ctl",
+      "to": "canary-v2-pods",
+      "label": "4. Route 10% Traffic to Canary",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Build & Delivery Hand-off",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Build creates immutable container; Cloud Deploy initializes canary release.",
+      "why_traversal": "Decouples continuous integration (build/test) from continuous delivery (deployment/release).",
+      "protocol": "Cloud Deploy API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Canary Traffic Splitting",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "GKE Gateway API splits ingress traffic: 90% to stable baseline, 10% to canary pods.",
+      "why_traversal": "Limits potential blast radius of defects to only 10% of users.",
+      "protocol": "Gateway API HTTPRoute",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canary-regression-detect",
+      "label": "Canary Latency Regression Triggers Instant Rollback",
+      "changes": {
+        "failedNodes": [
+          "canary-v2-pods"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "v1.1 contained an unindexed database query causing p99 latency to spike to 2,800ms.",
+      "diverted_path": "Cloud Deploy automated canary health check fails; shifts 100% traffic back to v1.0.",
+      "blast_radius": "Only 10% of users impacted for 45 seconds.",
+      "recovery": "Rollback completes automatically in 12 seconds with zero human intervention."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cloud-build-ci"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cloud-build-ci"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

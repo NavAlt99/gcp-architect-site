@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "components": {
+    "client-browser": {
+      "label": "Client Browser / App",
+      "product": "External Client",
+      "scope": "external",
+      "plane": "data",
+      "category": "edge"
+    },
+    "dns-resolver": {
+      "label": "DNS Resolver (Public/Cloud DNS)",
+      "product": "Cloud DNS",
+      "scope": "global",
+      "plane": "control",
+      "category": "networking"
+    },
+    "cloud-load-balancer": {
+      "label": "Cloud Load Balancing (External L7)",
+      "product": "Cloud Load Balancing",
+      "scope": "global",
+      "plane": "data",
+      "category": "networking"
+    },
+    "cloud-nat": {
+      "label": "Cloud NAT Gateway",
+      "product": "Cloud NAT",
+      "scope": "regional",
+      "plane": "data",
+      "category": "networking"
+    },
+    "cloud-router": {
+      "label": "Cloud Router (BGP)",
+      "product": "Cloud Router",
+      "scope": "regional",
+      "plane": "control",
+      "category": "networking"
+    },
+    "vpc-network": {
+      "label": "Production VPC Network",
+      "product": "Virtual Private Cloud",
+      "scope": "global",
+      "plane": "data",
+      "category": "networking"
+    },
+    "subnet-web": {
+      "label": "Web Subnet (10.0.1.0/24)",
+      "product": "VPC Subnet",
+      "scope": "regional",
+      "plane": "data",
+      "category": "networking"
+    },
+    "backend-vm": {
+      "label": "Backend Application VM",
+      "product": "Compute Engine",
+      "scope": "zonal",
+      "plane": "data",
+      "category": "compute"
+    },
+    "cloud-sql": {
+      "label": "Order Database (Cloud SQL)",
+      "product": "Cloud SQL",
+      "scope": "regional",
+      "plane": "data",
+      "category": "database"
+    }
+  }
+}

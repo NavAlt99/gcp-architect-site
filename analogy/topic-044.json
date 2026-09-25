@@ -1,0 +1,43 @@
+{
+  "topic_no": "044",
+  "roadmap_id": "6.5",
+  "title": "Cloud City: Operations & Process Improvement: Platform Engineering & Reviews",
+  "city_concept": "City Public Works Department & Civic Operations",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Every shop owner had to dig their own sewer ditch and pave their own sidewalk, creating a patchwork of broken gravel and overflowing gutters.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian established the Public Works Department (Platform Engineering): providing standardized paved roads, clean water mains, and street sweepers.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Public Works conducted quarterly city audits, repairing cobblestones before wagons broke their axles.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical city infrastructure maintenance requires heavy earthmovers; cloud platform automation updates thousands of resources via declarative APIs.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

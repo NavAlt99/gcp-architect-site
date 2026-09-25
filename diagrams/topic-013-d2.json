@@ -1,0 +1,241 @@
+{
+  "id": "topic-013-d2",
+  "title": "Compute Engine: VMs, Disks, and Managed Instance Groups \u2014 Request & Control Flow",
+  "topic_no": "013",
+  "roadmap_id": "2.1",
+  "kind": "flow",
+  "purpose": "Traces Compute Engine autoscaling and traffic dispatch: shows how Cloud Load Balancing distributes requests to healthy MIG instances based on CPU utilization.",
+  "routing_rationale": "Autoscalers monitor aggregate CPU and load balancer utilization, adding VM instances across zones to keep average utilization below target thresholds.",
+  "groups": [
+    {
+      "id": "g-ingress",
+      "label": "Client Ingress & Load Balancing",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-autoscaler",
+      "label": "Autoscaling Control Loop",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-backends",
+      "label": "Managed Instance Group Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client-stream",
+      "label": "Surging Client Traffic",
+      "product": "External Traffic Flow",
+      "group": "g-ingress",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Traffic surges from 1,000 to 10,000 QPS during flash sale."
+    },
+    {
+      "id": "gfe-proxy",
+      "label": "Cloud Load Balancer",
+      "product": "External HTTPS LB",
+      "group": "g-ingress",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Terminates TLS and routes to backend service with round-robin balancing."
+    },
+    {
+      "id": "mig-autoscaler",
+      "label": "Compute Autoscaler",
+      "product": "Target CPU: 70%",
+      "group": "g-autoscaler",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Monitors average CPU across fleet; calculates required VM count."
+    },
+    {
+      "id": "vm-inst-1",
+      "label": "VM Instance #1 (Saturated)",
+      "product": "Zone A (95% CPU)",
+      "group": "g-backends",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Current running instance approaching saturation limit."
+    },
+    {
+      "id": "vm-inst-2",
+      "label": "VM Instance #2 (Scaled Out)",
+      "product": "Zone B (Fresh Boot)",
+      "group": "g-backends",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Newly booted VM launched from instance template absorbing redirected load."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client-stream",
+      "to": "gfe-proxy",
+      "label": "1. Influx Surge (10k QPS)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "gfe-proxy",
+      "to": "vm-inst-1",
+      "label": "2. Dispatch Requests",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "vm-inst-1",
+      "to": "mig-autoscaler",
+      "label": "3. Telemetry: 95% CPU",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "mig-autoscaler",
+      "to": "vm-inst-2",
+      "label": "4. Spin Up Replica",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "gfe-proxy",
+      "to": "vm-inst-2",
+      "label": "5. Distribute Balanced Load",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Traffic Surge Ingress",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Flash sale traffic drives VM #1 CPU to 95%, breaching 70% target threshold.",
+      "why_traversal": "Load balancer forwards traffic to available healthy instances.",
+      "protocol": "HTTPS 443",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Autoscaling Decision",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Autoscaler detects CPU violation; orders MIG manager to provision VM #2 in Zone B.",
+      "why_traversal": "Spreads capacity evenly across availability zones for redundancy.",
+      "protocol": "Compute Engine API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Traffic Equalization",
+      "edges": [
+        "e5"
+      ],
+      "action": "VM #2 passes initialization check; load balancer dispatches 50% traffic to new VM.",
+      "why_traversal": "Average CPU drops to 52%, restoring sub-100ms response latencies.",
+      "protocol": "HTTP/2 Multiplexing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "autoscaler-max-cap",
+      "label": "MIG Maximum Capacity Reached",
+      "changes": {
+        "failedNodes": [
+          "vm-inst-1"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Traffic exceeded maxReplicas = 10 setting in autoscaling policy.",
+      "diverted_path": "No additional VMs provisioned; existing backends queue requests, increasing p99 latency.",
+      "blast_radius": "Users experience latency degradation and 504 Gateway Timeouts.",
+      "recovery": "Increase maxReplicas limit or configure secondary failover region."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Compute Engine autoscaling and traffic dispatch: shows how Cloud Load Balancing distributes requests to healthy MIG instances based on CPU utilization."
+}

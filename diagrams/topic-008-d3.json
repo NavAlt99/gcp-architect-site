@@ -1,0 +1,205 @@
+{
+  "id": "topic-008-d3",
+  "title": "Resource Hierarchy and Organization Policies \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "008",
+  "roadmap_id": "1.2",
+  "kind": "failure",
+  "purpose": "Simulates organization policy violations: demonstrates an engineer attempting to create a VM with a public IP when constraints/compute.vmExternalIpAccess is enforced.",
+  "routing_rationale": "Google Cloud Resource Manager intercepts the API call at the project boundary and rejects the request with HTTP 412 Precondition Failed, logging an audit event.",
+  "groups": [
+    {
+      "id": "g-dev",
+      "label": "Developer API Client",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-intercept",
+      "label": "Org Policy Intercept & Audit Perimeter",
+      "type": "organization",
+      "scope": "organization",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dev-cli",
+      "label": "Developer CLI / Terraform",
+      "product": "User Client",
+      "group": "g-dev",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Submits gcloud compute instances create --public-ip."
+    },
+    {
+      "id": "cli-error",
+      "label": "CLI Error Terminal",
+      "product": "HTTP 412 Display",
+      "group": "g-dev",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Receives Operation failed: Constraint constraints/compute.vmExternalIpAccess violated."
+    },
+    {
+      "id": "policy-interceptor",
+      "label": "Resource Manager Interceptor",
+      "product": "Org Policy Enforcer",
+      "group": "g-intercept",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Enforces synchronous admission control; cancels operation before resource allocation."
+    },
+    {
+      "id": "scc-alarm",
+      "label": "Security Command Center Alert",
+      "product": "SCC Premium",
+      "group": "g-intercept",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Publishes high-visibility policy violation finding to enterprise security dashboard."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dev-cli",
+      "to": "policy-interceptor",
+      "label": "1. Submit Non-Compliant Request",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "policy-interceptor",
+      "to": "cli-error",
+      "label": "2. Return HTTP 412 Precondition Failed",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "policy-interceptor",
+      "to": "scc-alarm",
+      "label": "3. Publish Violation Finding",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Illegal Call Intercept",
+      "edges": [
+        "e1"
+      ],
+      "action": "Developer sends request to attach public IP to backend database VM.",
+      "why_traversal": "API gateway forwards payload to policy enforcement layer prior to execution.",
+      "protocol": "Compute Engine API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Synchronous Rejection",
+      "edges": [
+        "e2"
+      ],
+      "action": "Resource Manager intercepts call and responds with HTTP 412 Precondition Failed.",
+      "why_traversal": "Prevents unauthorized internet attack vectors from ever instantiating.",
+      "protocol": "HTTP 412",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Security Incident Emission",
+      "edges": [
+        "e3"
+      ],
+      "action": "Policy enforcer logs violation event to Security Command Center.",
+      "why_traversal": "Security operations detects accidental or malicious perimeter breaches immediately.",
+      "protocol": "Cloud Audit Log",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "location-restriction",
+      "label": "Unauthorized Cloud Region Selection",
+      "changes": {
+        "failedNodes": [
+          "policy-interceptor"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Terraform script attempted to spin up storage bucket in asia-east1 when ResourceLocations constraint restricts to us-locations.",
+      "diverted_path": "Creation request blocked; audit finding raised.",
+      "blast_radius": "Only non-compliant regions blocked; approved US regions deploy normally.",
+      "recovery": "Update Terraform provider region variable to us-central1."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dev-cli"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dev-cli"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates organization policy violations: demonstrates an engineer attempting to create a VM with a public IP when constraints/compute.vmExternalIpAccess is enforced."
+}

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Performance Optimization &amp; Scalability — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-041.html">← Topic page</a><span>6.2 · TOPIC-041-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-041-d2",
+  "title": "Performance Optimization & Scalability \u2014 Request & Control Flow",
+  "topic_no": "041",
+  "roadmap_id": "6.2",
+  "kind": "flow",
+  "purpose": "Traces Request Acceleration: comparing Premium Tier (cold-potato routing on Google private fiber) against Standard Tier (hot-potato routing over public internet).",
+  "routing_rationale": "Google Premium Tier ingests traffic at the edge PoP closest to the user, traveling over private illuminated fiber with dedicated SLA guarantees.",
+  "groups": [
+    {
+      "id": "g-london-user",
+      "label": "Client Location: London, UK",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-google-backbone",
+      "label": "Google Private Global Backbone (Cold-Potato)",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dest-us",
+      "label": "Destination: us-central1 (Iowa)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "london-client",
+      "label": "User Browser (London)",
+      "product": "Requests Dynamic API Endpoint",
+      "group": "g-london-user",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "User initiates HTTPS request to api.global.service."
+    },
+    {
+      "id": "london-pop",
+      "label": "London Google PoP Edge",
+      "product": "Ingress Latency: 1.8ms",
+      "group": "g-google-backbone",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Anycast BGP routes packet immediately into Google private network at London PoP."
+    },
+    {
+      "id": "transatlantic-fiber",
+      "label": "Transatlantic Subsea Cable",
+      "product": "Dunant / Equiano Private Fiber",
+      "group": "g-google-backbone",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Crosses Atlantic Ocean on Google-owned subsea fiber with zero public transit hops."
+    },
+    {
+      "id": "backend-iowa",
+      "label": "Compute Backend (Iowa)",
+      "product": "Total RTT: 74ms (Consistent)",
+      "group": "g-dest-us",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Processes API request and returns dynamic JSON payload back along private fiber."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "london-client",
+      "to": "london-pop",
+      "label": "1. Ingress at London PoP (1.8ms)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "london-pop",
+      "to": "transatlantic-fiber",
+      "label": "2. Route via Google Fiber",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "transatlantic-fiber",
+      "to": "backend-iowa",
+      "label": "3. Terminate at us-central1",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Immediate Ingress",
+      "edges": [
+        "e1"
+      ],
+      "action": "Packet enters Google network in London within 2 milliseconds of leaving client device.",
+      "why_traversal": "Minimizes exposure to unreliable public ISP transit.",
+      "protocol": "Anycast BGP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Private Subsea Routing",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Traffic travels across private transatlantic cables directly to Iowa datacenter.",
+      "why_traversal": "Guarantees lowest possible latency and near-zero jitter.",
+      "protocol": "Google Private SDN (B4)",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "public-isp-peering-storm",
+      "label": "Public Internet Congestion Spike (Standard Tier)",
+      "changes": {
+        "failedNodes": [
+          "transatlantic-fiber"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Standard tier routed traffic over public transit during transcontinental fiber cut.",
+      "diverted_path": "Packets routed through 14 intermediate ISP hops with 18% loss.",
+      "blast_radius": "High latency and timeouts for international users.",
+      "recovery": "Migrate workload back to Premium Network Tier."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "london-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "london-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Request Acceleration: comparing Premium Tier (cold-potato routing on Google private fiber) against Standard Tier (hot-potato routing over public internet)."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

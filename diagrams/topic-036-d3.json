@@ -1,0 +1,190 @@
+{
+  "id": "topic-036-d3",
+  "title": "Data Protection: Cloud KMS & DLP \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "036",
+  "roadmap_id": "5.3",
+  "kind": "failure",
+  "purpose": "Simulates External Key Manager (Cloud EKM) Network Failure: demonstrates automated fail-safe behavior when external enterprise key server is unreachable.",
+  "routing_rationale": "Cloud EKM ensures data can only be decrypted when an external enterprise key management system approves the request; if the EKM connection fails, data remains cryptographically locked.",
+  "groups": [
+    {
+      "id": "g-onprem-ekm",
+      "label": "On-Premises Thales / Fortanix EKM",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-cloud-ekm-target",
+      "label": "Google Cloud EKM Integration",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "onprem-hsm-server",
+      "label": "On-Prem HSM Key Manager",
+      "product": "Enterprise EKM Appliance",
+      "group": "g-onprem-ekm",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Maintains physical custody of master encryption keys outside Google Cloud."
+    },
+    {
+      "id": "ekm-vpn-interconnect",
+      "label": "Cloud Interconnect / EKM VPN",
+      "product": "Private EKM Network Path",
+      "group": "g-onprem-ekm",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Carries TLS wrapped key unwrap requests from Google Cloud to enterprise HSM."
+    },
+    {
+      "id": "cloud-ekm-bridge",
+      "label": "Cloud EKM Gateway",
+      "product": "Google Cloud KMS EKM Endpoint",
+      "group": "g-cloud-ekm-target",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Relays cryptographic requests to enterprise EKM server."
+    },
+    {
+      "id": "locked-storage",
+      "label": "Locked BigQuery / GCS Data",
+      "product": "Un-decryptable Ciphertext",
+      "group": "g-cloud-ekm-target",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Data cannot be decrypted by Google or anyone else while EKM is offline."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "onprem-hsm-server",
+      "to": "ekm-vpn-interconnect",
+      "label": "1. Provide Key Access Justification",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ekm-vpn-interconnect",
+      "to": "cloud-ekm-bridge",
+      "label": "2. Forward Decryption Authorization",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cloud-ekm-bridge",
+      "to": "locked-storage",
+      "label": "3. Decrypt Ciphertext Blocks",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "External Key Negotiation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud KMS connects to on-prem EKM, providing audit justification reason for key access.",
+      "why_traversal": "Customer maintains absolute cryptographic sovereignty over data decryption.",
+      "protocol": "Cloud EKM Protocol / TLS",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Data Decryption",
+      "edges": [
+        "e3"
+      ],
+      "action": "Upon receiving unwrapped key from on-prem HSM, BigQuery decrypts storage blocks.",
+      "why_traversal": "Proves that Google cannot decrypt data without external customer consent.",
+      "protocol": "AES-256 GCM Decryption",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "ekm-network-severed",
+      "label": "Enterprise EKM Network Outage",
+      "changes": {
+        "failedNodes": [
+          "ekm-vpn-interconnect"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "On-premise enterprise firewall reboot severed TLS connection to Cloud EKM.",
+      "diverted_path": "Cloud EKM fails closed; all BigQuery queries fail with 'EKM_UNREACHABLE'.",
+      "blast_radius": "Data operations halted until enterprise network recovers.",
+      "recovery": "Restore on-premise firewall and configure redundant Cloud Interconnect paths for EKM traffic."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "onprem-hsm-server"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "onprem-hsm-server"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates External Key Manager (Cloud EKM) Network Failure: demonstrates automated fail-safe behavior when external enterprise key server is unreachable."
+}

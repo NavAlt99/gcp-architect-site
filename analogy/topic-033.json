@@ -1,0 +1,43 @@
+{
+  "topic_no": "033",
+  "roadmap_id": "4.6",
+  "title": "Cloud City: Testing for Reliability: Load, Chaos & Game Days",
+  "city_concept": "City Fire Drills & Controlled Seismic Testing",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "The city built a massive new suspension bridge, but nobody knew if it could withstand gale-force winds until a winter storm nearly collapsed it.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Chief Inspector Ines established mandatory wind-tunnel testing and controlled seismic vibration drills before certifying public structures.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a simulated gas explosion drill, emergency dispatchers noticed a hospital route was blocked by construction and established a permanent bypass.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical city destructive testing damages concrete; cloud chaos experiments inject non-destructive, scoped digital faults.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

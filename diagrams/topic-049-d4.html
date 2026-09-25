@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: Helicopter Racing League — Video Streaming &amp; Real-Time ML — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-049.html">← Topic page</a><span>7.4d · TOPIC-049-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-049-d4",
+  "title": "Case Study: Helicopter Racing League \u2014 Video Streaming & Real-Time ML \u2014 D4",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "HRL requires sub-second streaming of in-flight race telemetry (G-force, RPM, position) to augment global live video broadcasts with real-time predictive overtake AI graphics.",
+  "groups": [
+    {
+      "id": "g-racing-copters",
+      "label": "Race Helicopters & In-Flight Sensors",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-realtime-processing",
+      "label": "Real-Time Telemetry & AI Prediction",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-viewer-broadcast",
+      "label": "Global Fan Experience & Live Video Tier",
+      "type": "vpc",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "helicopter-telemetry",
+      "label": "Helicopter Sensor Array",
+      "product": "100Hz Telemetry & 4K Camera",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Streams rotor RPM, airspeed, GPS coordinates, and G-force over private cellular."
+    },
+    {
+      "id": "mobile-edge-cell",
+      "label": "5G Trackside Mobile Edge",
+      "product": "Google Cloud Distributed Edge",
+      "group": "g-racing-copters",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Ultra-low-latency 5G edge compute gateway at racing circuit PoP."
+    },
+    {
+      "id": "dataflow-telemetry",
+      "label": "Dataflow Streaming Engine",
+      "product": "Sliding Window Race Positions",
+      "group": "g-realtime-processing",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Computes instantaneous race leaderboards and lap split times in under 50ms."
+    },
+    {
+      "id": "vertex-predictive-ai",
+      "label": "Vertex AI Overtake Predictor",
+      "product": "Real-time Probability Engine",
+      "group": "g-realtime-processing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Predicts pass probability based on rotor aerodynamics and entry velocity."
+    },
+    {
+      "id": "cloud-cdn-video",
+      "label": "Cloud CDN Live Video Cache",
+      "product": "Low-Latency HLS / CMAF Stream",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Distributes 4K race video feeds worldwide with sub-second glass-to-glass latency."
+    },
+    {
+      "id": "spanner-race-state",
+      "label": "Cloud Spanner Live Leaderboard",
+      "product": "Global Race Standings",
+      "group": "g-viewer-broadcast",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Delivers globally synchronized race standings to mobile fan apps worldwide."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "helicopter-telemetry",
+      "to": "mobile-edge-cell",
+      "label": "1. 5G Low-Latency Sensor Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "mobile-edge-cell",
+      "to": "dataflow-telemetry",
+      "label": "2. Ingest to Dataflow Pipeline",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-telemetry",
+      "to": "vertex-predictive-ai",
+      "label": "3. Feed Real-time Aerodynamic State",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vertex-predictive-ai",
+      "to": "cloud-cdn-video",
+      "label": "4. Inject Dynamic AR Graphic Overlay",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "dataflow-telemetry",
+      "to": "spanner-race-state",
+      "label": "5. Update Global Fan Leaderboards",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ultra-Low Latency Telemetry Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "In-flight sensors stream over 5G edge into Dataflow in under 20 milliseconds.",
+      "why_traversal": "Provides the sub-second baseline needed for augmented reality sports broadcasting.",
+      "protocol": "QUIC / UDP Stream",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Predictive AI Augmentation & Global Broadcast",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Vertex AI predicts overtakes; overlays probability onto video stream cached via Cloud CDN.",
+      "why_traversal": "Engages 10 million global fans with cutting-edge real-time predictive graphics.",
+      "protocol": "CMAF HLS / Spanner gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "canyon-5g-drop",
+      "label": "Intermittent Track Shadow Signal Loss",
+      "changes": {
+        "failedNodes": [
+          "mobile-edge-cell"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Helicopter dipped into mountain canyon, dropping 5G signal for 4 seconds.",
+      "diverted_path": "Helicopter onboard flash memory buffered telemetry; transmitted burst upon re-emergence.",
+      "blast_radius": "Dataflow event-time watermarking sorted packets correctly with zero distortion.",
+      "recovery": "Dataflow watermark handling absorbed out-of-order data automatically."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "helicopter-telemetry"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

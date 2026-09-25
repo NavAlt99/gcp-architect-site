@@ -1,0 +1,31 @@
+{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}

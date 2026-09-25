@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Identity Basics: IAM, Principals, and Service Accounts — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-009.html">← Topic page</a><span>1.3 · TOPIC-009-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-009-d3",
+  "title": "Identity Basics: IAM, Principals, and Service Accounts \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "009",
+  "roadmap_id": "1.3",
+  "kind": "failure",
+  "purpose": "Simulates service account credential failure: demonstrates expired OAuth tokens and IAM role revocation triggering immediate 403 Forbidden rejections.",
+  "routing_rationale": "When IAM permissions are revoked in Cloud IAM, downstream API calls fail instantaneously across Google's globally synchronized policy cache.",
+  "groups": [
+    {
+      "id": "g-workload-fail",
+      "label": "Compromised Service Pod",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-iam-revoke",
+      "label": "Real-Time IAM Policy Revocation",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rogue-pod",
+      "label": "Attacker / Hijacked Pod",
+      "product": "Compromised Workload",
+      "group": "g-workload-fail",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Malicious payload attempting to exfiltrate customer records via service account."
+    },
+    {
+      "id": "auth-cache",
+      "label": "Local Token Cache",
+      "product": "Client SDK Memory",
+      "group": "g-workload-fail",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Holds active OAuth bearer token issued prior to incident declaration."
+    },
+    {
+      "id": "iam-admin",
+      "label": "SecOps Incident Responder",
+      "product": "Cloud IAM Admin",
+      "group": "g-iam-revoke",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Revokes roles/storage.admin binding and disables Service Account immediately."
+    },
+    {
+      "id": "global-cache",
+      "label": "Google Global Policy Cache",
+      "product": "IAM Policy Engine",
+      "group": "g-iam-revoke",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Propagates permission revocation globally within 15 seconds; returns 403 Forbidden."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "iam-admin",
+      "to": "global-cache",
+      "label": "1. Remove IAM Binding & Disable SA",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "rogue-pod",
+      "to": "global-cache",
+      "label": "2. Exfiltration API Attempt",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "global-cache",
+      "to": "rogue-pod",
+      "label": "3. Immediate HTTP 403 Access Denied",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Emergency Revocation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Security team strips all IAM roles from service account via gcloud iam.",
+      "why_traversal": "Disabling the parent service account invalidates active bearer tokens globally.",
+      "protocol": "IAM REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Exfiltration Blocked",
+      "edges": [
+        "e2"
+      ],
+      "action": "Compromised pod sends GET request with bearer token to Cloud Storage.",
+      "why_traversal": "Every Google Cloud API call verifies IAM bindings at runtime.",
+      "protocol": "HTTPS REST",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Instant Lockdown",
+      "edges": [
+        "e3"
+      ],
+      "action": "Google policy cache rejects token with HTTP 403 Forbidden; exfiltration halted.",
+      "why_traversal": "Global synchronization halts compromised session within seconds without VM reboot.",
+      "protocol": "HTTP 403 Forbidden",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "privilege-escalation",
+      "label": "Unauthorized IAM Role Escalation Attempt",
+      "changes": {
+        "failedNodes": [
+          "rogue-pod"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Attacker exploited container vulnerability to call iam.serviceAccounts.setIamPolicy.",
+      "diverted_path": "Call blocked; principal lacks resourcemanager.projects.setIamPolicy.",
+      "blast_radius": "Confined to compromised container; cluster permissions unmodified.",
+      "recovery": "Isolate compromised pod; patch container base image and rotate secrets."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "rogue-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "rogue-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates service account credential failure: demonstrates expired OAuth tokens and IAM role revocation triggering immediate 403 Forbidden rejections."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

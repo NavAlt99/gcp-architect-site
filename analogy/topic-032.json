@@ -1,0 +1,43 @@
+{
+  "topic_no": "032",
+  "roadmap_id": "4.5",
+  "title": "Cloud City: Observability: Cloud Monitoring, Logging, Trace & Profiler",
+  "city_concept": "City Monitoring Towers & Dispatch Telemetry",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Firefighters only discovered fires when citizens ran into the station screaming; the city had no centralized alarm system.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Chief Inspector Ines built high observation towers with smoke detectors, barometers, and direct telegraph wires to dispatch.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a minor smoke plume appeared in the grain warehouse, dispatchers dispatched a fire brigade in 45 seconds before flames spread.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Telegraph wires can break in severe storms; cloud observability pipelines use distributed global endpoints with buffered retries.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

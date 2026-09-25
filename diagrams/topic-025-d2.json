@@ -1,0 +1,241 @@
+{
+  "id": "topic-025-d2",
+  "title": "Migration Strategies & The 6 Rs \u2014 Request & Control Flow",
+  "topic_no": "025",
+  "roadmap_id": "3.4",
+  "kind": "flow",
+  "purpose": "Traces the Step-by-Step Low-Downtime Migration Cutover: baseline sync, continuous CDC delta replication, application quiesce, and DNS flip.",
+  "routing_rationale": "Orchestrating database quiescence before final DNS record updates prevents split-brain writes and ensures zero data loss during cloud cutovers.",
+  "groups": [
+    {
+      "id": "g-source-env",
+      "label": "Source On-Premise Environment",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-cutover-ctl",
+      "label": "Cutover Automation Controller",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dest-env",
+      "label": "Target Google Cloud Production",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "onprem-app",
+      "label": "On-Prem Application Server",
+      "product": "Source Web & App Tier",
+      "group": "g-source-env",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Active source application serving live customer traffic."
+    },
+    {
+      "id": "onprem-db",
+      "label": "Source MySQL 8.0 Primary",
+      "product": "Source Transaction DB",
+      "group": "g-source-env",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Replicating write binlogs continuously to Database Migration Service."
+    },
+    {
+      "id": "dms-streamer",
+      "label": "DMS Continuous CDC",
+      "product": "Lag < 2 seconds",
+      "group": "g-cutover-ctl",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Maintains sub-second replication synchronization between source and target."
+    },
+    {
+      "id": "dns-switcher",
+      "label": "Cloud DNS Record Manager",
+      "product": "TTL = 60 seconds",
+      "group": "g-dest-env",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Updates api.company.com A record from on-prem IP to GCP Anycast VIP."
+    },
+    {
+      "id": "target-alloydb",
+      "label": "Target AlloyDB / Cloud SQL",
+      "product": "Promoted to Primary DB",
+      "group": "g-dest-env",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Promoted from replica to standalone primary; opens read/write connections."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "onprem-db",
+      "to": "dms-streamer",
+      "label": "1. Stream Delta Transactions",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dms-streamer",
+      "to": "target-alloydb",
+      "label": "2. Apply to Target Instance",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "onprem-app",
+      "to": "onprem-db",
+      "label": "3. Quiesce Writes (Maintenance)",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "dms-streamer",
+      "to": "target-alloydb",
+      "label": "4. Promote Target to Primary",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "dns-switcher",
+      "to": "target-alloydb",
+      "label": "5. Update DNS to GCP VIP",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Continuous Delta Synchronization",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "DMS maintains real-time replication lag below 2 seconds.",
+      "why_traversal": "Prepares target database for instantaneous cutover.",
+      "protocol": "MySQL Binlog Replication",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Graceful Quiesce & Promote",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Source app placed in read-only mode; DMS applies final delta and promotes target.",
+      "why_traversal": "Eliminates risk of in-flight write loss.",
+      "protocol": "DMS Promotion API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Global Traffic Redirection",
+      "edges": [
+        "e5"
+      ],
+      "action": "Cloud DNS flips A record to Google Cloud External Load Balancer VIP.",
+      "why_traversal": "Clients transition seamlessly to cloud environment within 60 seconds.",
+      "protocol": "Anycast DNS",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "split-brain-write",
+      "label": "Split-Brain Write Conflict",
+      "changes": {
+        "failedNodes": [
+          "onprem-app"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Old on-prem app remained in read-write mode after DNS flip due to stale client DNS caches.",
+      "diverted_path": "5% of customers continued writing to on-prem database while 95% wrote to GCP.",
+      "blast_radius": "Data reconciliation conflict across two database primaries.",
+      "recovery": "Immediately sever network connectivity from on-prem app to source database."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "onprem-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "onprem-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Step-by-Step Low-Downtime Migration Cutover: baseline sync, continuous CDC delta replication, application quiesce, and DNS flip."
+}

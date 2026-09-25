@@ -1,0 +1,43 @@
+{
+  "topic_no": "056",
+  "roadmap_id": "cheat-2",
+  "title": "Cloud City: Cheat Sheet: Cloud SQL vs AlloyDB vs Spanner vs Firestore vs Bigtable",
+  "city_concept": "City Record Halls: Ledgers, Card Catalogs & Vaults",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "The city recorder stored tax audits, citizen birth certificates, and warehouse shipping tallies in the exact same wooden drawer.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Archivist Arthur established specialized archives: Bound Ledgers for taxes (Cloud SQL), The Master Vault for royal deeds (Spanner), and Tally Slates for cart weights (Bigtable).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Clerks retrieved tax records in seconds and weighed grain wagons without disturbing royal records.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical paper vaults can burn down; cloud databases replicate transactions synchronously across multiple availability zones.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

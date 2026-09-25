@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Application &amp; Supply-Chain Security (SLSA) — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-039.html">← Topic page</a><span>5.5b · TOPIC-039-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-039-d3",
+  "title": "Application & Supply-Chain Security (SLSA) \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "039",
+  "roadmap_id": "5.5b",
+  "kind": "failure",
+  "purpose": "Simulates Breakglass Emergency Deployment: illustrates emergency override procedures when immediate production fixes must bypass Binary Authorization gates.",
+  "routing_rationale": "Breakglass procedures allow authorized on-call engineers to deploy emergency hotfixes during major outages, while generating immutable audit logs for post-incident review.",
+  "groups": [
+    {
+      "id": "g-emergency-outage",
+      "label": "High-Severity Production Outage (P1)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-breakglass-gate",
+      "label": "Binary Authorization Breakglass Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hotfix-image",
+      "label": "Emergency Hotfix Container",
+      "product": "Built Locally (No CI Attestation)",
+      "group": "g-emergency-outage",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Lead engineer crafts urgent 2-line database deadlock fix during $50k/min outage."
+    },
+    {
+      "id": "breakglass-annotation",
+      "label": "Breakglass Override Annotation",
+      "product": "image-policy.k8s.io/break-glass: true",
+      "group": "g-emergency-outage",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Pod manifest explicitly asserts emergency breakglass permission."
+    },
+    {
+      "id": "binauth-evaluator",
+      "label": "BinAuth Admission Controller",
+      "product": "Evaluates Breakglass Permission",
+      "group": "g-breakglass-gate",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Permits unsigned container pod creation due to breakglass annotation."
+    },
+    {
+      "id": "audit-incident-log",
+      "label": "Security Incident Audit Log",
+      "product": "High-Severity Audit Finding",
+      "group": "g-breakglass-gate",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Logs exact engineer identity, timestamp, and container SHA to Cloud Audit Logs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "hotfix-image",
+      "to": "breakglass-annotation",
+      "label": "1. Attach Breakglass Pod Annotation",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "breakglass-annotation",
+      "to": "binauth-evaluator",
+      "label": "2. Bypass Attestation Gate",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "binauth-evaluator",
+      "to": "audit-incident-log",
+      "label": "3. Emit Irrevocable Audit Finding",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Emergency Breakglass Assertion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Engineer deploys hotfix with breakglass annotation; admission controller admits pod.",
+      "why_traversal": "Provides operational escape hatch to resolve critical business outages.",
+      "protocol": "Kubernetes Pod Specification",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Audit Accountability",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Audit Logs records breakglass event; security alerts are triggered for mandatory retrospective.",
+      "why_traversal": "Guarantees emergency overrides cannot be used secretly or maliciously without audit trail.",
+      "protocol": "Cloud Audit Logging",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unauthorized-breakglass-attempt",
+      "label": "Unauthorized Engineer Denied Breakglass Access",
+      "changes": {
+        "failedNodes": [
+          "binauth-evaluator"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Developer lacked container.deployments.breakglass IAM permission.",
+      "diverted_path": "Admission controller rejects deployment; pod fails to start.",
+      "blast_radius": "Only vetted emergency response personnel can activate breakglass.",
+      "recovery": "Designated on-call lead engineer with required breakglass role must execute the deployment."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "hotfix-image"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "hotfix-image"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Breakglass Emergency Deployment: illustrates emergency override procedures when immediate production fixes must bypass Binary Authorization gates."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

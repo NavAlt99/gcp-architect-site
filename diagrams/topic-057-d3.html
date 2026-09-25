@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Load Balancer Decision Cheat Sheet — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-057.html">← Topic page</a><span>cheat-3 · TOPIC-057-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-057-d3",
+  "title": "Load Balancer Decision Cheat Sheet \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "057",
+  "roadmap_id": "cheat-3",
+  "kind": "failure",
+  "purpose": "Simulates Global Multi-Region Traffic Spillover: us-central1 backend reaches 100% capacity; Global Application Load Balancer seamlessly spills excess traffic to europe-west1.",
+  "routing_rationale": "Global Anycast load balancing protects saturated regional backends by dynamically redistributing excess request capacity across global datacenter fleets.",
+  "groups": [
+    {
+      "id": "g-saturated-region",
+      "label": "Saturated Region: us-central1 (Capacity 100%)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-overflow-region",
+      "label": "Surviving Region: europe-west1 (Capacity 35%)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "us-backend-saturated",
+      "label": "us-central1 Backend MIG",
+      "product": "Serving 10,000 QPS (Max Capacity)",
+      "group": "g-saturated-region",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "CPU utilization reaches 85%; max rate per instance threshold breached."
+    },
+    {
+      "id": "alb-spillover-logic",
+      "label": "Global Anycast Spillover Engine",
+      "product": "Dynamic Capacity Balancing",
+      "group": "g-saturated-region",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Directs newly arriving US client requests across private fiber to Europe."
+    },
+    {
+      "id": "europe-backend-healthy",
+      "label": "europe-west1 Backend MIG",
+      "product": "Absorbs 3,000 QPS Spillover",
+      "group": "g-overflow-region",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Healthy European cluster has 65% idle headroom; processes US requests cleanly."
+    },
+    {
+      "id": "zero-dropped-requests",
+      "label": "Zero Dropped HTTP Requests",
+      "product": "100% Customer Success Rate",
+      "group": "g-overflow-region",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Customers experience 80ms transatlantic latency rather than HTTP 503 errors."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "us-backend-saturated",
+      "to": "alb-spillover-logic",
+      "label": "1. Signal Saturated Capacity",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "alb-spillover-logic",
+      "to": "europe-backend-healthy",
+      "label": "2. Spill Excess Traffic to Europe",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "europe-backend-healthy",
+      "to": "zero-dropped-requests",
+      "label": "3. Deliver 100% Successful Responses",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Capacity Overflow Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Load balancer detects us-central1 at max capacity; reroutes excess packets to Europe.",
+      "why_traversal": "Prevents local backend crash under viral surge.",
+      "protocol": "Anycast BGP Spillover",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Graceful Global Degradation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Europe absorbs load; users experience slightly higher latency instead of hard errors.",
+      "why_traversal": "Prioritizes availability over localized latency during major surges.",
+      "protocol": "Google Private Backbone",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "max-rate-unconfigured-crash",
+      "label": "Missing Max Rate Configuration Drops Traffic",
+      "changes": {
+        "failedNodes": [
+          "alb-spillover-logic"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Backend service lacked 'max rate per instance' setting; ALB sent 100% traffic to local region.",
+      "diverted_path": "us-central1 crashed under 25,000 QPS; 100% of US users dropped.",
+      "blast_radius": "System outage in primary market.",
+      "recovery": "Configure 'max rate per instance' or 'max utilization' on all Global ALB backend services."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "us-backend-saturated"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "us-backend-saturated"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Global Multi-Region Traffic Spillover: us-central1 backend reaches 100% capacity; Global Application Load Balancer seamlessly spills excess traffic to europe-west1."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

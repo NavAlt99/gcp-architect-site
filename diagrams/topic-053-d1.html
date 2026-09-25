@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Lake, Lakehouse &amp; BigLake — Scope &amp; Architecture Map</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-053.html">← Topic page</a><span>D.3 · TOPIC-053-D1</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-053-d1",
+  "title": "Data Lake, Lakehouse & BigLake \u2014 Scope & Architecture Map",
+  "topic_no": "053",
+  "roadmap_id": "D.3",
+  "kind": "map",
+  "purpose": "Visualizes Governed Enterprise Lakehouse Architecture: Cloud Storage, AWS S3, and Azure Blob multi-cloud data lakes unified via BigLake, open table formats (Iceberg, Delta, Hudi), and Dataplex centralized data mesh governance.",
+  "routing_rationale": "BigLake unifies data warehouses and data lakes into a single governed lakehouse: query open table formats directly in Cloud Storage or multi-cloud buckets with BigQuery performance while enforcing fine-grained row- and column-level security through Dataplex.",
+  "groups": [
+    {
+      "id": "g-multicloud-storage",
+      "label": "Multi-Cloud Storage Tier (GCS / S3)",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-biglake-engine",
+      "label": "BigLake Storage Engine & Open Formats",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dataplex-mesh",
+      "label": "Dataplex Centralized Data Governance",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gcs-iceberg",
+      "label": "GCS Apache Iceberg Tables",
+      "product": "Open Table Format (Parquet)",
+      "group": "g-multicloud-storage",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "ACID transactions and partition evolution on top of Cloud Storage object files."
+    },
+    {
+      "id": "aws-s3-lake",
+      "label": "AWS S3 / Azure Blob Storage",
+      "product": "External Cloud Lake Data",
+      "group": "g-multicloud-storage",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Petabytes of operational logs in AWS S3 queried in-place via BigQuery Omni."
+    },
+    {
+      "id": "biglake-connector",
+      "label": "BigLake Metastore & Connector",
+      "product": "BigQuery Omni & Storage API",
+      "group": "g-biglake-engine",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Executes SQL directly on open files without data duplication or cross-cloud egress fees."
+    },
+    {
+      "id": "dataplex-catalog",
+      "label": "Dataplex Data Mesh Catalog",
+      "product": "Automated Metadata Discovery",
+      "group": "g-dataplex-mesh",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Discovers schemas, manages data lineage, and classifies sensitive data across lakes."
+    },
+    {
+      "id": "fine-grained-sec",
+      "label": "Row / Column Security Policy",
+      "product": "Policy Tags & Dynamic Masking",
+      "group": "g-dataplex-mesh",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Masks credit card columns and filters rows based on caller IAM department."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "gcs-iceberg",
+      "to": "biglake-connector",
+      "label": "1. Read Iceberg Parquet Tables",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "aws-s3-lake",
+      "to": "biglake-connector",
+      "label": "2. Query S3 via BigQuery Omni",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "biglake-connector",
+      "to": "dataplex-catalog",
+      "label": "3. Register Discovered Assets",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "dataplex-catalog",
+      "to": "fine-grained-sec",
+      "label": "4. Enforce Access Policy Tags",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Federated Multi-Cloud In-Place Querying",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BigLake executes SQL queries over GCS Iceberg tables and AWS S3 in-place.",
+      "why_traversal": "Eliminates multi-million dollar data egress costs and avoids vendor lock-in.",
+      "protocol": "BigQuery Omni / Parquet Read",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Centralized Governance & Masking",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Dataplex catalogs data assets and applies dynamic data masking to sensitive columns.",
+      "why_traversal": "Ensures uniform compliance and security across diverse multi-cloud analytical assets.",
+      "protocol": "Dataplex Policy Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unmasked-column-leak",
+      "label": "Missing Policy Tag Exposes SSN Column",
+      "changes": {
+        "failedNodes": [
+          "fine-grained-sec"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "New table schema added 'social_security_num' column without applying Dataplex policy tag.",
+      "diverted_path": "Marketing analyst queried raw table and viewed customer SSNs.",
+      "blast_radius": "Privacy compliance breach.",
+      "recovery": "Automate policy tag inheritance in Dataplex so new sensitive columns are masked by default."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gcs-iceberg"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gcs-iceberg"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes Governed Enterprise Lakehouse Architecture: Cloud Storage, AWS S3, and Azure Blob multi-cloud data lakes unified via BigLake, open table formats (Iceberg, Delta, Hudi), and Dataplex centralized data mesh governance."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

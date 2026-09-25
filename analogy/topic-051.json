@@ -1,0 +1,43 @@
+{
+  "topic_no": "051",
+  "roadmap_id": "D.1",
+  "title": "Cloud City: Data Warehousing: BigQuery Architecture & Looker Studio",
+  "city_concept": "City Grand Library & Sorting Scribes",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Scholars were searching for tax scrolls stored in giant unlabelled heaps, taking 3 weeks to answer how much grain the city consumed in March.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Head Librarian Arthur organized scrolls into annual halls (Partitioning) and indexed them by merchant guild (Clustering).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Arthur hired quick scribes (Dremel Slots) who read only the March 1880 shelf, returning the exact grain total in 10 seconds.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Paper libraries cannot replicate scrolls; BigQuery separates compute from storage, allowing 1,000 queries over the same data simultaneously.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

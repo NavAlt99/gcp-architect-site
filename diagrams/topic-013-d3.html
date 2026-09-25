@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compute Engine: VMs, Disks, and Managed Instance Groups — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-013.html">← Topic page</a><span>2.1 · TOPIC-013-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-013-d3",
+  "title": "Compute Engine: VMs, Disks, and Managed Instance Groups \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "013",
+  "roadmap_id": "2.1",
+  "kind": "failure",
+  "purpose": "Simulates VM hardware crash: demonstrates MIG auto-healing detecting consecutive health check probe timeouts, recreating the failed VM, and re-attaching persistent storage.",
+  "routing_rationale": "The MIG auto-healing controller recreates instances in-place using the instance template, restoring zonal serving capacity within 120 seconds.",
+  "groups": [
+    {
+      "id": "g-failed-zone",
+      "label": "Degraded Zone A (Failed Host)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-healed-zone",
+      "label": "Auto-Healing & Recovery Controller",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "crashed-vm",
+      "label": "Crashed VM Instance",
+      "product": "Kernel Panic / OOM",
+      "group": "g-failed-zone",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Operating system kernel hung; stops responding to TCP port 8080."
+    },
+    {
+      "id": "health-prober",
+      "label": "Auto-Healing Prober",
+      "product": "HTTP Health Check",
+      "group": "g-failed-zone",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Consecutive timeouts (3x5s); declares instance UNHEALTHY."
+    },
+    {
+      "id": "mig-healer",
+      "label": "MIG Auto-Healer",
+      "product": "Instance Group Manager",
+      "group": "g-healed-zone",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Issues compute.instances.delete and recreates fresh instance from golden template."
+    },
+    {
+      "id": "recreated-vm",
+      "label": "Recreated VM Instance",
+      "product": "Fresh Clean Boot",
+      "group": "g-healed-zone",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Successfully boots, mounts persistent disk, and resumes serving customer traffic."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "health-prober",
+      "to": "crashed-vm",
+      "label": "1. Probe Timeout (Connection Refused)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "health-prober",
+      "to": "mig-healer",
+      "label": "2. Signal Unhealthy Instance",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "mig-healer",
+      "to": "recreated-vm",
+      "label": "3. Recreate from Instance Template",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "recreated-vm",
+      "to": "health-prober",
+      "label": "4. Verify Healthy HTTP 200",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Failure Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Health prober sends HTTP request; receives TCP reset due to kernel hang.",
+      "why_traversal": "Application-level health checks detect deadlocks that hypervisor pings miss.",
+      "protocol": "TCP Connection Probe",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Auto-Healing Signal",
+      "edges": [
+        "e2"
+      ],
+      "action": "Prober signals MIG manager after 3 consecutive failures (15s total).",
+      "why_traversal": "Prevents premature restarts while avoiding extended customer outages.",
+      "protocol": "MIG Controller Event",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Instance Re-creation",
+      "edges": [
+        "e3"
+      ],
+      "action": "MIG auto-healer tears down corrupt VM and launches clean instance from image template.",
+      "why_traversal": "Restores immutable, verified software state in under 90 seconds.",
+      "protocol": "Compute Engine API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Service Restoration",
+      "edges": [
+        "e4"
+      ],
+      "action": "Recreated VM initializes and responds HTTP 200 OK; traffic resumes.",
+      "why_traversal": "Self-healing architecture restores SLA without manual operator intervention.",
+      "protocol": "HTTP 200 OK",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "persistent-crashloop",
+      "label": "Corrupt Disk Boot CrashLoop",
+      "changes": {
+        "failedNodes": [
+          "recreated-vm"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Root filesystem corruption on persistent disk causes new VM to panic during boot.",
+      "diverted_path": "Recreated instance fails health check repeatedly; auto-healer throttles reboots.",
+      "blast_radius": "Capacity remains degraded by 1 instance until image is patched.",
+      "recovery": "Deploy stateless instances with OS on ephemeral disk and data on managed databases."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "crashed-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "crashed-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates VM hardware crash: demonstrates MIG auto-healing detecting consecutive health check probe timeouts, recreating the failed VM, and re-attaching persistent storage."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

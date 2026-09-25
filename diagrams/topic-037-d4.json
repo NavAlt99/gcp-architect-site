@@ -1,0 +1,218 @@
+{
+  "id": "topic-037-d4",
+  "title": "Compliance, Governance & Assured Workloads \u2014 D4",
+  "topic_no": "037",
+  "roadmap_id": "5.4",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Assured Workloads enforces regulatory boundaries at the folder level through immutable organization policies, guaranteeing data residency and restricting Google personnel access.",
+  "groups": [
+    {
+      "id": "g-gov-control",
+      "label": "Enterprise Compliance & Governance",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-assured-folder",
+      "label": "Assured Workloads Regulated Folder",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-google-support",
+      "label": "Google Cloud Support & KAJ Boundary",
+      "type": "external",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "compliance-officer",
+      "label": "Enterprise CISO / Auditor",
+      "product": "Regulatory Oversight",
+      "group": "g-gov-control",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Monitors compliance posture and reviews access justification logs in real time."
+    },
+    {
+      "id": "org-guardrail",
+      "label": "Org Policy Guardrails",
+      "product": "Resource Location Restriction",
+      "group": "g-gov-control",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Restricts resource provisioning strictly to compliant regions (e.g., us-gov-west1 or europe-west3)."
+    },
+    {
+      "id": "assured-env",
+      "label": "FedRAMP High Environment",
+      "product": "Assured Workloads Project",
+      "group": "g-assured-folder",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Hosts government workloads with FIPS 140-2 encryption and CJIS background-checked support."
+    },
+    {
+      "id": "kaj-enforcer",
+      "label": "Key Access Justifications (KAJ)",
+      "product": "Policy Approval Gate",
+      "group": "g-google-support",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Evaluates rationale before Google Cloud support personnel can access encryption keys."
+    },
+    {
+      "id": "pac-restricted",
+      "label": "Personnel Access Controls (PAC)",
+      "product": "US Persons Only (FedRAMP)",
+      "group": "g-google-support",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Guarantees that only vetted US citizens located in the US handle technical support."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "compliance-officer",
+      "to": "org-guardrail",
+      "label": "1. Deploy Compliance Baseline",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "org-guardrail",
+      "to": "assured-env",
+      "label": "2. Enforce Folder Constraints",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "assured-env",
+      "to": "kaj-enforcer",
+      "label": "3. Log Support Access Request",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "kaj-enforcer",
+      "to": "pac-restricted",
+      "label": "4. Verify Justification & Citizenship",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Regulatory Guardrail Enforcement",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Assured Workloads folder applies automated constraints blocking non-compliant regions.",
+      "why_traversal": "Eliminates risk of human error violating sovereign residency laws.",
+      "protocol": "Org Policy as Code",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Support Access Justification Audit",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "When support ticket is opened, KAJ demands automated justification and verifies PAC vetting.",
+      "why_traversal": "Ensures cloud provider personnel cannot access customer data without explicit logged consent.",
+      "protocol": "KAJ Webhook Verification",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "location-constraint-violation",
+      "label": "Deployment Blocked in Non-Compliant Region",
+      "changes": {
+        "failedNodes": [
+          "org-guardrail"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Terraform script attempted to spin up GCS bucket in asia-east1 within FedRAMP folder.",
+      "diverted_path": "Resource Manager blocks API call: 'Violates constraints/gcp.resourceLocations'.",
+      "blast_radius": "Zero regulatory violation.",
+      "recovery": "Update Terraform configuration to target authorized region us-gov-west1."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "compliance-officer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "compliance-officer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

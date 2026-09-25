@@ -1,0 +1,43 @@
+{
+  "topic_no": "037",
+  "roadmap_id": "5.4",
+  "title": "Cloud City: Compliance, Governance & Assured Workloads",
+  "city_concept": "City Public Health Inspections & Guild Charters",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Taverns and bakeries were operating with dirty water and spoiled grain, claiming that because the city paved the street outside, food was safe.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Chief Inspector Ines instituted the Shared Municipal Charter: the city guarantees clean water to the curb, but tavern keepers must cook food to 100 degrees.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a surprise inspection, Ines shut down a brewery that failed to maintain temperature logs, protecting public health.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "City health audits happen once a year; cloud compliance guardrails (Policy as Code) enforce rules continuously on every API call.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

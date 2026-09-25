@@ -1,0 +1,229 @@
+{
+  "id": "topic-007-d6",
+  "title": "Account, Tools and Access: Cloud Shell & gcloud \u2014 D6",
+  "topic_no": "007",
+  "roadmap_id": "1.1",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "All administrative interfaces (Console, Cloud Shell, gcloud) converge onto the same underlying Google Cloud REST APIs, authenticated via OAuth2 tokens and authorized by Cloud IAM.",
+  "groups": [
+    {
+      "id": "g-admin",
+      "label": "Administrator Client Terminals",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-api",
+      "label": "Google Cloud Management API Gateway",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-res",
+      "label": "Core Resource Management & Audit Sinks",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gcloud-cli",
+      "label": "Local gcloud SDK",
+      "product": "Terminal CLI",
+      "group": "g-admin",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Local developer workstation running authenticated gcloud CLI commands."
+    },
+    {
+      "id": "cloud-shell",
+      "label": "Cloud Shell Container",
+      "product": "Managed Dev Environment",
+      "group": "g-admin",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Ephemeral Debian container with 5GB persistent $HOME and pre-installed SDKs."
+    },
+    {
+      "id": "api-gateway",
+      "label": "Google API Gateway",
+      "product": "cloudresourcemanager.googleapis.com",
+      "group": "g-api",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Authenticates OAuth2 bearer tokens and terminates administrative gRPC/REST sessions."
+    },
+    {
+      "id": "iam-engine",
+      "label": "Cloud IAM Policy Engine",
+      "product": "Cloud IAM",
+      "group": "g-api",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Evaluates roles/viewer or roles/editor permissions against target project."
+    },
+    {
+      "id": "audit-sink",
+      "label": "Cloud Audit Log Sink",
+      "product": "Cloud Logging",
+      "group": "g-res",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Writes immutable admin activity audit logs with principal email and caller IP."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "gcloud-cli",
+      "to": "api-gateway",
+      "label": "1. gcloud compute instances create",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cloud-shell",
+      "to": "api-gateway",
+      "label": "1b. Web Shell API Call",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "api-gateway",
+      "to": "iam-engine",
+      "label": "2. Authorize Principal",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "api-gateway",
+      "to": "audit-sink",
+      "label": "3. Emit Audit Record",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "CLI Command Dispatch",
+      "edges": [
+        "e1"
+      ],
+      "action": "Engineer runs gcloud command; SDK attaches cached OAuth2 token.",
+      "why_traversal": "gcloud CLI manages credential acquisition and automatically negotiates API versions.",
+      "protocol": "HTTPS POST / OAuth2",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "gcloud auth list",
+        "metrics": "serviceruntime.googleapis.com/api/request_count"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Token & Quota Validation",
+      "edges": [
+        "e3"
+      ],
+      "action": "API Gateway verifies token signature with Google STS and evaluates IAM permissions.",
+      "why_traversal": "Enforces least-privilege role boundaries before executing resource modification.",
+      "protocol": "Internal Google RPC",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "gcloud projects get-iam-policy $PROJECT_ID",
+        "metrics": "iam.googleapis.com/policy/evaluation_count"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Audit Log Recording",
+      "edges": [
+        "e4"
+      ],
+      "action": "API Gateway writes non-repudiable audit event to Cloud Logging.",
+      "why_traversal": "Enterprise governance requires immutable audit trails for all administrative actions.",
+      "protocol": "Cloud Audit Logs API",
+      "plane": "Control Plane",
+      "check": {
+        "commands": "gcloud logging read 'logName:activity'",
+        "metrics": "logging.googleapis.com/log_entry_count"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "token-expired",
+      "label": "OAuth Refresh Token Expiry",
+      "changes": {
+        "failedNodes": [
+          "gcloud-cli"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Developer refresh token revoked by IdP password reset or 16-hour session max.",
+      "diverted_path": "CLI commands fail with HTTP 401 Unauthorized; local scripts halt.",
+      "blast_radius": "Automated deployments using personal credentials fail immediately.",
+      "recovery": "Execute gcloud auth login or switch CI automation to Workload Identity Federation."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gcloud-cli"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gcloud-cli"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

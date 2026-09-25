@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decision Frameworks: ADRs &amp; Trade-offs — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-026.html">← Topic page</a><span>3.4b · TOPIC-026-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-026-d2",
+  "title": "Decision Frameworks: ADRs & Trade-offs \u2014 Request & Control Flow",
+  "topic_no": "026",
+  "roadmap_id": "3.4b",
+  "kind": "flow",
+  "purpose": "Traces the Compute Decision Tree Flow: evaluating workload constraints (statefulness, GPU, long-running processes, traffic burstiness) to arrive at the optimal GCP compute target.",
+  "routing_rationale": "Decision trees guide engineers through branching criteria to systematically narrow down compute options from 6 candidates to 1 clear winner.",
+  "groups": [
+    {
+      "id": "g-workload-attr",
+      "label": "Workload Requirements Assessment",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-decision-branch",
+      "label": "Branching Architecture Logic",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-selected-runtime",
+      "label": "Optimal Google Cloud Runtime",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-type-check",
+      "label": "Containerized HTTP API?",
+      "product": "Stateless & Request-Driven",
+      "group": "g-workload-attr",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Workload packaged in OCI container; responds to HTTPS requests within 60 minutes."
+    },
+    {
+      "id": "run-check",
+      "label": "Scale-to-Zero Required?",
+      "product": "Zero Nighttime Traffic",
+      "group": "g-workload-attr",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Internal developer tool receives zero requests between 7 PM and 7 AM."
+    },
+    {
+      "id": "eval-branch",
+      "label": "Cloud Run Suitability Check",
+      "product": "Meets 100% Constraints",
+      "group": "g-decision-branch",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "No GPU needed, execution < 60 min, containerized -> Direct route to Cloud Run."
+    },
+    {
+      "id": "target-runtime",
+      "label": "Cloud Run Fully Managed",
+      "product": "Pay-per-Request Runtime",
+      "group": "g-selected-runtime",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Deployed with concurrency=80, min-instances=0, max-instances=100."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-type-check",
+      "to": "eval-branch",
+      "label": "1. Yes: OCI Container",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "run-check",
+      "to": "eval-branch",
+      "label": "2. Yes: Burst / Idle Pattern",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "eval-branch",
+      "to": "target-runtime",
+      "label": "3. Provision Cloud Run Service",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Constraint Verification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Decision tree evaluates container packaging and traffic distribution.",
+      "why_traversal": "Rapidly filters out unsuitable runtimes like App Engine Standard or bare VMs.",
+      "protocol": "Decision Tree Evaluation",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Deployment",
+      "edges": [
+        "e3"
+      ],
+      "action": "gcloud run deploy executes instantly based on decision tree recommendation.",
+      "why_traversal": "Fast-tracks development while adhering to enterprise standards.",
+      "protocol": "Cloud Run Admin API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "timeout-breach",
+      "label": "60-Minute Execution Timeout Exceeded",
+      "changes": {
+        "failedNodes": [
+          "target-runtime"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Workload required 4-hour batch video encoding, exceeding Cloud Run's 60-minute limit.",
+      "diverted_path": "Jobs killed mid-execution with HTTP 504.",
+      "blast_radius": "Batch jobs fail silently.",
+      "recovery": "Re-evaluate decision tree: route long-running batch jobs to Cloud Run Jobs or Cloud Batch."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app-type-check"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "app-type-check"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Compute Decision Tree Flow: evaluating workload constraints (statefulness, GPU, long-running processes, traffic burstiness) to arrive at the optimal GCP compute target."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

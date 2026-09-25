@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Application &amp; Supply-Chain Security (SLSA) — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-039.html">← Topic page</a><span>5.5b · TOPIC-039-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-039-d2",
+  "title": "Application & Supply-Chain Security (SLSA) \u2014 Request & Control Flow",
+  "topic_no": "039",
+  "roadmap_id": "5.5b",
+  "kind": "flow",
+  "purpose": "Traces the End-to-End SLSA L3 Cryptographic Attestation Pipeline: Git commit push -> hermetic build -> automated vulnerability gate -> KMS signing -> GKE pod deployment.",
+  "routing_rationale": "Chaining multiple independent attestations (Build Provenance + Security Vulnerability Sign-off) prevents compromised developers or build steps from unilaterally pushing unverified code.",
+  "groups": [
+    {
+      "id": "g-dev-src",
+      "label": "Source Code Repository (Git)",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ci-engine",
+      "label": "Automated Security CI Pipeline",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-prod-deploy",
+      "label": "Production Kubernetes Cluster",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "git-pr-merged",
+      "label": "Signed Git Commit",
+      "product": "GPG Signed Commit (SHA: e4b91f)",
+      "group": "g-dev-src",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Peer-reviewed commit merged into main branch with mandatory 2-person approval."
+    },
+    {
+      "id": "builder-bot",
+      "label": "Cloud Build Worker Pool",
+      "product": "Private Worker Pool (No Internet)",
+      "group": "g-ci-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 100,
+      "detail": "Builds OCI image from pinned dependencies; generates container digest SHA256."
+    },
+    {
+      "id": "cve-checker",
+      "label": "CVE Security Validator",
+      "product": "Artifact Analysis Gate",
+      "group": "g-ci-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Evaluates container against NIST NVD; confirms 0 Critical or High severity CVEs."
+    },
+    {
+      "id": "attestor-service",
+      "label": "KMS Provenance Attestor",
+      "product": "Asymmetric Signer",
+      "group": "g-ci-engine",
+      "plane": "control",
+      "x": 440,
+      "y": 300,
+      "detail": "Signs in-toto payload: 'Built by Cloud Build from commit e4b91f; verified clean'."
+    },
+    {
+      "id": "prod-k8s-pod",
+      "label": "Deployed Production Pod",
+      "product": "Running Verified Container",
+      "group": "g-prod-deploy",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Pod runs with read-only root filesystem and dropped Linux capabilities."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "git-pr-merged",
+      "to": "builder-bot",
+      "label": "1. Webhook Triggers Hermetic Build",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "builder-bot",
+      "to": "cve-checker",
+      "label": "2. Scan Built Image Digest",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cve-checker",
+      "to": "attestor-service",
+      "label": "3. Security Gate Passed -> Sign",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "attestor-service",
+      "to": "prod-k8s-pod",
+      "label": "4. Verify Attestation & Launch Pod",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Build & Vulnerability Verification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Build compiles container in private worker pool and runs vulnerability scan.",
+      "why_traversal": "Establishes cryptographic link between source commit and built binary.",
+      "protocol": "GitOps Trigger",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Attestation Signing & Cluster Launch",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Attestor signs image with KMS; GKE admission controller verifies signature and launches pod.",
+      "why_traversal": "Prevents any unauthorized artifact modification between build and runtime.",
+      "protocol": "Binary Authorization REST API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "critical-cve-block",
+      "label": "Critical OpenSSL CVE Halts Pipeline",
+      "changes": {
+        "failedNodes": [
+          "cve-checker"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Base container image contained unpatched Critical remote code execution vulnerability.",
+      "diverted_path": "CVE checker rejects image; no attestation signed; deployment blocked.",
+      "blast_radius": "Prevents vulnerable container from entering production.",
+      "recovery": "Update Dockerfile to latest base image containing security patch."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "git-pr-merged"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "git-pr-merged"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the End-to-End SLSA L3 Cryptographic Attestation Pipeline: Git commit push -> hermetic build -> automated vulnerability gate -> KMS signing -> GKE pod deployment."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

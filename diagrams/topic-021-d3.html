@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Messaging and Integration: Pub/Sub, Cloud Tasks, and Eventarc — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-021.html">← Topic page</a><span>2.9 · TOPIC-021-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-021-d3",
+  "title": "Messaging and Integration: Pub/Sub, Cloud Tasks, and Eventarc \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "021",
+  "roadmap_id": "2.9",
+  "kind": "failure",
+  "purpose": "Simulates downstream consumer crash: demonstrates unacknowledged message backpressure, exponential retry backoff, and dead-letter topic routing.",
+  "routing_rationale": "When worker consumers fail repeatedly, Pub/Sub forwards unprocessable messages to a Dead-Letter Topic after 5 failed attempts, preserving queue flow.",
+  "groups": [
+    {
+      "id": "g-failing-consumer",
+      "label": "Crashing Consumer Worker",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-dlq-recovery",
+      "label": "Dead-Letter Queue Isolation & Alerting",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "poison-msg",
+      "label": "Poison Pill Message",
+      "product": "Malformed JSON Payload",
+      "group": "g-failing-consumer",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Contains corrupted schema causing worker JSON parser to throw fatal panic."
+    },
+    {
+      "id": "crashing-worker",
+      "label": "Crashing Worker Pod",
+      "product": "CrashLoopBackOff",
+      "group": "g-failing-consumer",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Crashes on receipt; fails to acknowledge message across 5 retry attempts."
+    },
+    {
+      "id": "dlq-router",
+      "label": "Pub/Sub DLQ Router",
+      "product": "maxDeliveryAttempts = 5",
+      "group": "g-dlq-recovery",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Detects 5th delivery failure; automatically forwards poison pill to Dead-Letter Topic."
+    },
+    {
+      "id": "quarantine-bucket",
+      "label": "DLQ Storage & SecOps Alert",
+      "product": "Cloud Monitoring / GCS",
+      "group": "g-dlq-recovery",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Alerts on-call engineers; saves malformed payload for post-mortem analysis."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "poison-msg",
+      "to": "crashing-worker",
+      "label": "1. Dispatch Corrupt Message",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "crashing-worker",
+      "to": "dlq-router",
+      "label": "2. Consecutive NACK / Timeout (5x)",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dlq-router",
+      "to": "quarantine-bucket",
+      "label": "3. Forward to Dead-Letter Topic",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Poison Pill Ingestion",
+      "edges": [
+        "e1"
+      ],
+      "action": "Worker receives corrupted message; throws unhandled null pointer exception and crashes.",
+      "why_traversal": "Malformed client payloads must not cause systemic queue blockage.",
+      "protocol": "StreamingPull",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Exponential Retry Backoff",
+      "edges": [
+        "e2"
+      ],
+      "action": "Pub/Sub applies exponential retry backoff (10s, 20s, 40s); records 5 failed deliveries.",
+      "why_traversal": "Backoff gives transient downstream dependencies time to self-heal.",
+      "protocol": "Pub/Sub Retry Policy",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Quarantine and Unblock",
+      "edges": [
+        "e3"
+      ],
+      "action": "Pub/Sub moves poison message to DLQ topic and ACKs main subscription.",
+      "why_traversal": "Unblocks remaining valid queue messages, restoring production processing flow.",
+      "protocol": "DLQ Routing Event",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "dlq-subscription-missing",
+      "label": "Dead-Letter Topic Lacks Attached Subscription",
+      "changes": {
+        "failedNodes": [
+          "quarantine-bucket"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Dead-letter topic was created without any subscription attached to retain messages.",
+      "diverted_path": "Poison messages routed to DLQ topic are permanently lost without retention.",
+      "blast_radius": "Inability to analyze and replay failed messages.",
+      "recovery": "Attach pull subscription to DLQ topic; stream events into BigQuery error audit table."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "poison-msg"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "poison-msg"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates downstream consumer crash: demonstrates unacknowledged message backpressure, exponential retry backoff, and dead-letter topic routing."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

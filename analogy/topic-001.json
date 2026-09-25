@@ -1,0 +1,66 @@
+{
+  "topic_no": "001",
+  "roadmap_id": "0.1",
+  "title": "Cloud City Roadways & Postal Service",
+  "city_concept": "Roads, Highway Lanes, and Gatekeepers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Before paved avenues and address numbers, Bea the Baker's delivery drivers were wandering aimlessly in Cloud City. Packages collided at crossroads, trucks blocked narrow alleys, and no bakery could tell if flour arrived from the warehouse.",
+      "analogy_elements": [
+        "Unpaved dirt tracks",
+        "Lost delivery wagons"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian laid down a numbered grid of avenues (Subnets & CIDRs). Rae the Dispatcher set up central post offices (DNS) to look up store addresses, and posted city gate guards (Stateful Firewalls) to let verified couriers enter.",
+      "analogy_elements": [
+        "Numbered District Avenues (CIDR)",
+        "Central Directory (DNS)",
+        "City Gates (Firewalls)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "During the Holiday Pastry Rush, thousands of delivery trucks swarmed the single exit tollbooth (SNAT Port Exhaustion). Dispatcher Rae deployed express automated toll-gates with dynamic transponders, clearing the gridlock.",
+      "analogy_elements": [
+        "Traffic Jam at Single Gate",
+        "Dynamic Tollbooths (Auto-Scaled Cloud NAT)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In a real physical city, two streets can share the same name in different neighborhoods. In Cloud City VPC Peering, two districts with identical street numbers (overlapping CIDR blocks) instantly reject road connections. Physical bridges can cross; VPC peering cannot.",
+      "analogy_elements": [
+        "Overlapping Street Numbers Conflict"
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "city": "City Avenues & District Grid",
+      "gcp": "VPC Subnets & CIDR Blocks"
+    },
+    {
+      "city": "City Address Directory",
+      "gcp": "Cloud DNS Nameservers"
+    },
+    {
+      "city": "City Border Checkpoints",
+      "gcp": "Stateful Cloud Firewalls"
+    },
+    {
+      "city": "Delivery Couriers",
+      "gcp": "TCP / IP Packets"
+    },
+    {
+      "city": "Central Traffic Dispatcher",
+      "gcp": "Cloud Load Balancing (L4/L7)"
+    }
+  ]
+}

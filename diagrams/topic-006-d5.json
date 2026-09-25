@@ -1,0 +1,248 @@
+{
+  "id": "topic-006-d5",
+  "title": "Cloud Digital Leader & Business Foundations \u2014 D5",
+  "topic_no": "006",
+  "roadmap_id": "0.6",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Cloud transformation requires foundational alignment between People, Process, and Technology. Value streams and budget governance precede multi-workload migration.",
+  "groups": [
+    {
+      "id": "g-exec",
+      "label": "Executive Leadership & Business Governance",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-coe",
+      "label": "Cloud Center of Excellence (CCoE) & Landing Zone",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 320,
+      "height": 360
+    },
+    {
+      "id": "g-streams",
+      "label": "Business Unit Workstreams & Cost Centers",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 650,
+      "y": 30,
+      "width": 280,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "exec-board",
+      "label": "Executive Sponsor",
+      "product": "Business Governance",
+      "group": "g-exec",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Establishes cloud vision, business value metrics, and CapEx to OpEx funding model."
+    },
+    {
+      "id": "finops-mgr",
+      "label": "FinOps Cost Governance",
+      "product": "Cloud Billing & BigQuery",
+      "group": "g-exec",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Tracks unit economics, budget allocation, and committed use discounts."
+    },
+    {
+      "id": "ccoe-core",
+      "label": "Cloud Center of Excellence",
+      "product": "Architecture Standards",
+      "group": "g-coe",
+      "plane": "control",
+      "x": 450,
+      "y": 140,
+      "detail": "Defines guardrails, Terraform landing zones, and shared VPC blueprints."
+    },
+    {
+      "id": "landing-zone",
+      "label": "Enterprise Landing Zone",
+      "product": "Org Hierarchy & VPC",
+      "group": "g-coe",
+      "plane": "data",
+      "x": 450,
+      "y": 280,
+      "detail": "Provisioned baseline infrastructure: Org policies, central logging, and peering."
+    },
+    {
+      "id": "bu-workload",
+      "label": "Business Unit Fleet",
+      "product": "Target Applications",
+      "group": "g-streams",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Modernized application workloads operating within enterprise compliance perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "exec-board",
+      "to": "ccoe-core",
+      "label": "1. Mandate & Budget",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "finops-mgr",
+      "to": "landing-zone",
+      "label": "2. Attach Billing Account",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "ccoe-core",
+      "to": "landing-zone",
+      "label": "3. Deploy Golden Blueprints",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "landing-zone",
+      "to": "bu-workload",
+      "label": "4. Onboard Application Squads",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Strategic Charter",
+      "edges": [
+        "e1"
+      ],
+      "action": "Executive sponsors establish CCoE charter and digital transformation roadmap.",
+      "why_traversal": "Executive alignment prevents shadow IT and establishes unified governance.",
+      "protocol": "Enterprise Governance",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "FinOps Foundation",
+      "edges": [
+        "e2"
+      ],
+      "action": "FinOps team associates centralized billing accounts and budget alerts to projects.",
+      "why_traversal": "Ensures cost visibility and prevents unallocated infrastructure expenditure.",
+      "protocol": "Cloud Billing API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Landing Zone Provisioning",
+      "edges": [
+        "e3"
+      ],
+      "action": "CCoE deploys automated Terraform landing zone with organization security constraints.",
+      "why_traversal": "Provides secure, compliant foundation before migrating production workloads.",
+      "protocol": "Infrastructure as Code",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Squad Onboarding",
+      "edges": [
+        "e4"
+      ],
+      "action": "Business unit engineering squads receive pre-configured project environments.",
+      "why_traversal": "Accelerates time-to-market while guaranteeing security compliance.",
+      "protocol": "Resource Manager API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "shadow-it",
+      "label": "Unsanctioned Cloud Adoption",
+      "changes": {
+        "failedNodes": [
+          "ccoe-core"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Product team bypassed CCoE landing zone and created unmanaged projects.",
+      "diverted_path": "Unmanaged projects lack central logging and organization policy constraints.",
+      "blast_radius": "Security perimeter vulnerabilities and unmonitored cloud spending.",
+      "recovery": "Enforce organization creation restrictions; migrate unmanaged projects into CCoE hierarchy."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "exec-board"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "exec-board"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}

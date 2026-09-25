@@ -1,0 +1,215 @@
+{
+  "id": "topic-007-d2",
+  "title": "Account, Tools and Access: Cloud Shell & gcloud \u2014 Request & Control Flow",
+  "topic_no": "007",
+  "roadmap_id": "1.1",
+  "kind": "flow",
+  "purpose": "Traces a gcloud CLI command lifecycle: from local OAuth token acquisition across Google API Gateway to resource provisioning and immutable Cloud Audit Log emission.",
+  "routing_rationale": "The Google Cloud API Gateway validates authentication, project billing activation, and Service Usage enablement before routing commands to service-specific backends.",
+  "groups": [
+    {
+      "id": "g-client",
+      "label": "Local Workstation (Developer Machine)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-sts",
+      "label": "Google Identity STS & OAuth",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-cloud",
+      "label": "Google Cloud Target Service (Compute)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gcloud-auth",
+      "label": "gcloud auth cache",
+      "product": "~/.config/gcloud",
+      "group": "g-client",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Stores active account email, refresh token, and short-lived access token."
+    },
+    {
+      "id": "oauth-server",
+      "label": "Google OAuth Server",
+      "product": "oauth2.googleapis.com",
+      "group": "g-sts",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Issues 60-minute scoped JWT bearer tokens signed with Google private keys."
+    },
+    {
+      "id": "service-usage",
+      "label": "Service Usage API",
+      "product": "serviceusage.googleapis.com",
+      "group": "g-sts",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Verifies that compute.googleapis.com is enabled in the target project."
+    },
+    {
+      "id": "compute-api",
+      "label": "Compute Engine API",
+      "product": "compute.googleapis.com",
+      "group": "g-cloud",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Executes declarative resource creation and initiates asynchronous long-running operation."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "gcloud-auth",
+      "to": "oauth-server",
+      "label": "1. Refresh Token Exchange",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "oauth-server",
+      "to": "service-usage",
+      "label": "2. Verify Service Activation",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "service-usage",
+      "to": "compute-api",
+      "label": "3. Dispatch Resource Provisioning",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Token Refresh",
+      "edges": [
+        "e1"
+      ],
+      "action": "gcloud CLI detects token expiration (55 min old) and requests fresh token.",
+      "why_traversal": "Short-lived tokens limit exposure if client workstations are compromised.",
+      "protocol": "HTTPS POST",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Service Check",
+      "edges": [
+        "e2"
+      ],
+      "action": "Google API Gateway confirms compute.googleapis.com is active on project.",
+      "why_traversal": "Projects must explicitly activate services to manage billing and API quotas.",
+      "protocol": "Internal RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Resource Mutation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Compute API accepts configuration and returns LRO (Long Running Operation) ID.",
+      "why_traversal": "Asynchronous operations prevent client timeout during multi-second hardware bootstrapping.",
+      "protocol": "gRPC / REST",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "service-disabled",
+      "label": "API Service Disabled (403)",
+      "changes": {
+        "failedNodes": [
+          "service-usage"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "compute.googleapis.com was never activated in new Google Cloud project.",
+      "diverted_path": "API call rejected with HTTP 403 Access Not Configured.",
+      "blast_radius": "Terraform apply or CLI deployment halts immediately.",
+      "recovery": "Execute gcloud services enable compute.googleapis.com --project=$PROJECT_ID."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gcloud-auth"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gcloud-auth"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces a gcloud CLI command lifecycle: from local OAuth token acquisition across Google API Gateway to resource provisioning and immutable Cloud Audit Log emission."
+}

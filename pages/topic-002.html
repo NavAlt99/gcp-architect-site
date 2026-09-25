@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>002 (0.2) Linux and Command Line for Cloud Architects | GCP Architect Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
+  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+</head>
+<body>
+
+    <!-- Navigation -->
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-link">
+        <span style="font-size:16px;">☁</span>
+        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
+      </a>
+
+      <!-- Quick Topic Navigator -->
+      <div class="nav-topic-switcher">
+        <a href="topic-001.html" class="nav-topic-arrow prev" title="Previous Topic: Networking Fundamentals [Key: P]">‹</a>
+        <div class="nav-select-wrapper">
+          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
+            <optgroup label="Phase 0 — Prerequisites">
+              <option value="topic-001.html">001 [0.1] Networking Fundamentals</option>
+              <option value="topic-002.html" selected>002 [0.2] Linux & Command Line for Archi…</option>
+              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
+              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
+              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
+              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
+            </optgroup>
+            <optgroup label="Phase 1 — GCP Foundations">
+              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
+              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
+              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
+              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
+              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
+              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
+            </optgroup>
+            <optgroup label="Phase 2 — Core Services">
+              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
+              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
+              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
+              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
+              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
+              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
+              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
+              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
+              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
+            </optgroup>
+            <optgroup label="Phase 3 — Architecture Thinking">
+              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
+              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
+              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
+              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
+              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
+              <option value="topic-027.html">027 [3.5] Diagramming & Docs: C4 Model</option>
+            </optgroup>
+            <optgroup label="Phase 4 — Reliability & HA">
+              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
+              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
+              <option value="topic-030.html">030 [4.3] High Availability by Layer</option>
+              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
+              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
+              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
+            </optgroup>
+            <optgroup label="Phase 5 — Security & Compliance">
+              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
+              <option value="topic-035.html">035 [5.2] Network Security: VPC-SC & Clo…</option>
+              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
+              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
+              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
+              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
+            </optgroup>
+            <optgroup label="Phase 6 — Optimization & Ops">
+              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
+              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
+              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
+              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
+              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
+            </optgroup>
+            <optgroup label="Phase 7 — Case Studies & Exam">
+              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
+              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
+              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
+              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
+              <option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing …</option>
+              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
+            </optgroup>
+            <optgroup label="Data, Analytics & ML">
+              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
+              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
+              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
+              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
+            </optgroup>
+            <optgroup label="Service Decision Cheat Sheets">
+              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
+              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
+              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
+              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
+              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
+              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
+            </optgroup>
+          </select>
+        </div>
+        <a href="topic-003.html" class="nav-topic-arrow next" title="Next Topic: Virtualization and Containers [Key: N]">›</a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html" class="nav-link">Overview</a>
+        <a href="#diagrams" class="nav-link">Diagrams</a>
+        <a href="#demo-or-practice" class="nav-link">Labs</a>
+        <a href="#quiz" class="nav-link">Knowledge Check</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Topic Sub-Navigation Strip -->
+    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
+      <div class="subnav-breadcrumbs">
+        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-phase">Phase 0 — Prerequisites</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Topic 002</span>
+        <span class="crumb-progress">(2 of 60)</span>
+      </div>
+      <div class="subnav-actions">
+        <a href="topic-001.html" class="subnav-nav-btn prev" title="Networking Fundamentals">← Prev (001)</a>
+        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
+        <a href="topic-003.html" class="subnav-nav-btn next" title="Virtualization and Containers">Next (003) →</a>
+      </div>
+    </nav>
+
+    
+    <!-- Topic Header -->
+    <header class="page-header">
+      <div class="page-meta">
+        <span class="badge">Topic 002</span>
+        <span class="badge badge-type">Roadmap ID: 0.2</span>
+        <span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 0 — Prerequisites</span>
+        <span class="badge badge-type">Type: concept</span>
+        <span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
+      </div>
+      <h1 class="page-title">Linux and Command Line for Cloud Architects</h1>
+      <p class="page-lead">Mastering the POSIX foundation: file permissions, systemd service supervision, journalctl log inspection, SSH bastion tunnels, and jq JSON parsing for gcloud CLI operations.</p>
+    </header>
+
+    <!-- Part 1: Real-World Explanation -->
+    <nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world">
+      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+      
+        <h3>The Situation: Command Line Mastery Under Fire</h3>
+        <p>
+          At <strong>Brightloaf Bakery</strong>, the flagship e-commerce ordering engine suddenly stopped accepting order transactions at 2:00 AM on a Saturday. The web UI dashboard was unresponsive. The on-call engineer attempted to SSH into the host machine, only to be rejected with permission denied errors. When they finally accessed the console, typing commands hung because log output had completely frozen the shell. Without foundational Linux and shell debugging skills, diagnosing whether the failure stemmed from network dropouts, memory exhaustion, or disk quota failure was impossible.
+        </p>
+
+        <div class="callout danger">
+          <div class="callout-title">The Pain: Why Senior Architects Must Master Linux Primitives</div>
+          Cloud infrastructure is ultimately managed POSIX software:
+          <ul>
+            <li><strong>The Bastion Antipattern:</strong> Exposing port 22 directly to public IP addresses results in automated brute-force attacks and compliance violations. Modern cloud design uses Identity-Aware Proxy (IAP) TCP forwarding.</li>
+            <li><strong>Process Supervision Gaps:</strong> Running production apps with background <code>nohup</code> commands rather than managed <code>systemd</code> units means crashes remain unhealed and logs are lost.</li>
+            <li><strong>Unparsed CLI Output:</strong> Manually reading 500-line JSON outputs from <code>gcloud</code> instead of querying fields with <code>jq</code> or <code>--format</code> leads to human error during critical production rollouts.</li>
+          </ul>
+        </div>
+
+        <h3>Core Vocabulary</h3>
+        <ul>
+          <li><code>systemd / systemctl</code>: Linux init system and service manager responsible for bootstrapping user space and supervising daemons.</li>
+          <li><code>journalctl</code>: Centralized log query tool parsing binary systemd logs with exact time, unit, and priority filtering.</li>
+          <li><code>ulimit</code>: Shell built-in controlling per-process resource allocations (maximum open file descriptors, max processes, virtual memory).</li>
+          <li><code>jq</code>: Lightweight, high-performance command-line JSON processor essential for scripting gcloud API payloads.</li>
+        </ul>
+        
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Linux and Command Line for Cloud Architects design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Linux and Command Line for Cloud Architects gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 0.2 · Linux and Command Line for Cloud Architects; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+    </section>
+
+    <!-- Part 2: Technical Discussion & Diagrams -->
+    <section class="topic-section" id="technical">
+      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
+      
+
+      
+        <h4>Layer 1 — Foundation: Processes, Filesystems & Permissions (The Execution Substrate)</h4>
+        <p>
+          <strong>Architectural Role & Significance:</strong> Layer 1 establishes the baseline security boundary and resource primitives of the host. In Linux, the unifying abstraction is that <em>"everything is a file descriptor"</em>—including regular disk files, network sockets, anonymous pipes, hardware block devices, and UNIX domain sockets.
+        </p>
+        <p>
+          Permissions are governed by the POSIX 9-bit permission mask (<code>rwxrwxrwx</code>) distributed across three scopes: User (Owner), Group, and Other (World). In enterprise cloud environments:
+        </p>
+        <ul>
+          <li><strong>Least-Privilege Process Execution:</strong> Production daemons must never execute as <code>root</code> (UID 0). A container or service breakout running as root has complete write access to the host kernel memory space and raw block devices. Layer 1 mandates dedicated service accounts (e.g. <code>appuser:appuser</code>, UID/GID 1001).</li>
+          <li><strong>Immutable Substrate Filesystems:</strong> Cloud instances mount virtual persistent disks formatted as <code>ext4</code> or <code>XFS</code>. Modern cloud architectures configure root filesystems with <code>nodev</code>, <code>nosuid</code>, and mount sensitive application directories with strict <code>0750</code> or <code>0640</code> permissions, ensuring private keys and configuration secrets cannot be read across tenant boundaries.</li>
+          <li><strong>Socket & Descriptor Inheritance:</strong> When an application opens thousands of incoming client connections, each is a file descriptor in the kernel's file table. Understanding Layer 1 invariants prevents socket leaks and permission escalation vulnerabilities before higher-level services are layered on top.</li>
+        </ul>
+
+        <h4>Layer 2 — Practitioner: Service Supervision, Declarative Lifecycles & Log Telemetry</h4>
+        <p>
+          <strong>Architectural Role & Significance:</strong> Moving from ad-hoc operational commands (e.g. running <code>nohup python server.py &</code>) to production-grade, declarative process supervision. Layer 2 is the operational contract between the application and the host operating system.
+        </p>
+        <p>
+          In modern Linux distributions across Google Cloud (Debian, Ubuntu, Rocky Linux, COS), process supervision is governed by <strong>systemd (PID 1)</strong>. A declared unit file (e.g., <code>/etc/systemd/system/brightloaf.service</code>) defines the complete operational contract:
+        </p>
+        <pre><code>[Unit]
+Description=Brightloaf Order Processing Service
+Documentation=https://docs.brightloaf.internal/orders
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=appuser
+Group=appuser
+WorkingDirectory=/opt/brightloaf
+ExecStart=/usr/bin/node /opt/brightloaf/server.js
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5s
+KillMode=mixed
+TimeoutStopSec=30s
+
+# Resource Quotas & File Descriptor Ceilings
+LimitNOFILE=65535
+MemoryMax=2G
+CPUQuota=150%
+
+# Security Sandboxing
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+        <p>
+          <strong>Why this matters for Defense-in-Depth:</strong>
+        </p>
+        <ul>
+          <li><strong>Deterministic Crash Recovery:</strong> <code>Restart=always</code> with <code>RestartSec=5s</code> prevents transient memory spikes or uncaught exceptions from causing permanent cluster outages.</li>
+          <li><strong>Hard Resource Bounding:</strong> <code>MemoryMax=2G</code> and <code>CPUQuota=150%</code> enforce Linux kernel <code>cgroups v2</code> constraints, ensuring a memory leak in one service cannot starve critical system daemons (like <code>sshd</code> or <code>google-guest-agent</code>).</li>
+          <li><strong>Structured Binary Telemetry:</strong> All <code>stdout</code> and <code>stderr</code> streams are captured by <code>systemd-journald</code> with microsecond timestamps and process metadata. Practitioners inspect logs deterministically via <code>journalctl -u brightloaf.service --since "15 min ago" -p err --no-pager</code> without maintaining custom log scrapers.</li>
+        </ul>
+
+        <h4>Layer 3 — Architect: Modern Secure Access Without Public IPs (Zero-Trust Cloud Fabric)</h4>
+        <p>
+          <strong>Architectural Role & Significance:</strong> Elevating from single-node Linux administration to enterprise distributed cloud boundaries. The architect designs network perimeters that completely eliminate exposure to the public internet while preserving frictionless operational access.
+        </p>
+        <p>
+          The legacy enterprise pattern relied on <strong>SSH Bastion Jump Hosts</strong> with public IP addresses sitting in a DMZ. This pattern is fundamentally broken in modern cloud architecture:
+        </p>
+        <ul>
+          <li>Bastions introduce a concentrated, internet-facing attack surface vulnerable to zero-day OpenSSH exploits and automated credential brute-forcing.</li>
+          <li>Static SSH private keys on engineer laptops are frequently leaked, forgotten, or never rotated.</li>
+          <li>Maintaining bastion host patch cycles, HA failovers, and ingress firewall whitelists incurs heavy operational toil.</li>
+        </ul>
+        <p>
+          <strong>The Google Cloud Zero-Trust Architectural Standard: IAP TCP Forwarding + OS Login</strong>
+        </p>
+        <p>
+          Google Cloud eliminates bastion jump hosts entirely by unifying identity, software-defined networking, and OS authentication:
+        </p>
+        <ol>
+          <li><strong>Zero Public IPs (Complete Perimeter Isolation):</strong> Compute Engine instances live exclusively within private VPC subnets with RFC 1918 internal IP addresses (e.g. <code>10.128.0.0/20</code>). They possess no external IP addresses and cannot be scanned from the internet.</li>
+          <li><strong>Edge-Terminated TLS Authentication:</strong> Administrative traffic never connects directly to port 22 over the internet. When an engineer executes <code>gcloud compute ssh &lt;instance&gt; --tunnel-through-iap</code>, the CLI opens an encrypted TLS 1.3 WebSocket tunnel to Google Cloud's globally distributed Edge Proxies on port 443. Google evaluates Identity and Access Management (IAM) permissions (<code>roles/iap.tunnelResourceAccessor</code>) and Context-Aware Access policies (device health, IP geolocation) at the perimeter.</li>
+          <li><strong>Andromeda SDN Microsegmentation:</strong> Only if edge IAM authorization succeeds does Google Cloud's Andromeda SDN forward the encapsulated TCP packets into the private VPC on port 22. VPC firewall rules enforce this by allowing ingress port 22 <em>strictly from Google's IAP netblock: <code>35.235.240.0/20</code></em>.</li>
+          <li><strong>OS Login Dynamic PAM Federation:</strong> Inside the Linux VM, the <code>/lib/security/pam_oslogin.so</code> module intercepts the SSH handshake. Instead of consulting a static local <code>~/.ssh/authorized_keys</code> file, PAM queries the Google Cloud Instance Metadata Server (<code>http://metadata.google.internal/computeMetadata/v1/oslogin/users</code>), dynamically resolving the caller's Cloud Identity, POSIX UID/GID, and short-lived public keys. When an employee leaves the company, revoking their IAM role instantly cuts off SSH access to every VM across the enterprise within seconds.</li>
+        </ol>
+
+        <h4>Layer 4 — Staff / Principal: System Limits, Chaos Horizons & Blast Radius Containment</h4>
+        <p>
+          <strong>Architectural Role & Significance:</strong> Understanding the catastrophic failure horizons where operating system abstractions shatter under extreme load. A Staff Architect designs systems with the mathematical awareness of kernel ceilings, filesystem structures, and cascading blast radii.
+        </p>
+        <div class="callout warning">
+          <div class="callout-title">Enterprise Failure-Mode Table: Linux Kernel & Subsystem Limits</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Failure Phenomenon</th>
+                <th>Root Cause & Syscall Mechanism</th>
+                <th>Blast Radius</th>
+                <th>Immediate Triage Action</th>
+                <th>Durable Architectural Prevention</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>EMFILE (File Descriptor Saturation)</strong></td>
+                <td>Process opens more sockets/files than permitted by <code>ulimit -n</code>. Kernel syscall <code>accept4()</code> or <code>socket()</code> fails with <code>errno 24 (Too many open files)</code>. Incoming connections stall.</td>
+                <td>Single application daemon or reverse proxy. Upstream load balancers register 502 Bad Gateway and failover.</td>
+                <td>Elevate limits dynamically without restarting process: <br><code>prlimit --pid=&lt;pid&gt; --nofile=65536:65536</code></td>
+                <td>Declare <code>LimitNOFILE=65535</code> in the systemd unit file; verify system-wide ceilings via <code>sysctl fs.file-max</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>100% Inode Exhaustion (Silent Disk Lock)</strong></td>
+                <td>Millions of zero-byte or micro error logs consume all pointers in the filesystem inode table. <code>df -h</code> shows gigabytes of free disk space, but <code>open(..., O_CREAT)</code> returns <code>ENOSPC</code>. Filesystem locks read-only.</td>
+                <td>Entire Compute Engine instance. Database transactions halt, Docker daemon cannot spawn containers, and monitoring agents crash.</td>
+                <td>Find directory hoarding inodes: <br><code>find / -xdev -printf '%h\n' | sort | uniq -c | sort -k 1 -n | tail -n 20</code>; purge stale caches.</td>
+                <td>Deploy automated <code>logrotate</code> with strict size-based rotation (<code>maxsize 50M</code>); mount separate dedicated persistent disks for <code>/var/log</code> and data paths.</td>
+              </tr>
+              <tr>
+                <td><strong>Kernel OOM Killer (Exit 137 SIGKILL)</strong></td>
+                <td>Total physical RAM + swap is exhausted. Linux kernel <code>mm/oom_kill.c</code> calculates <code>oom_badness()</code> score and sends uncatchable <code>SIGKILL</code> to the process consuming the most memory.</td>
+                <td>Primary application process terminated instantly. In-flight transactions dropped; state unpersisted.</td>
+                <td>Inspect kernel ring buffer: <br><code>dmesg -T | grep -i 'killed process'</code>; restart unit and configure emergency temporary swapfile.</td>
+                <td>Set explicit runtime heap boundaries (e.g. JVM <code>-Xmx</code>, Node.js <code>--max-old-space-size</code>); configure systemd <code>MemoryMax</code> with 20% headroom below VM machine type RAM.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Linux and Command Line for Cloud Architects must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div id="diagrams" style="margin-top: 40px;">
+        <h3>2B — Interactive Architecture Diagrams</h3>
+        
+        <div class="callout" style="margin-bottom: 24px;">
+          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
+          <p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+        <div class="diagram-suite-nav">
+          <span class="suite-title">VIEWPOINT:</span>
+          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+        </div>
+
+<!-- Diagram 1 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Linux OS Subsystems & Cloud Hypervisor Boundary</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes the execution boundaries of a Google Compute Engine instance, detailing the strict separation between User Space (POSIX), Linux Kernel Space, and the Google Cloud KVM Hypervisor substrate.
+          </p>
+        </div>
+        <div id="diagram-d1"></div>
+
+        <!-- Diagram 2 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: SSH Bastion Jump & IAP TCP Forwarding Flow</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes the zero-trust administrative access flow into private Compute Engine instances using Google Cloud IAP TCP Forwarding and OS Login PAM, eliminating public IP exposures.
+          </p>
+        </div>
+        <div id="diagram-d2"></div>
+
+        <!-- Diagram 3 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: System Failure Modes: Resource Exhaustion & Cascade Recovery</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes the critical failure mechanics of Linux OS resource exhaustion (EMFILE file descriptor saturation and 100% inode depletion) inside a production compute instance.
+          </p>
+        </div>
+        <div id="diagram-d3"></div>
+      </div>
+    
+      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Linux and Command Line for Cloud Architects — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Linux and Command Line for Cloud Architects — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Linux and Command Line for Cloud Architects — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
+    </section>
+
+    <!-- Part 3: Explained by Analogy -->
+    <section class="topic-section" id="analogy">
+      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+      
+        <p>
+          In <strong>Cloud City</strong>, building superintending is governed by strict municipal charters. Ola the Operator ensures no rogue boilers run without a licensed engineer, and gate passes are validated electronically at the perimeter checkpoint.
+        </p>
+        
+
+      <div class="analogy-stepper" style="margin-top: 20px;">
+        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+      </div>
+
+      <div class="analogy-box" id="analogy-display"></div>
+      <div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div>
+      <div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<tr><td>Brightloaf city campus</td><td>Linux and Command Line for Cloud Architects</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
+<tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
+<tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
+<tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
+</tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div>
+    </section>
+
+    <!-- Part 4: Demo or Practice Exercise -->
+    <section class="topic-section" id="demo-or-practice">
+      <h2 class="section-title"><span class="section-number">4</span> Practice Exercise</h2>
+      
+        <div class="callout">
+          <div class="callout-title">Hands-On Practice Exercise: Troubleshooting a Failing Daemon via CLI</div>
+          <p>
+            You are tasked with diagnosing a private Compute Engine VM hosting an API service that has fallen out of load balancer health checks.
+          </p>
+          <ol>
+            <li>Construct the exact <code>gcloud compute ssh</code> command using IAP tunneling without a public IP.</li>
+            <li>Write the single-line <code>journalctl</code> command to view logs from unit <code>api.service</code> emitted in the last 15 minutes filtered for error priority.</li>
+            <li>Write a <code>jq</code> query that parses the output of <code>gcloud compute instances list --format=json</code> to return only the instance names and internal IP addresses where status is <code>RUNNING</code>.</li>
+          </ol>
+        </div>
+
+        <button class="btn-de" id="toggle-solution-btn" onclick="toggleSolution()" style="margin-bottom:14px;">
+          👁 Show Solution & Rubric
+        </button>
+
+        <div id="solution-block" style="display:none; background:#0d1222; padding:18px; border-radius:8px; border:1px solid var(--panel-border);">
+          <h4>Worked Solution</h4>
+          <p><strong>1. IAP SSH Command:</strong></p>
+          <pre><code>gcloud compute ssh api-backend-vm --zone=us-west1-b --tunnel-through-iap</code></pre>
+          <p><strong>2. Filtered journalctl command:</strong></p>
+          <pre><code>journalctl -u api.service --since "15 minutes ago" -p err..emerg --no-pager</code></pre>
+          <p><strong>3. jq filter query:</strong></p>
+          <pre><code>gcloud compute instances list --format=json | jq -r '.[] | select(.status=="RUNNING") | {name: .name, internal_ip: .networkInterfaces[0].networkIP}'</code></pre>
+        </div>
+        
+      <div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
+gcloud services list --enabled
+: "Guard: DEMO_PROJECT_ID must be set"
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+terraform fmt -check
+terraform validate
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in
+terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
+terraform output
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+gcloud projects describe "$DEMO_PROJECT_ID"
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
+    </section>
+
+    <!-- Footer 1: Knowledge Check -->
+    <section class="topic-section" id="quiz">
+      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+      
+        <div class="quiz-card">
+          <span class="quiz-badge">Band: Recall (Question 1)</span>
+          <p><strong>Which command correctly displays filesystem disk space usage alongside inode utilization?</strong></p>
+          <ul class="quiz-options">
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! df -h shows human-readable space, and df -i shows inode count and usage percentage.')">A) df -h && df -i</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'du displays disk usage by directory, not total filesystem inode allocations.')">B) du -sh *</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'lsblk lists block devices, not filesystem inode metadata.')">C) lsblk -f</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'fdisk manages partition tables.')">D) fdisk -l</button>
+          </ul>
+          <div class="quiz-explanation"></div>
+        </div>
+
+        <div class="quiz-card">
+          <span class="quiz-badge">Band: Application (Question 2)</span>
+          <p><strong>To allow DevOps engineers to SSH into private Compute Engine VMs using Identity-Aware Proxy (IAP) without external IP addresses, what ingress firewall rule must be configured?</strong></p>
+          <ul class="quiz-options">
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! 35.235.240.0/20 is the dedicated Google IP range reserved for IAP TCP forwarding.')">A) Ingress allow TCP:22 from source range 35.235.240.0/20</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, '0.0.0.0/0 exposes the port to the public internet, violating the private security model.')">B) Ingress allow TCP:22 from 0.0.0.0/0</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, '10.0.0.0/8 only allows internal RFC 1918 traffic from within the VPC, not from Google IAP edge proxy.')">C) Ingress allow TCP:22 from 10.0.0.0/8</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, '169.254.169.254 is the instance metadata server.')">D) Ingress allow TCP:22 from 169.254.169.254/32</button>
+          </ul>
+          <div class="quiz-explanation"></div>
+        </div>
+        
+      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
+    </section>
+
+    <!-- Footer 2: Further Reading -->
+    <section class="topic-section" id="reading">
+      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
+      
+        <ul>
+          <li><strong>IAP Documentation:</strong> <a href="https://cloud.google.com/iap/docs/using-tcp-forwarding" target="_blank">TCP Forwarding with Cloud IAP</a> (Verifies 35.235.240.0/20 firewall requirement).</li>
+          <li><strong>OS Login:</strong> <a href="https://cloud.google.com/compute/docs/oslogin" target="_blank">Managing Instance Access with OS Login</a> (Verifies IAM-linked SSH key synchronization).</li>
+          <li><strong>gcloud CLI Syntax:</strong> <a href="https://cloud.google.com/sdk/gcloud/reference/topic/filters" target="_blank">gcloud Filtering and Formatting Guide</a>.</li>
+        </ul>
+        
+    </section>
+    <!-- Topic Pagination Footer -->
+    <nav class="topic-pagination" aria-label="Topic Pagination">
+      <!-- Previous Topic -->
+      <a href="topic-001.html" class="pagination-card prev">
+        <div class="pagination-direction">← PREVIOUS TOPIC</div>
+        <div class="pagination-topic-meta">Phase 0 — Prerequisites • [0.1]</div>
+        <div class="pagination-title">001: Networking Fundamentals</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div>
+      </a>
+
+      <!-- Roadmap Overview -->
+      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
+        <div class="pagination-direction">ROADMAP OVERVIEW</div>
+        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-title">Architecture Explorer</div>
+        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
+      </a>
+
+      <!-- Next Topic -->
+      <a href="topic-003.html" class="pagination-card next">
+        <div class="pagination-direction">NEXT TOPIC →</div>
+        <div class="pagination-topic-meta">Phase 0 — Prerequisites • [0.3]</div>
+        <div class="pagination-title">003: Virtualization and Containers</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
+      </a>
+    </nav>
+
+
+  </main>
+
+  <footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
+    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static & Offline Compatible
+  </footer>
+
+  <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+  <script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-002-d1",
+  "title": "Linux OS Subsystems & Cloud Hypervisor Boundary",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "map",
+  "purpose": "Visualizes the execution boundaries of a Google Compute Engine instance, detailing the strict separation between User Space (POSIX), Linux Kernel Space, and the Google Cloud KVM Hypervisor substrate.",
+  "routing_rationale": "User applications never interact directly with cloud physical hardware. System calls traverse kernel cgroups and netfilter before paravirtualized VirtIO drivers pass packet buffers across memory-mapped rings to Google's physical Andromeda SDN.",
+  "groups": [
+    {
+      "id": "g-user",
+      "label": "User Space (POSIX Applications & Daemons)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 350
+    },
+    {
+      "id": "g-kernel",
+      "label": "Linux Kernel Space (Subsystems & Isolation)",
+      "type": "project",
+      "scope": "project",
+      "x": 320,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-hyper",
+      "label": "Google Cloud Hypervisor (KVM & Andromeda)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 630,
+      "y": 30,
+      "width": 270,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "gcloud & jq CLI",
+      "product": "Admin Shell",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 110,
+      "detail": "Interacts with REST APIs via IPC and pipes JSON data to jq for declarative automation."
+    },
+    {
+      "id": "systemd",
+      "label": "systemd (PID 1)",
+      "product": "Init & Service Supervisor",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 260,
+      "detail": "Supervises daemon lifecycles, bounds cgroup limits, and captures stdout/stderr into journald."
+    },
+    {
+      "id": "cgroups",
+      "label": "cgroups & Namespaces",
+      "product": "Kernel Isolation Subsystem",
+      "group": "g-kernel",
+      "plane": "control",
+      "x": 460,
+      "y": 110,
+      "detail": "Enforces CPU/RAM resource ceilings and provides PID, network, and mount isolation."
+    },
+    {
+      "id": "netfilter",
+      "label": "netfilter & Conntrack",
+      "product": "Kernel Network Engine",
+      "group": "g-kernel",
+      "plane": "data",
+      "x": 460,
+      "y": 260,
+      "detail": "Performs stateful packet filtering, NAT, and routing table lookups for all socket traffic."
+    },
+    {
+      "id": "virtio",
+      "label": "VirtIO NIC & Ring Buffer",
+      "product": "Paravirtualized Hardware",
+      "group": "g-hyper",
+      "plane": "data",
+      "x": 765,
+      "y": 185,
+      "detail": "Zero-copy shared memory queue transmitting ethernet frames directly to Google Andromeda SDN."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-cmd",
+      "from": "cli",
+      "to": "systemd",
+      "label": "1. systemctl / D-Bus IPC",
+      "plane": "control"
+    },
+    {
+      "id": "e-cgroup",
+      "from": "systemd",
+      "to": "cgroups",
+      "label": "2. Apply Quotas & Cgroups",
+      "plane": "control"
+    },
+    {
+      "id": "e-sock",
+      "from": "systemd",
+      "to": "netfilter",
+      "label": "3. Open Socket / Net I/O",
+      "plane": "data"
+    },
+    {
+      "id": "e-virt",
+      "from": "netfilter",
+      "to": "virtio",
+      "label": "4. DMA Memory Ring Push",
+      "plane": "data"
+    },
+    {
+      "id": "e-irq",
+      "from": "virtio",
+      "to": "cgroups",
+      "label": "5. VirtIO IRQ Interrupt",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Admin Shell Execution & IPC Dispatch",
+      "edges": [
+        "e-cmd"
+      ],
+      "action": "Operator executes administrative or deployment commands; shell sends D-Bus IPC messages to systemd (PID 1).",
+      "why_traversal": "All managed services must be orchestrated by PID 1 rather than backgrounded ad-hoc, ensuring clean daemonization, environment preservation, and predictable signal handling.",
+      "protocol": "UNIX Domain Socket / D-Bus IPC",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin CLI tool signals systemd (PID 1) via local D-Bus IPC to supervise and bootstrap the application daemon.",
+      "check": {
+        "commands": "systemctl status custom-app.service",
+        "logs": "systemd[1]: Starting custom-app.service..."
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kernel Resource Bounding & Process Isolation",
+      "edges": [
+        "e-cgroup"
+      ],
+      "action": "systemd provisions process isolation namespaces (PID, mount, net) and binds CPU/memory quotas in /sys/fs/cgroup.",
+      "why_traversal": "cgroups prevent rogue workloads from starving neighboring processes of RAM and CPU cycles, establishing intra-node defense-in-depth.",
+      "protocol": "Kernel VFS Sysfs Interface (/sys/fs/cgroup)",
+      "plane": "Control Plane",
+      "narration": "Step 2: systemd writes resource ceilings into Linux kernel cgroups and sets up execution namespaces.",
+      "check": {
+        "commands": "systemd-cgls && cat /sys/fs/cgroup/memory/system.slice/custom-app.service/memory.limit_in_bytes",
+        "metrics": "guest/cpu/usage_time"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Socket Allocation & Netfilter Traversal",
+      "edges": [
+        "e-sock"
+      ],
+      "action": "Workload process creates TCP socket via syscall; outbound network packets enter kernel netfilter framework.",
+      "why_traversal": "Every TCP/UDP packet must traverse Linux conntrack and iptables/nftables to verify egress policy and local routing tables before reaching physical interfaces.",
+      "protocol": "POSIX socket() / TCP SYN",
+      "plane": "Data Plane",
+      "narration": "Step 3: Application opens network socket; kernel netfilter evaluates connection tracking and route table.",
+      "check": {
+        "commands": "ss -tulpn | grep ':8080' && conntrack -L",
+        "metrics": "guest/network/sent_packets_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "VirtIO Paravirtualized Memory Ring Buffer Transit",
+      "edges": [
+        "e-virt"
+      ],
+      "action": "Kernel packet driver places sk_buff ethernet frames directly into VirtIO DMA shared memory ring buffer.",
+      "why_traversal": "Paravirtualized VirtIO drivers bypass slow hardware emulation, enabling direct zero-copy packet dispatch between guest OS and Google Cloud hypervisor.",
+      "protocol": "PCIe / Shared Memory DMA",
+      "plane": "Data Plane",
+      "narration": "Step 4: Linux kernel copies ethernet frames into VirtIO ring buffer for high-throughput guest-to-host transit.",
+      "check": {
+        "commands": "ethtool -S eth0 | grep tx_packets",
+        "metrics": "compute.googleapis.com/instance/network/sent_bytes_count"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Hypervisor Interrupt & Andromeda SDN Handoff",
+      "edges": [
+        "e-irq"
+      ],
+      "action": "VirtIO virtual NIC signals KVM hypervisor via virtual IRQ; packet is ingested into Google Andromeda SDN fabric.",
+      "why_traversal": "Hypervisor handles physical encapsulation (Geneve/GRE) and offloads packet switching to Google's Jupiter datacenter network fabric.",
+      "protocol": "VirtIO vhost-net / KVM Exit",
+      "plane": "Control Plane",
+      "narration": "Step 5: Google Cloud KVM hypervisor acknowledges transmission and routes packet across Andromeda SDN.",
+      "check": {
+        "commands": "lspci -v | grep -i 'virtio'",
+        "metrics": "andromeda/packet_latency_us"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "oom-killer-breach",
+      "label": "cgroup Memory Ceiling Breach (OOM Kill 137)",
+      "changes": {
+        "failedNodes": [
+          "cgroups"
+        ]
+      },
+      "narration": "Workload process exceeds allocated cgroup memory limit. Linux kernel invokes oom_killer, terminating the primary daemon with SIGKILL (Exit code 137).",
+      "root_cause": "Application memory leak or inadequate cgroup MemoryMax configuration in systemd unit file.",
+      "path_divergence": "Kernel abruptly drops application process tree; all socket descriptors are closed immediately, dropping client connections.",
+      "blast_radius": "Single supervised daemon on the VM. Other system units and SSH administrative sessions remain unaffected.",
+      "durable_prevention": "Configure systemd MemoryMax with 25% safety headroom and implement memory profiling in CI/CD pipeline.",
+      "check": {
+        "command": "dmesg -T | grep -i 'killed process'",
+        "metric": "guest/memory/usage_ratio > 0.98"
+      }
+    },
+    {
+      "id": "virtio-ring-starvation",
+      "label": "VirtIO TX Ring Buffer Saturation",
+      "changes": {
+        "failedNodes": [
+          "virtio"
+        ]
+      },
+      "narration": "Burst of microsecond network traffic exceeds VirtIO TX descriptor queue size. Outbound packets are dropped before reaching Google Andromeda SDN.",
+      "root_cause": "High-throughput workload generates bursts faster than guest OS vCPUs can process VirtIO completion interrupts.",
+      "path_divergence": "Packets are dropped at the guest/hypervisor interface, triggering TCP retransmissions and exponential latency spikes.",
+      "blast_radius": "All outbound network connections from the Compute Engine VM instance.",
+      "durable_prevention": "Enable Google Virtual NIC (gVNIC) on Compute Engine instance and tune TX ring size via ethtool -G eth0 tx 4096.",
+      "check": {
+        "command": "ethtool -S eth0 | grep -i 'drop'",
+        "metric": "guest/network/sent_packets_dropped"
+      }
+    }
+  ]
+}
+  </script>
+  <script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-002-d2",
+  "title": "SSH Bastion Jump & IAP TCP Forwarding Flow",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "flow",
+  "purpose": "Visualizes the zero-trust administrative access flow into private Compute Engine instances using Google Cloud IAP TCP Forwarding and OS Login PAM, eliminating public IP exposures.",
+  "routing_rationale": "Rather than opening SSH port 22 to the public internet or managing vulnerable bastion jump boxes, administrative sessions are tunneled through Google's edge over TLS port 443, authenticated via IAM, and forwarded across Andromeda SDN directly to the private VM.",
+  "groups": [
+    {
+      "id": "g-client",
+      "label": "Admin Workstation (Local Environment)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 350
+    },
+    {
+      "id": "g-iap",
+      "label": "Google Cloud Edge Perimeter (IAP & IAM)",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-vpc",
+      "label": "Private VPC Subnet (No Public IP)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 610,
+      "y": 30,
+      "width": 290,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "admin",
+      "label": "gcloud compute ssh",
+      "product": "Admin Workstation",
+      "group": "g-client",
+      "plane": "control",
+      "x": 150,
+      "y": 120,
+      "detail": "Initiates authenticated connection request using local user Google Cloud credentials and OAuth2 tokens."
+    },
+    {
+      "id": "iap-proxy",
+      "label": "Identity-Aware Proxy",
+      "product": "Cloud IAP TCP Forwarding",
+      "group": "g-iap",
+      "plane": "control",
+      "x": 440,
+      "y": 120,
+      "detail": "Terminates TLS 1.3 WebSocket on port 443 and verifies IAM permission roles/iap.tunnelResourceAccessor."
+    },
+    {
+      "id": "audit",
+      "label": "Cloud Audit Logging",
+      "product": "Admin Activity Audit",
+      "group": "g-iap",
+      "plane": "control",
+      "x": 440,
+      "y": 260,
+      "detail": "Generates immutable audit logs of tunnel initiation, source IP, user identity, and session duration."
+    },
+    {
+      "id": "sshd",
+      "label": "sshd Daemon (Private VM)",
+      "product": "Private Compute Engine",
+      "group": "g-vpc",
+      "plane": "data",
+      "x": 750,
+      "y": 120,
+      "detail": "Listens on private IP port 22; accepts ingress traffic only from Google IAP netblock 35.235.240.0/20."
+    },
+    {
+      "id": "oslogin",
+      "label": "OS Login PAM Module",
+      "product": "Linux PAM & Metadata",
+      "group": "g-vpc",
+      "plane": "control",
+      "x": 750,
+      "y": 260,
+      "detail": "Intercepts SSH authentication and queries instance metadata server for authorized public keys and POSIX UID/GID."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-auth",
+      "from": "admin",
+      "to": "iap-proxy",
+      "label": "1. TLS WebSocket (Port 443)",
+      "plane": "control"
+    },
+    {
+      "id": "e-audit",
+      "from": "iap-proxy",
+      "to": "audit",
+      "label": "2. Record Session Audit Log",
+      "plane": "control"
+    },
+    {
+      "id": "e-forward",
+      "from": "iap-proxy",
+      "to": "sshd",
+      "label": "3. Andromeda SDN Forward (TCP 22)",
+      "plane": "data"
+    },
+    {
+      "id": "e-pam",
+      "from": "sshd",
+      "to": "oslogin",
+      "label": "4. PAM Auth / libpam-oslogin",
+      "plane": "control"
+    },
+    {
+      "id": "e-shell",
+      "from": "oslogin",
+      "to": "sshd",
+      "label": "5. Authorize Shell & Bind PTY",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Client Connection & WebSocket Tunnel Setup",
+      "edges": [
+        "e-auth"
+      ],
+      "action": "Admin executes gcloud compute ssh --tunnel-through-iap; client opens outbound TLS 1.3 WebSocket connection to Google Cloud IAP edge on port 443.",
+      "why_traversal": "Standard SSH port 22 is blocked outbound by many corporate firewalls. Port 443 TLS WebSocket bypasses corporate egress filters and encrypts the tunnel payload.",
+      "protocol": "HTTPS / TLS 1.3 WebSocket (Port 443)",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin workstation establishes TLS 1.3 WebSocket connection to Google Cloud Identity-Aware Proxy on port 443.",
+      "check": {
+        "commands": "gcloud compute ssh --tunnel-through-iap --verbosity=debug",
+        "logs": "Creating tunnel to instance: ... on port: 22"
+      }
+    },
+    {
+      "n": 2,
+      "title": "IAM Policy & Context-Aware Access Evaluation",
+      "edges": [
+        "e-audit"
+      ],
+      "action": "Google IAP validates caller identity against IAM policy (roles/iap.tunnelResourceAccessor) and records tunnel session into Cloud Audit Logs.",
+      "why_traversal": "Zero-trust verification occurs at Google's global perimeter before any network traffic is permitted into the internal VPC network.",
+      "protocol": "Google Cloud IAM / OAuth 2.0",
+      "plane": "Control Plane",
+      "narration": "Step 2: Google Cloud IAP authorizes user identity against IAM rules and writes entry to immutable Cloud Audit Logs.",
+      "check": {
+        "commands": "gcloud logging read 'protoPayload.serviceName=iap.googleapis.com' --limit=5",
+        "logs": "protoPayload.methodName: iap.tunnelSession"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Encapsulation & Private Forwarding",
+      "edges": [
+        "e-forward"
+      ],
+      "action": "IAP forwards raw SSH byte stream across Andromeda SDN to the private VM's internal IP address, originating from netblock 35.235.240.0/20.",
+      "why_traversal": "The target Compute Engine VM has zero public IP addresses. Ingress traffic is strictly allowed from 35.235.240.0/20 via VPC firewall rules.",
+      "protocol": "TCP Port 22 / Andromeda SDN Encapsulation",
+      "plane": "Data Plane",
+      "narration": "Step 3: IAP proxies encrypted SSH stream through Google's Andromeda SDN directly to the private VM's port 22.",
+      "check": {
+        "commands": "gcloud compute firewall-rules list --filter='targetTags:iap-ssh'",
+        "metrics": "firewall/ingress_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "PAM Interception & Metadata Identity Resolution",
+      "edges": [
+        "e-pam"
+      ],
+      "action": "Linux sshd intercepts incoming connection and invokes /lib/security/pam_oslogin.so to verify credentials against instance metadata server.",
+      "why_traversal": "OS Login eliminates static SSH authorized_keys files on local disk; keys and POSIX user accounts are centrally governed in Cloud Identity.",
+      "protocol": "UNIX Socket / PAM Syscall Interface",
+      "plane": "Control Plane",
+      "narration": "Step 4: VM sshd hands off authentication to Linux PAM OS Login module to fetch centralized user keys from metadata server.",
+      "check": {
+        "commands": "curl -s -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/oslogin/users'",
+        "logs": "sshd[...]: pam_oslogin(sshd:auth): authorized user"
+      }
+    },
+    {
+      "n": 5,
+      "title": "POSIX Account Provisioning & Interactive Shell",
+      "edges": [
+        "e-shell"
+      ],
+      "action": "OS Login PAM creates ephemeral POSIX user, validates public key cryptographic signature, and sshd spawns interactive pseudo-terminal (PTY).",
+      "why_traversal": "Admin gains secure interactive shell with audited POSIX UID/GID without managing local passwords or static SSH keys.",
+      "protocol": "SSH-2.0 Protocol / PTY Allocation",
+      "plane": "Data Plane",
+      "narration": "Step 5: OS Login validates signature, maps POSIX user, and sshd allocates pseudo-terminal for the admin session.",
+      "check": {
+        "commands": "id && w",
+        "logs": "sshd[...]: Accepted publickey for user from 35.235.240.x"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "iap-firewall-missing",
+      "label": "VPC Firewall Missing for IAP Netblock (35.235.240.0/20)",
+      "changes": {
+        "failedNodes": [
+          "sshd"
+        ]
+      },
+      "narration": "VPC ingress firewall rule for 35.235.240.0/20 on port 22 is missing or deleted. IAP tunnel handshake succeeds, but connection to port 22 times out.",
+      "root_cause": "VPC network firewall rules default to deny ingress; explicit allow rule for 35.235.240.0/20 was omitted.",
+      "path_divergence": "IAP proxy fails to establish TCP handshake with internal VM; gcloud CLI returns ERROR: (gcloud.compute.ssh) Could not connect to instance.",
+      "blast_radius": "All administrative SSH access to VMs in the affected VPC subnet via IAP.",
+      "durable_prevention": "Deploy Terraform module with mandatory default firewall rule: allow-iap-ssh for source 35.235.240.0/20 targeting tag allow-iap.",
+      "check": {
+        "command": "gcloud compute firewall-rules list --filter='sourceRanges:35.235.240.0/20'",
+        "metric": "compute.googleapis.com/firewall/dropped_bytes_count"
+      }
+    },
+    {
+      "id": "oslogin-iam-revocation",
+      "label": "Cloud Identity OS Login IAM Permission Revoked",
+      "changes": {
+        "failedNodes": [
+          "oslogin"
+        ]
+      },
+      "narration": "User attempts SSH login after being removed from roles/compute.osLogin. PAM module rejects authentication with Permission Denied (publickey).",
+      "root_cause": "IAM role compute.osLogin or compute.osAdminLogin was revoked or expired via Cloud Identity / PIM.",
+      "path_divergence": "TCP connection succeeds across IAP, but Linux PAM OS Login module queries metadata server, receives 403 Forbidden, and denies shell allocation.",
+      "blast_radius": "Specific revoked user identity; other authorized engineers continue unaffected.",
+      "durable_prevention": "Bind OS Login roles to Cloud Identity Google Groups rather than individual users; implement automated PAM access reviews.",
+      "check": {
+        "command": "gcloud projects get-iam-policy $PROJECT_ID --filter='bindings.role:roles/compute.osLogin'",
+        "metric": "iam.googleapis.com/service/auth_error_count"
+      }
+    }
+  ]
+}
+  </script>
+  <script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-002-d3",
+  "title": "System Failure Modes: Resource Exhaustion & Cascade Recovery",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "failure",
+  "purpose": "Visualizes the critical failure mechanics of Linux OS resource exhaustion (EMFILE file descriptor saturation and 100% inode depletion) inside a production compute instance.",
+  "routing_rationale": "When application workloads experience unexpected traffic surges, kernel-level limits (ulimit -n) reject new connection sockets. If unhandled errors trigger uncontrolled debug logging, filesystem inode exhaustion locks the persistent disk into read-only mode.",
+  "groups": [
+    {
+      "id": "g-app",
+      "label": "Application Runtime Space",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 30,
+      "width": 410,
+      "height": 350
+    },
+    {
+      "id": "g-os",
+      "label": "OS Kernel Limits & Filesystem Subsystem",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 470,
+      "y": 30,
+      "width": 430,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client",
+      "label": "Client Traffic Burst",
+      "product": "External Ingress",
+      "group": "g-app",
+      "plane": "data",
+      "x": 120,
+      "y": 110,
+      "detail": "Spike of 50,000 concurrent HTTP requests hitting the Compute Engine instance."
+    },
+    {
+      "id": "proc",
+      "label": "Web Server Daemon",
+      "product": "Nginx / Node.js Process",
+      "group": "g-app",
+      "plane": "data",
+      "x": 280,
+      "y": 110,
+      "detail": "Accepts client TCP connections and delegates request processing to worker threads."
+    },
+    {
+      "id": "disk",
+      "label": "Error Log (/var/log)",
+      "product": "Root Persistent Disk",
+      "group": "g-app",
+      "plane": "data",
+      "x": 280,
+      "y": 260,
+      "detail": "Captures unthrottled verbose application stack traces and debug dumps during cascading failures."
+    },
+    {
+      "id": "nofile",
+      "label": "ulimit -n (FD Limit)",
+      "product": "Kernel Process Quota",
+      "group": "g-os",
+      "plane": "control",
+      "x": 670,
+      "y": 110,
+      "detail": "Limits maximum open file descriptors (sockets, files, pipes) per process; default is often 1024."
+    },
+    {
+      "id": "inodes",
+      "label": "Disk Inode Table",
+      "product": "Ext4 / XFS Filesystem",
+      "group": "g-os",
+      "plane": "data",
+      "x": 670,
+      "y": 260,
+      "detail": "Fixed metadata table tracking file pointers; exhausting inodes causes 'No space left on device' even with free disk bytes."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-conn",
+      "from": "client",
+      "to": "proc",
+      "label": "1. 50k Concurrent HTTP Requests",
+      "plane": "data"
+    },
+    {
+      "id": "e-fd",
+      "from": "proc",
+      "to": "nofile",
+      "label": "2. socket() / accept4() Syscall",
+      "plane": "control"
+    },
+    {
+      "id": "e-wr",
+      "from": "proc",
+      "to": "disk",
+      "label": "3. Unthrottled Error Log Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e-in",
+      "from": "disk",
+      "to": "inodes",
+      "label": "4. Allocate Inode per Micro-log",
+      "plane": "data"
+    },
+    {
+      "id": "e-rec",
+      "from": "nofile",
+      "to": "proc",
+      "label": "5. prlimit Live Remediation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Traffic Surge & Socket Descriptor Allocation",
+      "edges": [
+        "e-conn"
+      ],
+      "action": "Flash crowd or retry storm floods Web Server Daemon with 50,000 concurrent TCP connection attempts.",
+      "why_traversal": "Each active HTTP connection requires a dedicated socket file descriptor allocated by the Linux kernel.",
+      "protocol": "TCP SYN Flood / HTTP 1.1",
+      "plane": "Data Plane",
+      "narration": "Step 1: Sudden traffic surge directs thousands of concurrent client connections to the web server process.",
+      "check": {
+        "commands": "ss -s && netstat -ant | grep ESTABLISHED | wc -l",
+        "metrics": "guest/network/tcp_connections"
+      }
+    },
+    {
+      "n": 2,
+      "title": "File Descriptor Ceiling Reached (EMFILE Error)",
+      "edges": [
+        "e-fd"
+      ],
+      "action": "Web server reaches default ulimit -n ceiling (1024); kernel syscall accept4() returns errno 24 (EMFILE: Too many open files).",
+      "why_traversal": "Linux kernel enforces strict per-process file descriptor limits to prevent single processes from exhausting global kernel memory.",
+      "protocol": "POSIX accept4() Syscall / Error 24 EMFILE",
+      "plane": "Control Plane",
+      "narration": "Step 2: Process exhausts allocated file descriptors; kernel immediately rejects subsequent socket() and accept() calls.",
+      "check": {
+        "commands": "lsof -p $(pgrep nginx) | wc -l && ulimit -n",
+        "logs": "nginx: [emerg] socket() failed (24: Too many open files)"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Cascading Error Logging & Disk I/O Saturation",
+      "edges": [
+        "e-wr"
+      ],
+      "action": "Application catches unhandled connection failures and writes verbose stack traces to /var/log/app/error.log at 10,000 lines/second.",
+      "why_traversal": "Unthrottled error logging generates massive write I/O amplification, saturating virtual persistent disk IOPS and storage bandwidth.",
+      "protocol": "POSIX write() Syscall / Ext4 Write Queue",
+      "plane": "Data Plane",
+      "narration": "Step 3: Unhandled failure cascade triggers emergency error logging, hammering persistent disk write IOPS.",
+      "check": {
+        "commands": "iostat -xz 1 5 && tail -f /var/log/app/error.log",
+        "metrics": "compute.googleapis.com/instance/disk/write_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Filesystem Inode Table Depletion (100% Inodes)",
+      "edges": [
+        "e-in"
+      ],
+      "action": "Micro-log creation exhausts 100% of available filesystem inodes; kernel marks filesystem read-only, rejecting all writes despite gigabytes of free disk space.",
+      "why_traversal": "Ext4/XFS filesystems allocate a finite inode table at format time. Even a 0-byte file requires one inode.",
+      "protocol": "Ext4 Inode Allocation Block / VFS Read-Only Lock",
+      "plane": "Data Plane",
+      "narration": "Step 4: Millions of error files exhaust the filesystem inode table; kernel puts disk in read-only mode to prevent corruption.",
+      "check": {
+        "commands": "df -ih / && touch /tmp/test",
+        "logs": "kernel: EXT4-fs error: no free inode; remounting read-only"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Live prlimit Elevation & Automated Remediation",
+      "edges": [
+        "e-rec"
+      ],
+      "action": "Automated SRE remediation script detects saturation, executes prlimit --pid=<pid> --nofile=65536:65536 live, and purges micro-logs.",
+      "why_traversal": "prlimit allows modifying running process resource ceilings without restarting the daemon, restoring connection capacity immediately.",
+      "protocol": "Kernel prlimit64() Syscall / Logrotate Prune",
+      "plane": "Control Plane",
+      "narration": "Step 5: Live prlimit call expands process file descriptor ceiling to 65,536; logrotate prunes orphan logs and normal traffic resumes.",
+      "check": {
+        "commands": "prlimit --pid=$(pgrep nginx) --nofile && df -ih /",
+        "logs": "prlimit applied; file descriptor ceiling updated to 65536"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "inode-exhaustion-outage",
+      "label": "100% Inode Exhaustion Outage (Silent Lockup)",
+      "changes": {
+        "failedNodes": [
+          "inodes",
+          "disk"
+        ]
+      },
+      "narration": "Unrotated session files or debug logs consume every filesystem inode. df -h shows 50GB free, but applications crash with 'No space left on device'.",
+      "root_cause": "Missing logrotate configuration and rapid generation of millions of small temporary files.",
+      "path_divergence": "System cannot write PID files, locks, or database journals. Daemon panics and system monitoring scripts fail to record data.",
+      "blast_radius": "Entire Compute Engine VM instance. All resident daemons crash or enter read-only degraded state.",
+      "durable_prevention": "Configure daily logrotate with maxsize 100M and maxage 7; set up Cloud Monitoring metric disk/inode_used_percent > 85%.",
+      "check": {
+        "command": "df -ih /",
+        "metric": "guest/disk/inode_used_percent = 100"
+      }
+    },
+    {
+      "id": "emfile-socket-rejection",
+      "label": "EMFILE Socket Rejection Cascade",
+      "changes": {
+        "failedNodes": [
+          "nofile",
+          "proc"
+        ]
+      },
+      "narration": "High-traffic web proxy hits system default ulimit -n ceiling of 1024 open files. Inbound TCP handshakes stall, triggering 502 Bad Gateway across upstream load balancers.",
+      "root_cause": "systemd unit file omitted LimitNOFILE directive; inherited default soft limit of 1024 from parent init environment.",
+      "path_divergence": "Incoming connections sit in TCP listen backlog queue until backlog fills, dropping subsequent SYN packets.",
+      "blast_radius": "All incoming user traffic routed through this web proxy instance.",
+      "durable_prevention": "Add LimitNOFILE=65535 to [Service] block in systemd unit file and set /etc/security/limits.conf system-wide.",
+      "check": {
+        "command": "prlimit --pid=$(pgrep nginx) | grep NOFILE",
+        "metric": "loadbalancing.googleapis.com/https/backend_request_count"
+      }
+    }
+  ]
+}
+  </script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-002-d4",
+  "title": "Linux and Command Line for Cloud Architects \u2014 D4",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "User applications never interact directly with cloud physical hardware. System calls traverse kernel cgroups and netfilter before paravirtualized VirtIO drivers pass packet buffers across memory-mapped rings to Google's physical Andromeda SDN.",
+  "groups": [
+    {
+      "id": "g-user",
+      "label": "User Space (POSIX Applications & Daemons)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 350
+    },
+    {
+      "id": "g-kernel",
+      "label": "Linux Kernel Space (Subsystems & Isolation)",
+      "type": "project",
+      "scope": "project",
+      "x": 320,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-hyper",
+      "label": "Google Cloud Hypervisor (KVM & Andromeda)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 630,
+      "y": 30,
+      "width": 270,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "gcloud & jq CLI",
+      "product": "Admin Shell",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 110,
+      "detail": "Interacts with REST APIs via IPC and pipes JSON data to jq for declarative automation."
+    },
+    {
+      "id": "systemd",
+      "label": "systemd (PID 1)",
+      "product": "Init & Service Supervisor",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 260,
+      "detail": "Supervises daemon lifecycles, bounds cgroup limits, and captures stdout/stderr into journald."
+    },
+    {
+      "id": "cgroups",
+      "label": "cgroups & Namespaces",
+      "product": "Kernel Isolation Subsystem",
+      "group": "g-kernel",
+      "plane": "control",
+      "x": 460,
+      "y": 110,
+      "detail": "Enforces CPU/RAM resource ceilings and provides PID, network, and mount isolation."
+    },
+    {
+      "id": "netfilter",
+      "label": "netfilter & Conntrack",
+      "product": "Kernel Network Engine",
+      "group": "g-kernel",
+      "plane": "data",
+      "x": 460,
+      "y": 260,
+      "detail": "Performs stateful packet filtering, NAT, and routing table lookups for all socket traffic."
+    },
+    {
+      "id": "virtio",
+      "label": "VirtIO NIC & Ring Buffer",
+      "product": "Paravirtualized Hardware",
+      "group": "g-hyper",
+      "plane": "data",
+      "x": 765,
+      "y": 185,
+      "detail": "Zero-copy shared memory queue transmitting ethernet frames directly to Google Andromeda SDN."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-cmd",
+      "from": "cli",
+      "to": "systemd",
+      "label": "1. systemctl / D-Bus IPC",
+      "plane": "control"
+    },
+    {
+      "id": "e-cgroup",
+      "from": "systemd",
+      "to": "cgroups",
+      "label": "2. Apply Quotas & Cgroups",
+      "plane": "control"
+    },
+    {
+      "id": "e-sock",
+      "from": "systemd",
+      "to": "netfilter",
+      "label": "3. Open Socket / Net I/O",
+      "plane": "data"
+    },
+    {
+      "id": "e-virt",
+      "from": "netfilter",
+      "to": "virtio",
+      "label": "4. DMA Memory Ring Push",
+      "plane": "data"
+    },
+    {
+      "id": "e-irq",
+      "from": "virtio",
+      "to": "cgroups",
+      "label": "5. VirtIO IRQ Interrupt",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Admin Shell Execution & IPC Dispatch",
+      "edges": [
+        "e-cmd"
+      ],
+      "action": "Operator executes administrative or deployment commands; shell sends D-Bus IPC messages to systemd (PID 1).",
+      "why_traversal": "All managed services must be orchestrated by PID 1 rather than backgrounded ad-hoc, ensuring clean daemonization, environment preservation, and predictable signal handling.",
+      "protocol": "UNIX Domain Socket / D-Bus IPC",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin CLI tool signals systemd (PID 1) via local D-Bus IPC to supervise and bootstrap the application daemon.",
+      "check": {
+        "commands": "systemctl status custom-app.service",
+        "logs": "systemd[1]: Starting custom-app.service..."
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kernel Resource Bounding & Process Isolation",
+      "edges": [
+        "e-cgroup"
+      ],
+      "action": "systemd provisions process isolation namespaces (PID, mount, net) and binds CPU/memory quotas in /sys/fs/cgroup.",
+      "why_traversal": "cgroups prevent rogue workloads from starving neighboring processes of RAM and CPU cycles, establishing intra-node defense-in-depth.",
+      "protocol": "Kernel VFS Sysfs Interface (/sys/fs/cgroup)",
+      "plane": "Control Plane",
+      "narration": "Step 2: systemd writes resource ceilings into Linux kernel cgroups and sets up execution namespaces.",
+      "check": {
+        "commands": "systemd-cgls && cat /sys/fs/cgroup/memory/system.slice/custom-app.service/memory.limit_in_bytes",
+        "metrics": "guest/cpu/usage_time"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Socket Allocation & Netfilter Traversal",
+      "edges": [
+        "e-sock"
+      ],
+      "action": "Workload process creates TCP socket via syscall; outbound network packets enter kernel netfilter framework.",
+      "why_traversal": "Every TCP/UDP packet must traverse Linux conntrack and iptables/nftables to verify egress policy and local routing tables before reaching physical interfaces.",
+      "protocol": "POSIX socket() / TCP SYN",
+      "plane": "Data Plane",
+      "narration": "Step 3: Application opens network socket; kernel netfilter evaluates connection tracking and route table.",
+      "check": {
+        "commands": "ss -tulpn | grep ':8080' && conntrack -L",
+        "metrics": "guest/network/sent_packets_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "VirtIO Paravirtualized Memory Ring Buffer Transit",
+      "edges": [
+        "e-virt"
+      ],
+      "action": "Kernel packet driver places sk_buff ethernet frames directly into VirtIO DMA shared memory ring buffer.",
+      "why_traversal": "Paravirtualized VirtIO drivers bypass slow hardware emulation, enabling direct zero-copy packet dispatch between guest OS and Google Cloud hypervisor.",
+      "protocol": "PCIe / Shared Memory DMA",
+      "plane": "Data Plane",
+      "narration": "Step 4: Linux kernel copies ethernet frames into VirtIO ring buffer for high-throughput guest-to-host transit.",
+      "check": {
+        "commands": "ethtool -S eth0 | grep tx_packets",
+        "metrics": "compute.googleapis.com/instance/network/sent_bytes_count"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Hypervisor Interrupt & Andromeda SDN Handoff",
+      "edges": [
+        "e-irq"
+      ],
+      "action": "VirtIO virtual NIC signals KVM hypervisor via virtual IRQ; packet is ingested into Google Andromeda SDN fabric.",
+      "why_traversal": "Hypervisor handles physical encapsulation (Geneve/GRE) and offloads packet switching to Google's Jupiter datacenter network fabric.",
+      "protocol": "VirtIO vhost-net / KVM Exit",
+      "plane": "Control Plane",
+      "narration": "Step 5: Google Cloud KVM hypervisor acknowledges transmission and routes packet across Andromeda SDN.",
+      "check": {
+        "commands": "lspci -v | grep -i 'virtio'",
+        "metrics": "andromeda/packet_latency_us"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "oom-killer-breach",
+      "label": "cgroup Memory Ceiling Breach (OOM Kill 137)",
+      "changes": {
+        "failedNodes": [
+          "cgroups"
+        ]
+      },
+      "narration": "Workload process exceeds allocated cgroup memory limit. Linux kernel invokes oom_killer, terminating the primary daemon with SIGKILL (Exit code 137).",
+      "root_cause": "Application memory leak or inadequate cgroup MemoryMax configuration in systemd unit file.",
+      "path_divergence": "Kernel abruptly drops application process tree; all socket descriptors are closed immediately, dropping client connections.",
+      "blast_radius": "Single supervised daemon on the VM. Other system units and SSH administrative sessions remain unaffected.",
+      "durable_prevention": "Configure systemd MemoryMax with 25% safety headroom and implement memory profiling in CI/CD pipeline.",
+      "check": {
+        "command": "dmesg -T | grep -i 'killed process'",
+        "metric": "guest/memory/usage_ratio > 0.98"
+      }
+    },
+    {
+      "id": "virtio-ring-starvation",
+      "label": "VirtIO TX Ring Buffer Saturation",
+      "changes": {
+        "failedNodes": [
+          "virtio"
+        ]
+      },
+      "narration": "Burst of microsecond network traffic exceeds VirtIO TX descriptor queue size. Outbound packets are dropped before reaching Google Andromeda SDN.",
+      "root_cause": "High-throughput workload generates bursts faster than guest OS vCPUs can process VirtIO completion interrupts.",
+      "path_divergence": "Packets are dropped at the guest/hypervisor interface, triggering TCP retransmissions and exponential latency spikes.",
+      "blast_radius": "All outbound network connections from the Compute Engine VM instance.",
+      "durable_prevention": "Enable Google Virtual NIC (gVNIC) on Compute Engine instance and tune TX ring size via ethtool -G eth0 tx 4096.",
+      "check": {
+        "command": "ethtool -S eth0 | grep -i 'drop'",
+        "metric": "guest/network/sent_packets_dropped"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cli"
+        ],
+        "failedEdges": [
+          "e-cmd"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-002-d5",
+  "title": "Linux and Command Line for Cloud Architects \u2014 D5",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "User applications never interact directly with cloud physical hardware. System calls traverse kernel cgroups and netfilter before paravirtualized VirtIO drivers pass packet buffers across memory-mapped rings to Google's physical Andromeda SDN.",
+  "groups": [
+    {
+      "id": "g-user",
+      "label": "User Space (POSIX Applications & Daemons)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 350
+    },
+    {
+      "id": "g-kernel",
+      "label": "Linux Kernel Space (Subsystems & Isolation)",
+      "type": "project",
+      "scope": "project",
+      "x": 320,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-hyper",
+      "label": "Google Cloud Hypervisor (KVM & Andromeda)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 630,
+      "y": 30,
+      "width": 270,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "gcloud & jq CLI",
+      "product": "Admin Shell",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 110,
+      "detail": "Interacts with REST APIs via IPC and pipes JSON data to jq for declarative automation."
+    },
+    {
+      "id": "systemd",
+      "label": "systemd (PID 1)",
+      "product": "Init & Service Supervisor",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 260,
+      "detail": "Supervises daemon lifecycles, bounds cgroup limits, and captures stdout/stderr into journald."
+    },
+    {
+      "id": "cgroups",
+      "label": "cgroups & Namespaces",
+      "product": "Kernel Isolation Subsystem",
+      "group": "g-kernel",
+      "plane": "control",
+      "x": 460,
+      "y": 110,
+      "detail": "Enforces CPU/RAM resource ceilings and provides PID, network, and mount isolation."
+    },
+    {
+      "id": "netfilter",
+      "label": "netfilter & Conntrack",
+      "product": "Kernel Network Engine",
+      "group": "g-kernel",
+      "plane": "data",
+      "x": 460,
+      "y": 260,
+      "detail": "Performs stateful packet filtering, NAT, and routing table lookups for all socket traffic."
+    },
+    {
+      "id": "virtio",
+      "label": "VirtIO NIC & Ring Buffer",
+      "product": "Paravirtualized Hardware",
+      "group": "g-hyper",
+      "plane": "data",
+      "x": 765,
+      "y": 185,
+      "detail": "Zero-copy shared memory queue transmitting ethernet frames directly to Google Andromeda SDN."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-cmd",
+      "from": "cli",
+      "to": "systemd",
+      "label": "1. systemctl / D-Bus IPC",
+      "plane": "control"
+    },
+    {
+      "id": "e-cgroup",
+      "from": "systemd",
+      "to": "cgroups",
+      "label": "2. Apply Quotas & Cgroups",
+      "plane": "control"
+    },
+    {
+      "id": "e-sock",
+      "from": "systemd",
+      "to": "netfilter",
+      "label": "3. Open Socket / Net I/O",
+      "plane": "data"
+    },
+    {
+      "id": "e-virt",
+      "from": "netfilter",
+      "to": "virtio",
+      "label": "4. DMA Memory Ring Push",
+      "plane": "data"
+    },
+    {
+      "id": "e-irq",
+      "from": "virtio",
+      "to": "cgroups",
+      "label": "5. VirtIO IRQ Interrupt",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Admin Shell Execution & IPC Dispatch",
+      "edges": [
+        "e-cmd"
+      ],
+      "action": "Operator executes administrative or deployment commands; shell sends D-Bus IPC messages to systemd (PID 1).",
+      "why_traversal": "All managed services must be orchestrated by PID 1 rather than backgrounded ad-hoc, ensuring clean daemonization, environment preservation, and predictable signal handling.",
+      "protocol": "UNIX Domain Socket / D-Bus IPC",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin CLI tool signals systemd (PID 1) via local D-Bus IPC to supervise and bootstrap the application daemon.",
+      "check": {
+        "commands": "systemctl status custom-app.service",
+        "logs": "systemd[1]: Starting custom-app.service..."
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kernel Resource Bounding & Process Isolation",
+      "edges": [
+        "e-cgroup"
+      ],
+      "action": "systemd provisions process isolation namespaces (PID, mount, net) and binds CPU/memory quotas in /sys/fs/cgroup.",
+      "why_traversal": "cgroups prevent rogue workloads from starving neighboring processes of RAM and CPU cycles, establishing intra-node defense-in-depth.",
+      "protocol": "Kernel VFS Sysfs Interface (/sys/fs/cgroup)",
+      "plane": "Control Plane",
+      "narration": "Step 2: systemd writes resource ceilings into Linux kernel cgroups and sets up execution namespaces.",
+      "check": {
+        "commands": "systemd-cgls && cat /sys/fs/cgroup/memory/system.slice/custom-app.service/memory.limit_in_bytes",
+        "metrics": "guest/cpu/usage_time"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Socket Allocation & Netfilter Traversal",
+      "edges": [
+        "e-sock"
+      ],
+      "action": "Workload process creates TCP socket via syscall; outbound network packets enter kernel netfilter framework.",
+      "why_traversal": "Every TCP/UDP packet must traverse Linux conntrack and iptables/nftables to verify egress policy and local routing tables before reaching physical interfaces.",
+      "protocol": "POSIX socket() / TCP SYN",
+      "plane": "Data Plane",
+      "narration": "Step 3: Application opens network socket; kernel netfilter evaluates connection tracking and route table.",
+      "check": {
+        "commands": "ss -tulpn | grep ':8080' && conntrack -L",
+        "metrics": "guest/network/sent_packets_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "VirtIO Paravirtualized Memory Ring Buffer Transit",
+      "edges": [
+        "e-virt"
+      ],
+      "action": "Kernel packet driver places sk_buff ethernet frames directly into VirtIO DMA shared memory ring buffer.",
+      "why_traversal": "Paravirtualized VirtIO drivers bypass slow hardware emulation, enabling direct zero-copy packet dispatch between guest OS and Google Cloud hypervisor.",
+      "protocol": "PCIe / Shared Memory DMA",
+      "plane": "Data Plane",
+      "narration": "Step 4: Linux kernel copies ethernet frames into VirtIO ring buffer for high-throughput guest-to-host transit.",
+      "check": {
+        "commands": "ethtool -S eth0 | grep tx_packets",
+        "metrics": "compute.googleapis.com/instance/network/sent_bytes_count"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Hypervisor Interrupt & Andromeda SDN Handoff",
+      "edges": [
+        "e-irq"
+      ],
+      "action": "VirtIO virtual NIC signals KVM hypervisor via virtual IRQ; packet is ingested into Google Andromeda SDN fabric.",
+      "why_traversal": "Hypervisor handles physical encapsulation (Geneve/GRE) and offloads packet switching to Google's Jupiter datacenter network fabric.",
+      "protocol": "VirtIO vhost-net / KVM Exit",
+      "plane": "Control Plane",
+      "narration": "Step 5: Google Cloud KVM hypervisor acknowledges transmission and routes packet across Andromeda SDN.",
+      "check": {
+        "commands": "lspci -v | grep -i 'virtio'",
+        "metrics": "andromeda/packet_latency_us"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "oom-killer-breach",
+      "label": "cgroup Memory Ceiling Breach (OOM Kill 137)",
+      "changes": {
+        "failedNodes": [
+          "cgroups"
+        ]
+      },
+      "narration": "Workload process exceeds allocated cgroup memory limit. Linux kernel invokes oom_killer, terminating the primary daemon with SIGKILL (Exit code 137).",
+      "root_cause": "Application memory leak or inadequate cgroup MemoryMax configuration in systemd unit file.",
+      "path_divergence": "Kernel abruptly drops application process tree; all socket descriptors are closed immediately, dropping client connections.",
+      "blast_radius": "Single supervised daemon on the VM. Other system units and SSH administrative sessions remain unaffected.",
+      "durable_prevention": "Configure systemd MemoryMax with 25% safety headroom and implement memory profiling in CI/CD pipeline.",
+      "check": {
+        "command": "dmesg -T | grep -i 'killed process'",
+        "metric": "guest/memory/usage_ratio > 0.98"
+      }
+    },
+    {
+      "id": "virtio-ring-starvation",
+      "label": "VirtIO TX Ring Buffer Saturation",
+      "changes": {
+        "failedNodes": [
+          "virtio"
+        ]
+      },
+      "narration": "Burst of microsecond network traffic exceeds VirtIO TX descriptor queue size. Outbound packets are dropped before reaching Google Andromeda SDN.",
+      "root_cause": "High-throughput workload generates bursts faster than guest OS vCPUs can process VirtIO completion interrupts.",
+      "path_divergence": "Packets are dropped at the guest/hypervisor interface, triggering TCP retransmissions and exponential latency spikes.",
+      "blast_radius": "All outbound network connections from the Compute Engine VM instance.",
+      "durable_prevention": "Enable Google Virtual NIC (gVNIC) on Compute Engine instance and tune TX ring size via ethtool -G eth0 tx 4096.",
+      "check": {
+        "command": "ethtool -S eth0 | grep -i 'drop'",
+        "metric": "guest/network/sent_packets_dropped"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cli"
+        ],
+        "failedEdges": [
+          "e-cmd"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-002-d6",
+  "title": "Linux and Command Line for Cloud Architects \u2014 D6",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "User applications never interact directly with cloud physical hardware. System calls traverse kernel cgroups and netfilter before paravirtualized VirtIO drivers pass packet buffers across memory-mapped rings to Google's physical Andromeda SDN.",
+  "groups": [
+    {
+      "id": "g-user",
+      "label": "User Space (POSIX Applications & Daemons)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 350
+    },
+    {
+      "id": "g-kernel",
+      "label": "Linux Kernel Space (Subsystems & Isolation)",
+      "type": "project",
+      "scope": "project",
+      "x": 320,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-hyper",
+      "label": "Google Cloud Hypervisor (KVM & Andromeda)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 630,
+      "y": 30,
+      "width": 270,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "gcloud & jq CLI",
+      "product": "Admin Shell",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 110,
+      "detail": "Interacts with REST APIs via IPC and pipes JSON data to jq for declarative automation."
+    },
+    {
+      "id": "systemd",
+      "label": "systemd (PID 1)",
+      "product": "Init & Service Supervisor",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 260,
+      "detail": "Supervises daemon lifecycles, bounds cgroup limits, and captures stdout/stderr into journald."
+    },
+    {
+      "id": "cgroups",
+      "label": "cgroups & Namespaces",
+      "product": "Kernel Isolation Subsystem",
+      "group": "g-kernel",
+      "plane": "control",
+      "x": 460,
+      "y": 110,
+      "detail": "Enforces CPU/RAM resource ceilings and provides PID, network, and mount isolation."
+    },
+    {
+      "id": "netfilter",
+      "label": "netfilter & Conntrack",
+      "product": "Kernel Network Engine",
+      "group": "g-kernel",
+      "plane": "data",
+      "x": 460,
+      "y": 260,
+      "detail": "Performs stateful packet filtering, NAT, and routing table lookups for all socket traffic."
+    },
+    {
+      "id": "virtio",
+      "label": "VirtIO NIC & Ring Buffer",
+      "product": "Paravirtualized Hardware",
+      "group": "g-hyper",
+      "plane": "data",
+      "x": 765,
+      "y": 185,
+      "detail": "Zero-copy shared memory queue transmitting ethernet frames directly to Google Andromeda SDN."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-cmd",
+      "from": "cli",
+      "to": "systemd",
+      "label": "1. systemctl / D-Bus IPC",
+      "plane": "control"
+    },
+    {
+      "id": "e-cgroup",
+      "from": "systemd",
+      "to": "cgroups",
+      "label": "2. Apply Quotas & Cgroups",
+      "plane": "control"
+    },
+    {
+      "id": "e-sock",
+      "from": "systemd",
+      "to": "netfilter",
+      "label": "3. Open Socket / Net I/O",
+      "plane": "data"
+    },
+    {
+      "id": "e-virt",
+      "from": "netfilter",
+      "to": "virtio",
+      "label": "4. DMA Memory Ring Push",
+      "plane": "data"
+    },
+    {
+      "id": "e-irq",
+      "from": "virtio",
+      "to": "cgroups",
+      "label": "5. VirtIO IRQ Interrupt",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Admin Shell Execution & IPC Dispatch",
+      "edges": [
+        "e-cmd"
+      ],
+      "action": "Operator executes administrative or deployment commands; shell sends D-Bus IPC messages to systemd (PID 1).",
+      "why_traversal": "All managed services must be orchestrated by PID 1 rather than backgrounded ad-hoc, ensuring clean daemonization, environment preservation, and predictable signal handling.",
+      "protocol": "UNIX Domain Socket / D-Bus IPC",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin CLI tool signals systemd (PID 1) via local D-Bus IPC to supervise and bootstrap the application daemon.",
+      "check": {
+        "commands": "systemctl status custom-app.service",
+        "logs": "systemd[1]: Starting custom-app.service..."
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kernel Resource Bounding & Process Isolation",
+      "edges": [
+        "e-cgroup"
+      ],
+      "action": "systemd provisions process isolation namespaces (PID, mount, net) and binds CPU/memory quotas in /sys/fs/cgroup.",
+      "why_traversal": "cgroups prevent rogue workloads from starving neighboring processes of RAM and CPU cycles, establishing intra-node defense-in-depth.",
+      "protocol": "Kernel VFS Sysfs Interface (/sys/fs/cgroup)",
+      "plane": "Control Plane",
+      "narration": "Step 2: systemd writes resource ceilings into Linux kernel cgroups and sets up execution namespaces.",
+      "check": {
+        "commands": "systemd-cgls && cat /sys/fs/cgroup/memory/system.slice/custom-app.service/memory.limit_in_bytes",
+        "metrics": "guest/cpu/usage_time"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Socket Allocation & Netfilter Traversal",
+      "edges": [
+        "e-sock"
+      ],
+      "action": "Workload process creates TCP socket via syscall; outbound network packets enter kernel netfilter framework.",
+      "why_traversal": "Every TCP/UDP packet must traverse Linux conntrack and iptables/nftables to verify egress policy and local routing tables before reaching physical interfaces.",
+      "protocol": "POSIX socket() / TCP SYN",
+      "plane": "Data Plane",
+      "narration": "Step 3: Application opens network socket; kernel netfilter evaluates connection tracking and route table.",
+      "check": {
+        "commands": "ss -tulpn | grep ':8080' && conntrack -L",
+        "metrics": "guest/network/sent_packets_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "VirtIO Paravirtualized Memory Ring Buffer Transit",
+      "edges": [
+        "e-virt"
+      ],
+      "action": "Kernel packet driver places sk_buff ethernet frames directly into VirtIO DMA shared memory ring buffer.",
+      "why_traversal": "Paravirtualized VirtIO drivers bypass slow hardware emulation, enabling direct zero-copy packet dispatch between guest OS and Google Cloud hypervisor.",
+      "protocol": "PCIe / Shared Memory DMA",
+      "plane": "Data Plane",
+      "narration": "Step 4: Linux kernel copies ethernet frames into VirtIO ring buffer for high-throughput guest-to-host transit.",
+      "check": {
+        "commands": "ethtool -S eth0 | grep tx_packets",
+        "metrics": "compute.googleapis.com/instance/network/sent_bytes_count"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Hypervisor Interrupt & Andromeda SDN Handoff",
+      "edges": [
+        "e-irq"
+      ],
+      "action": "VirtIO virtual NIC signals KVM hypervisor via virtual IRQ; packet is ingested into Google Andromeda SDN fabric.",
+      "why_traversal": "Hypervisor handles physical encapsulation (Geneve/GRE) and offloads packet switching to Google's Jupiter datacenter network fabric.",
+      "protocol": "VirtIO vhost-net / KVM Exit",
+      "plane": "Control Plane",
+      "narration": "Step 5: Google Cloud KVM hypervisor acknowledges transmission and routes packet across Andromeda SDN.",
+      "check": {
+        "commands": "lspci -v | grep -i 'virtio'",
+        "metrics": "andromeda/packet_latency_us"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "oom-killer-breach",
+      "label": "cgroup Memory Ceiling Breach (OOM Kill 137)",
+      "changes": {
+        "failedNodes": [
+          "cgroups"
+        ]
+      },
+      "narration": "Workload process exceeds allocated cgroup memory limit. Linux kernel invokes oom_killer, terminating the primary daemon with SIGKILL (Exit code 137).",
+      "root_cause": "Application memory leak or inadequate cgroup MemoryMax configuration in systemd unit file.",
+      "path_divergence": "Kernel abruptly drops application process tree; all socket descriptors are closed immediately, dropping client connections.",
+      "blast_radius": "Single supervised daemon on the VM. Other system units and SSH administrative sessions remain unaffected.",
+      "durable_prevention": "Configure systemd MemoryMax with 25% safety headroom and implement memory profiling in CI/CD pipeline.",
+      "check": {
+        "command": "dmesg -T | grep -i 'killed process'",
+        "metric": "guest/memory/usage_ratio > 0.98"
+      }
+    },
+    {
+      "id": "virtio-ring-starvation",
+      "label": "VirtIO TX Ring Buffer Saturation",
+      "changes": {
+        "failedNodes": [
+          "virtio"
+        ]
+      },
+      "narration": "Burst of microsecond network traffic exceeds VirtIO TX descriptor queue size. Outbound packets are dropped before reaching Google Andromeda SDN.",
+      "root_cause": "High-throughput workload generates bursts faster than guest OS vCPUs can process VirtIO completion interrupts.",
+      "path_divergence": "Packets are dropped at the guest/hypervisor interface, triggering TCP retransmissions and exponential latency spikes.",
+      "blast_radius": "All outbound network connections from the Compute Engine VM instance.",
+      "durable_prevention": "Enable Google Virtual NIC (gVNIC) on Compute Engine instance and tune TX ring size via ethtool -G eth0 tx 4096.",
+      "check": {
+        "command": "ethtool -S eth0 | grep -i 'drop'",
+        "metric": "guest/network/sent_packets_dropped"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cli"
+        ],
+        "failedEdges": [
+          "e-cmd"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}
+</script>
+  <script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">
+{
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "title": "Cloud City Operating Regulations & Inspection Crews",
+  "city_concept": "Building Codes, Service Permits, and Registry Ledgers",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery's kitchen equipment was running unmonitored. Ovens overheated without warning, unmanaged delivery carts cluttered the fire exits, and nobody kept an official record of building keys.",
+      "analogy_elements": [
+        "Unsupervised Ovens (Unmanaged Processes)",
+        "Lost Building Keys (SSH Sprawl)"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Ola the Operator introduced building superintendent guidelines (systemd). All engines are catalogued, fire permits are verified via digital visitor badges (OS Login), and fuel consumption is strictly metered (cgroups).",
+      "analogy_elements": [
+        "Superintendent Office (systemd)",
+        "Building Ledgers (journalctl)",
+        "Electronic Badge Reader (IAP / OS Login)"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "The City Under Stress",
+      "story": "During a flash pastry sale, delivery orders swamped the mailroom. The room hit its maximum parcel capacity (ulimit open file descriptors) and new letters were dropped at the doorstep until Superintendent Ola expanded the intake ceiling.",
+      "analogy_elements": [
+        "Overfilled Mailroom (Too many open files)",
+        "Expanded Mail Slots (ulimit -n 65535)"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where the Metaphor Breaks",
+      "story": "In a physical city, if a basement fills up with flour bags, you can stack them into the hallway. In Linux filesystems, if the Inode Table is full, creating a single zero-byte text file is strictly rejected by physics, regardless of empty disk gigabytes.",
+      "analogy_elements": [
+        "Rigid Inode Capacity Ceiling"
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script src="../assets/diagram-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
+      const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
+      const specD3 = JSON.parse(document.getElementById('spec-d3-data').textContent);
+      window.analogyData = JSON.parse(document.getElementById('analogy-data').textContent);
+
+      new DiagramEngine('diagram-d1', specD1);
+      new DiagramEngine('diagram-d2', specD2);
+      new DiagramEngine('diagram-d3', specD3);
+      new DiagramEngine('diagram-d4', JSON.parse(document.getElementById('spec-d4-data').textContent));
+      new DiagramEngine('diagram-d5', JSON.parse(document.getElementById('spec-d5-data').textContent));
+      new DiagramEngine('diagram-d6', JSON.parse(document.getElementById('spec-d6-data').textContent));
+
+      showAnalogyBeat(1);
+    });
+
+    function showAnalogyBeat(stepNum) {
+      if (!window.analogyData) return;
+      const beat = window.analogyData.beats.find(b => b.step === stepNum);
+      if (!beat) return;
+
+      const container = document.getElementById('analogy-display');
+      container.innerHTML = `
+        <h4 style="margin-top:0; color:var(--accent);">Beat ${beat.step}: ${beat.name}</h4>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--text-main);">${beat.story}</p>
+        <div style="font-size:11.5px; color:var(--text-dim);">
+          <strong style="color:#fb923c;">Analogy Tokens:</strong> ${beat.analogy_elements.join(' • ')}
+        </div>
+      `;
+
+      document.querySelectorAll('.stepper-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === stepNum);
+      });
+    }
+
+    function toggleSolution() {
+      const block = document.getElementById('solution-block');
+      const btn = document.getElementById('toggle-solution-btn');
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = '🙈 Hide Solution & Rubric';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = '👁 Show Solution & Rubric';
+      }
+    }
+
+    function checkQuiz(element, isCorrect, explanation) {
+      const card = element.closest('.quiz-card');
+      const options = card.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.style.borderColor = 'var(--panel-border)';
+        opt.style.background = 'var(--panel)';
+      });
+
+      element.style.borderColor = isCorrect ? 'var(--accent-green)' : 'var(--accent-red)';
+      element.style.background = isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+      const explEl = card.querySelector('.quiz-explanation');
+      explEl.style.display = 'block';
+      explEl.innerHTML = `<strong style="color:${isCorrect ? '#34d399' : '#f87171'};">${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
+    }
+  </script>
+  <!-- Floating Quick Navigation Dock -->
+  <div class="floating-topic-dock" id="floating-topic-dock">
+    <a href="topic-001.html" class="dock-btn prev" title="Previous Topic: Networking Fundamentals [Key: P]">← 001</a>
+    <span class="dock-indicator" title="Topic 002 of 60">002 / 060</span>
+    <a href="topic-003.html" class="dock-btn next" title="Next Topic: Virtualization and Containers [Key: N]">003 →</a>
+    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
+  </div>
+
+  <script>
+    // Global Keyboard Navigation between topics
+    (function() {
+      const prevUrl = "topic-001.html";
+      const nextUrl = "topic-003.html";
+      document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
+          if (prevUrl) window.location.href = prevUrl;
+        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
+          if (nextUrl) window.location.href = nextUrl;
+        } else if (e.key === 'i' || e.key === 'I') {
+          window.location.href = '../index.html';
+        }
+      });
+    })();
+  </script>
+  <!-- End Floating Quick Navigation Dock -->
+
+  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+</body>
+</html>

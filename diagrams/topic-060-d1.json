@@ -1,0 +1,228 @@
+{
+  "id": "topic-060-d1",
+  "title": "Key Numbers, Limits & SLAs to Memorise \u2014 Scope & Architecture Map",
+  "topic_no": "060",
+  "roadmap_id": "cheat-7",
+  "kind": "map",
+  "purpose": "Visualizes PCA Essential Metrics, SLAs & Limit Math: Compound Availability formulas (Serial vs Parallel), Service SLAs (Spanner 99.999% vs Cloud SQL 99.95% vs Compute Engine 99.99%), Storage limits, and Network throughput ceilings.",
+  "routing_rationale": "Passing the PCA exam requires instant recall of critical service boundaries: Spanner multi-region yields 5 minutes downtime/year (99.999%), Cloud SQL allows 4.38 hours downtime/year (99.95%), and compound serial availability degrades with each chained dependency.",
+  "groups": [
+    {
+      "id": "g-sla-math",
+      "label": "Compound Availability & Downtime Math",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-service-limits",
+      "label": "Critical GCP Limits & Ceilings",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-network-limits",
+      "label": "Network & Throughput Formulas",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sla-serial-math",
+      "label": "Serial Availability Formula",
+      "product": "A_total = A1 * A2 * A3",
+      "group": "g-sla-math",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Three 99.9% services in series = 99.7% availability (26 hours downtime/year)."
+    },
+    {
+      "id": "sla-parallel-math",
+      "label": "Parallel Availability Formula",
+      "product": "A_total = 1 - (1 - A1)*(1 - A2)",
+      "group": "g-sla-math",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Two 99.9% services in parallel = 99.9999% availability (31 seconds downtime/year)."
+    },
+    {
+      "id": "spanner-5nines",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA (5.26 min/yr down)",
+      "group": "g-service-limits",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Highest database SLA in Google Cloud; requires 3+ regions with TrueTime Paxos."
+    },
+    {
+      "id": "cloudsql-ha-sla",
+      "label": "Cloud SQL HA Regional",
+      "product": "99.95% SLA (4.38 hr/yr down)",
+      "group": "g-service-limits",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "60-second automatic failover; maximum 64TB storage volume size per instance."
+    },
+    {
+      "id": "vm-egress-cap",
+      "label": "Compute Egress Cap: 2 Gbps/vCPU",
+      "product": "Tier 1: Max 100 Gbps / Instance",
+      "group": "g-network-limits",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Standard networking allows 2Gbps per vCPU up to 32Gbps; Tier 1 networking enables 100Gbps."
+    },
+    {
+      "id": "gcs-object-limits",
+      "label": "Cloud Storage Limits",
+      "product": "Max 5TB Object / 11 9s Durability",
+      "group": "g-network-limits",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Single object maximum size: 5TB; 11 9s annual durability (99.999999999%)."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sla-serial-math",
+      "to": "spanner-5nines",
+      "label": "1. Counteract Serial Degradation",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "sla-parallel-math",
+      "to": "cloudsql-ha-sla",
+      "label": "2. Model Regional HA Redundancy",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "spanner-5nines",
+      "to": "vm-egress-cap",
+      "label": "3. Size Compute Bandwidth for DB",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "cloudsql-ha-sla",
+      "to": "gcs-object-limits",
+      "label": "4. Verify Storage Limits & SLAs",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Availability Mathematics Synthesis",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Applies serial and parallel mathematical formulas to calculate compound system availability.",
+      "why_traversal": "Reveals why chaining services degrades overall SLA and how parallel redundancy cures it.",
+      "protocol": "Reliability Formulas",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Service Limit Validation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Validates network bandwidth quotas (2Gbps/core) and object size limits (5TB max).",
+      "why_traversal": "Ensures architecture proposals never breach hard platform physical ceilings.",
+      "protocol": "Platform Limits Matrix",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "serial-sla-breach-trap",
+      "label": "Serial Dependency Chain Violates Customer Contract",
+      "changes": {
+        "failedNodes": [
+          "sla-serial-math"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "System chained 5 separate services with 99.9% SLAs; actual availability was only 99.5%.",
+      "diverted_path": "Breached 99.9% contractual customer SLA; triggered 25% financial refund penalties.",
+      "blast_radius": "Severe financial loss.",
+      "recovery": "Redesign architecture using asynchronous decoupling (Pub/Sub) and parallel redundant deployments."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "sla-serial-math"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "sla-serial-math"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes PCA Essential Metrics, SLAs & Limit Math: Compound Availability formulas (Serial vs Parallel), Service SLAs (Spanner 99.999% vs Cloud SQL 99.95% vs Compute Engine 99.99%), Storage limits, and Network throughput ceilings."
+}

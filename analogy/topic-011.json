@@ -1,0 +1,43 @@
+{
+  "topic_no": "011",
+  "roadmap_id": "1.5",
+  "title": "Cloud City: Google Global Infrastructure & Network Tiers",
+  "city_concept": "City International Airports, Transit Hubs, and High-Speed Rail",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Bea wanted to ship bread to Paris. She handed parcels to random hitchhikers on public dirt roads. Packages got lost, spoiled, or delayed by traffic.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian connected Cloud City to a private high-speed dedicated maglev railway (Google Global Fiber Network) with secured customs terminals.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A landslide blocked one international railway tunnel. The central dispatch automatically diverted trains through an alternative mountain tunnel in milliseconds.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In public roads, potholes and tollbooths delay traffic; on Google's private B4 network, packets travel at two-thirds the speed of light in vacuum.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

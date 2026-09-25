@@ -1,0 +1,233 @@
+{
+  "id": "topic-011-d5",
+  "title": "Google Global Infrastructure & Network Tiers \u2014 D5",
+  "topic_no": "011",
+  "roadmap_id": "1.5",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Google operates one of the largest private software-defined networks in the world. Traffic enters via the nearest Anycast edge PoP, avoiding public internet hops.",
+  "groups": [
+    {
+      "id": "g-edge-net",
+      "label": "Google Edge Network (Anycast PoP Fleet)",
+      "type": "region",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-backbone",
+      "label": "B4 Software-Defined Private WAN",
+      "type": "project",
+      "scope": "global",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-datacenter",
+      "label": "Regional Datacenter (Jupiter Fabric & Zones)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edge-pop",
+      "label": "Edge PoP (London)",
+      "product": "Anycast Edge",
+      "group": "g-edge-net",
+      "plane": "data",
+      "x": 150,
+      "y": 140,
+      "detail": "Global Point of Presence routing ingress traffic onto Google private fiber."
+    },
+    {
+      "id": "edge-cache",
+      "label": "Edge Caching Node",
+      "product": "Cloud CDN PoP",
+      "group": "g-edge-net",
+      "plane": "data",
+      "x": 150,
+      "y": 280,
+      "detail": "Serves cached static assets directly at the edge, reducing latency to <10ms."
+    },
+    {
+      "id": "b4-sdn",
+      "label": "B4 SDN Global Core",
+      "product": "Private Fiber Fabric",
+      "group": "g-backbone",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "Google-owned terrestrial and subsea fiber cables connecting all worldwide regions."
+    },
+    {
+      "id": "jupiter-fabric",
+      "label": "Jupiter Datacenter Fabric",
+      "product": "Intra-DC Network",
+      "group": "g-datacenter",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Petabit-per-second bisection bandwidth interconnecting servers within the datacenter."
+    },
+    {
+      "id": "zone-vm",
+      "label": "Backend Compute Pods",
+      "product": "Compute Engine (Zone A)",
+      "group": "g-datacenter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Workloads distributed across independent power and cooling availability zones."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "edge-pop",
+      "to": "edge-cache",
+      "label": "1. Check Edge Cache",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "edge-pop",
+      "to": "b4-sdn",
+      "label": "2. Premium Tier Fiber Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "b4-sdn",
+      "to": "jupiter-fabric",
+      "label": "3. Deliver to Destination Region",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "jupiter-fabric",
+      "to": "zone-vm",
+      "label": "4. Local Host vNIC Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Ingress",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Packet enters closest London PoP; cache misses and packet enters B4 private fiber.",
+      "why_traversal": "Premium Tier minimizes public internet hops, eliminating transit ISP packet loss.",
+      "protocol": "BGP Anycast / TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Subsea Fiber Transit",
+      "edges": [
+        "e3"
+      ],
+      "action": "Packet traverses transatlantic subsea cables under B4 software-defined routing.",
+      "why_traversal": "Google private WAN prioritizes packets and dynamically routes around fiber cuts.",
+      "protocol": "Google Private Protocol",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Datacenter Delivery",
+      "edges": [
+        "e4"
+      ],
+      "action": "Jupiter switch fabric delivers packet across redundant leaves to backend VM.",
+      "why_traversal": "Jupiter provides non-blocking 100Gbps line rate between any two servers in the facility.",
+      "protocol": "Andromeda / VirtIO",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "subsea-cut",
+      "label": "Subsea Transatlantic Cable Cut",
+      "changes": {
+        "failedNodes": [
+          "b4-sdn"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Undersea seismic activity severs primary fiber link between London and New York.",
+      "diverted_path": "B4 SDN automatically shifts traffic to southern transatlantic path via Portugal in <20ms.",
+      "blast_radius": "Slight 12ms latency increase; zero dropped TCP connections.",
+      "recovery": "B4 dynamic topology recalculation ensures 100% traffic survival."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "edge-pop"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "edge-pop"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}

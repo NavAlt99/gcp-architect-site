@@ -1,0 +1,218 @@
+{
+  "id": "topic-036-d2",
+  "title": "Data Protection: Cloud KMS & DLP \u2014 Request & Control Flow",
+  "topic_no": "036",
+  "roadmap_id": "5.3",
+  "kind": "flow",
+  "purpose": "Traces Automated Data De-Identification Flow: raw CSV upload to Cloud Storage -> Eventarc notification -> Cloud Run DLP execution -> CMEK-encrypted BigQuery ingestion.",
+  "routing_rationale": "Automating data de-identification at the ingestion boundary ensures raw sensitive information never enters enterprise analytical data lakes.",
+  "groups": [
+    {
+      "id": "g-raw-drop",
+      "label": "Secure Staging Ingestion",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-sanitize-svc",
+      "label": "Serverless Sanitization Pipeline",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-clean-lake",
+      "label": "Governed Analytic Storage",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "raw-gcs-bucket",
+      "label": "Raw Ingestion GCS Bucket",
+      "product": "Retention Policy = 24 Hours",
+      "group": "g-raw-drop",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Staging bucket with CMEK encryption receiving customer CSV batch dumps."
+    },
+    {
+      "id": "eventarc-trigger",
+      "label": "Eventarc Object Finalize",
+      "product": "CloudEvents Router",
+      "group": "g-raw-drop",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Emits google.cloud.storage.object.v1.finalized event on upload."
+    },
+    {
+      "id": "run-dlp-worker",
+      "label": "Cloud Run DLP Processor",
+      "product": "Inspect & De-Identify Service",
+      "group": "g-sanitize-svc",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Streams records through DLP API; masks emails and tokenizes government IDs."
+    },
+    {
+      "id": "cmek-bq-table",
+      "label": "BigQuery Target Table",
+      "product": "CMEK-Protected Lakehouse",
+      "group": "g-clean-lake",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Analytical table containing only pseudonymized records ready for business BI."
+    },
+    {
+      "id": "gcs-purge",
+      "label": "Auto-Delete Raw Object",
+      "product": "Lifecycle Expiration (Immediate)",
+      "group": "g-clean-lake",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Permanently deletes raw staging file from GCS once sanitization succeeds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "raw-gcs-bucket",
+      "to": "eventarc-trigger",
+      "label": "1. Object Created Event",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "eventarc-trigger",
+      "to": "run-dlp-worker",
+      "label": "2. Trigger Processing Worker",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "run-dlp-worker",
+      "to": "cmek-bq-table",
+      "label": "3. Stream Sanitized Rows",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "cmek-bq-table",
+      "to": "gcs-purge",
+      "label": "4. Purge Unredacted Staging File",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingestion Eventing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Upload to GCS fires Eventarc event; Cloud Run container starts instantly.",
+      "why_traversal": "Serverless event-driven architecture scales to zero when no uploads occur.",
+      "protocol": "CloudEvents / HTTP",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Sanitization & Storage",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "DLP transforms sensitive fields; clean data lands in BigQuery; staging file is destroyed.",
+      "why_traversal": "Minimizes time unredacted data resides in cloud storage to under 30 seconds.",
+      "protocol": "BigQuery Storage Write API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "dlp-quota-backlog",
+      "label": "DLP API Quota Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "run-dlp-worker"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Sudden upload of 5,000 files exceeded regional DLP inspection byte quota.",
+      "diverted_path": "Cloud Run worker receives HTTP 429 Too Many Requests; files queue.",
+      "blast_radius": "Delayed data ingestion for business reports.",
+      "recovery": "Request quota increase and implement Cloud Tasks queue with controlled concurrency rate."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "raw-gcs-bucket"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "raw-gcs-bucket"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Automated Data De-Identification Flow: raw CSV upload to Cloud Storage -> Eventarc notification -> Cloud Run DLP execution -> CMEK-encrypted BigQuery ingestion."
+}

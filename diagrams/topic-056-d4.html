@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cheat Sheet: Cloud SQL vs AlloyDB vs Spanner vs Firestore vs Bigtable — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-056.html">← Topic page</a><span>cheat-2 · TOPIC-056-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-056-d4",
+  "title": "Cheat Sheet: Cloud SQL vs AlloyDB vs Spanner vs Firestore vs Bigtable \u2014 D4",
+  "topic_no": "056",
+  "roadmap_id": "cheat-2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Choosing a Google Cloud database requires systematic constraint mapping: Relational vs NoSQL? Single-region vs Multi-region? Read-heavy caching vs Petabyte write-heavy streaming? Knowing the exact boundaries prevents costly architectural re-platforming.",
+  "groups": [
+    {
+      "id": "g-db-model-choice",
+      "label": "Data Model & Query Semantics",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-relational-tier",
+      "label": "Relational SQL Tier (ACID)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-nosql-tier",
+      "label": "NoSQL High-Throughput Tier",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "need-sql",
+      "label": "Relational SQL Required?",
+      "product": "Joins, Foreign Keys, Complex SQL",
+      "group": "g-db-model-choice",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Existing schema requires strict relational integrity and complex multi-table joins."
+    },
+    {
+      "id": "need-nosql",
+      "label": "NoSQL / High Volume Required?",
+      "product": "Millions of QPS / Flexible Schema",
+      "group": "g-db-model-choice",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Massive horizontal scale, document hierarchy, or sub-10ms key-value lookups."
+    },
+    {
+      "id": "spanner-db-choice",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "Global SQL (99.999% SLA)",
+      "group": "g-relational-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Horizontal scaling, multi-region external consistency, limitless storage capacity."
+    },
+    {
+      "id": "cloudsql-choice",
+      "label": "Cloud SQL / AlloyDB",
+      "product": "Regional Managed SQL (Max 64TB)",
+      "group": "g-relational-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Drop-in PostgreSQL, MySQL, SQL Server compatibility; automatic HA failover."
+    },
+    {
+      "id": "firestore-choice",
+      "label": "Cloud Firestore",
+      "product": "Document NoSQL (Mobile / Web)",
+      "group": "g-nosql-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Real-time client synchronization, offline mobile cache, flexible JSON documents."
+    },
+    {
+      "id": "bigtable-choice",
+      "label": "Cloud Bigtable",
+      "product": "Wide-Column Time-Series (Sub-10ms)",
+      "group": "g-nosql-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Sustains millions of writes/sec; ideal for IoT, financial tickers, and telemetry data."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "need-sql",
+      "to": "spanner-db-choice",
+      "label": "1. Global Scale + 99.999% SLA -> Spanner",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "need-sql",
+      "to": "cloudsql-choice",
+      "label": "2. Regional Standard SQL -> Cloud SQL",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "need-nosql",
+      "to": "firestore-choice",
+      "label": "3. Mobile / Document Sync -> Firestore",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "need-nosql",
+      "to": "bigtable-choice",
+      "label": "4. Heavy Stream / IoT (>1TB) -> Bigtable",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Relational Routing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Evaluates relational scaling: Cloud Spanner for global horizontal scale; Cloud SQL for regional workloads.",
+      "why_traversal": "Prevents over-provisioning Spanner when Cloud SQL satisfies requirements.",
+      "protocol": "Decision Rubric",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "NoSQL Routing",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Evaluates NoSQL: Firestore for client-facing mobile documents; Bigtable for raw telemetry scale.",
+      "why_traversal": "Ensures database performance matches data access patterns.",
+      "protocol": "NoSQL Sizing Matrix",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "firestore-for-iot-trap",
+      "label": "Selected Firestore for High-Throughput IoT Stream",
+      "changes": {
+        "failedNodes": [
+          "firestore-choice"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Ingested 100,000 writes/sec into single Firestore document; hit hard 1 write/sec per document limit.",
+      "diverted_path": "Writes blocked with RESOURCE_EXHAUSTED errors; massive billing overrun.",
+      "blast_radius": "IoT ingestion failure.",
+      "recovery": "Select Cloud Bigtable for high-throughput streaming writes exceeding 10,000 QPS."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "need-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "need-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

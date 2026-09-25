@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advanced IAM, Identity Federation &amp; Zero Trust — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-034.html">← Topic page</a><span>5.1 · TOPIC-034-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-034-d5",
+  "title": "Advanced IAM, Identity Federation & Zero Trust \u2014 D5",
+  "topic_no": "034",
+  "roadmap_id": "5.1",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Zero Trust dictates that no network or user is implicitly trusted; authentication and authorization require continuous identity assertion, device posture evaluation, and ephemeral short-lived credentials.",
+  "groups": [
+    {
+      "id": "g-idp",
+      "label": "Enterprise Identity Provider (IdP)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-beyondcorp",
+      "label": "BeyondCorp Context-Aware Gateway",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gcp-iam",
+      "label": "Google Cloud IAM & Short-Lived STS",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "okta-idp",
+      "label": "Okta / Azure AD IdP",
+      "product": "SAML 2.0 / OIDC Provider",
+      "group": "g-idp",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Corporate directory authenticating enterprise users with hardware MFA keys."
+    },
+    {
+      "id": "user-device",
+      "label": "Managed Corporate Laptop",
+      "product": "Chrome Enterprise Client",
+      "group": "g-idp",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Corporate device reporting encryption status, OS version, and certificate health."
+    },
+    {
+      "id": "caa-engine",
+      "label": "Context-Aware Access",
+      "product": "Access Context Manager",
+      "group": "g-beyondcorp",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Evaluates user group, device posture, geographic origin, and IP subnets before granting access."
+    },
+    {
+      "id": "sts-broker",
+      "label": "Security Token Service",
+      "product": "Federation STS Token Broker",
+      "group": "g-gcp-iam",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Exchanges external OIDC assertion for short-lived (1-hour) Google OAuth2 token."
+    },
+    {
+      "id": "sa-impersonation",
+      "label": "Service Account Impersonation",
+      "product": "iam.serviceAccounts.getAccessToken",
+      "group": "g-gcp-iam",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Grants temporary access without requiring permanent, downloadable JSON private keys."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "okta-idp",
+      "to": "caa-engine",
+      "label": "1. SAML/OIDC Identity Claim",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "user-device",
+      "to": "caa-engine",
+      "label": "2. Transmit Device Posture State",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "caa-engine",
+      "to": "sts-broker",
+      "label": "3. Authorize Federated Token Minting",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "sts-broker",
+      "to": "sa-impersonation",
+      "label": "4. Impersonate Target Workload SA",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Federated Claim & Context Evaluation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Okta authenticates user; Access Context Manager evaluates device encryption and corporate network location.",
+      "why_traversal": "Validates both user identity and device security posture simultaneously.",
+      "protocol": "OIDC + BeyondCorp Posture",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Ephemeral Token Exchange",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Google STS validates OIDC claims and exchanges them for a short-lived token impersonating the deployment SA.",
+      "why_traversal": "Completely eliminates downloadable JSON service account keys, extinguishing key leak vectors.",
+      "protocol": "STS Token Exchange API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "compromised-device-block",
+      "label": "Unencrypted Device Access Denied",
+      "changes": {
+        "failedNodes": [
+          "caa-engine"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Contractor accessed GCP Console from personal laptop with disk encryption disabled.",
+      "diverted_path": "Context-Aware Access rejects request with HTTP 403 Access Level Violation.",
+      "blast_radius": "Zero compromise of enterprise resources.",
+      "recovery": "Contractor must enable FileVault/BitLocker and enroll device in corporate MDM."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "okta-idp"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "okta-idp"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

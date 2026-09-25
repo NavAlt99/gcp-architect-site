@@ -1,0 +1,248 @@
+{
+  "id": "topic-008-d4",
+  "title": "Resource Hierarchy and Organization Policies \u2014 D4",
+  "topic_no": "008",
+  "roadmap_id": "1.2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Policies and IAM roles flow strictly downward. Organization Policies enforce guardrails at the root, while projects serve as the fundamental billing and quota boundary.",
+  "groups": [
+    {
+      "id": "g-org",
+      "label": "Organization Node (brightloaf.com)",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-folder",
+      "label": "Department Folders (Engineering & Security)",
+      "type": "folder",
+      "scope": "folder",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-proj",
+      "label": "Projects: production-app & staging-app",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "org-node",
+      "label": "Organization Root",
+      "product": "Resource Manager",
+      "group": "g-org",
+      "plane": "control",
+      "x": 150,
+      "y": 140,
+      "detail": "Root of all Google Cloud resources tied to Google Workspace domain."
+    },
+    {
+      "id": "org-policy",
+      "label": "Org Policy Service",
+      "product": "constraints/compute.vmExternalIpAccess",
+      "group": "g-org",
+      "plane": "control",
+      "x": 150,
+      "y": 280,
+      "detail": "Enforces global security guardrails that cannot be overridden by project admins."
+    },
+    {
+      "id": "folder-eng",
+      "label": "Engineering Folder",
+      "product": "Folder Level IAM",
+      "group": "g-folder",
+      "plane": "control",
+      "x": 450,
+      "y": 140,
+      "detail": "Applies team-wide policies, shared networking, and audit aggregation."
+    },
+    {
+      "id": "project-prod",
+      "label": "Project: prod-core",
+      "product": "Billing & Quota Boundary",
+      "group": "g-proj",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Isolated resource boundary owning VPCs, compute instances, and billing account link."
+    },
+    {
+      "id": "vm-res",
+      "label": "Compute VM Resource",
+      "product": "Compute Engine",
+      "group": "g-proj",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "End-tier workload inheriting all parent folder and org policy constraints."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "org-node",
+      "to": "org-policy",
+      "label": "1. Define Guardrails",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "org-node",
+      "to": "folder-eng",
+      "label": "2. Hierarchical Inheritance",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "folder-eng",
+      "to": "project-prod",
+      "label": "3. Project Scoping",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "org-policy",
+      "to": "vm-res",
+      "label": "4. Enforce Boundary Check",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Root Policy Definition",
+      "edges": [
+        "e1"
+      ],
+      "action": "Security team enforces constraints/compute.vmExternalIpAccess = DENY at root.",
+      "why_traversal": "Root constraints guarantee defense-in-depth across every future child project.",
+      "protocol": "Org Policy API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Folder Inheritance",
+      "edges": [
+        "e2"
+      ],
+      "action": "Engineering folder inherits root constraint and grants roles/resourcemanager.folderAdmin.",
+      "why_traversal": "Hierarchical inheritance eliminates repetitive per-project IAM provisioning.",
+      "protocol": "IAM Inheritance",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Project Provisioning",
+      "edges": [
+        "e3"
+      ],
+      "action": "Engineering provisions prod-core project linked to corporate billing account.",
+      "why_traversal": "Projects isolate blast radius, audit logging, and resource quotas.",
+      "protocol": "Resource Manager API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Runtime Constraint Evaluation",
+      "edges": [
+        "e4"
+      ],
+      "action": "Compute Engine intercepts VM launch attempt; verifies no public IP is requested.",
+      "why_traversal": "Automated constraint engine rejects violations before network interfaces instantiate.",
+      "protocol": "Policy Evaluation RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "public-ip-violation",
+      "label": "Public IP Policy Violation",
+      "changes": {
+        "failedNodes": [
+          "vm-res"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Developer attempted to launch VM with natIP specified while Org Policy forbids public IPs.",
+      "diverted_path": "API call rejected with HTTP 412 Precondition Failed.",
+      "blast_radius": "Deployment blocked; security perimeter remains intact.",
+      "recovery": "Remove external IP from VM specification; use Cloud NAT for outbound internet egress."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "org-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "org-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

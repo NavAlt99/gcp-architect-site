@@ -1,0 +1,200 @@
+{
+  "id": "topic-031-d2",
+  "title": "Disaster Recovery Patterns (RTO & RPO) \u2014 Request & Control Flow",
+  "topic_no": "031",
+  "roadmap_id": "4.4",
+  "kind": "flow",
+  "purpose": "Traces the Automated Warm Standby Failover Workflow: regional health degradation detection, replica promotion, DNS traffic flip, and autoscaling.",
+  "routing_rationale": "Automating the disaster recovery runbook via Cloud Functions and Cloud DNS routing policies eliminates human latency during high-stress regional outages.",
+  "groups": [
+    {
+      "id": "g-failover-mon",
+      "label": "Health Probing & Outage Sentinel",
+      "type": "organization",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-failover-orch",
+      "label": "Automated DR Orchestrator",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-backup-dest",
+      "label": "Promoted DR Destination (us-east4)",
+      "type": "region",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sentinel-probe",
+      "label": "Global Uptime Check Probe",
+      "product": "Multi-Region Prober",
+      "group": "g-failover-mon",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Probes primary region endpoint from 6 worldwide locations every 10 seconds."
+    },
+    {
+      "id": "dr-orchestrator",
+      "label": "Cloud Workflows DR Engine",
+      "product": "Automated Failover Runbook",
+      "group": "g-failover-orch",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Coordinates database promotion, DNS TTL flip, and pod scaling sequentially."
+    },
+    {
+      "id": "dns-failover-policy",
+      "label": "Cloud DNS Failover Policy",
+      "product": "Automated Health-Routed DNS",
+      "group": "g-backup-dest",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Automatically directs queries to us-east4 load balancer VIP upon health check failure."
+    },
+    {
+      "id": "scaled-gke-pods",
+      "label": "Autoscaled GKE Pods",
+      "product": "Scaled 2 -> 60 Pods",
+      "group": "g-backup-dest",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Horizontal Pod Autoscaler brings up 60 pods within 90 seconds to handle production load."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sentinel-probe",
+      "to": "dr-orchestrator",
+      "label": "1. Confirm Primary Outage (3 Failures)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "dr-orchestrator",
+      "to": "dns-failover-policy",
+      "label": "2. Flip DNS to Backup Region",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dr-orchestrator",
+      "to": "scaled-gke-pods",
+      "label": "3. Trigger Emergency Pod Scaling",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Outage Confirmation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Uptime check confirms 100% loss of primary region across all probes.",
+      "why_traversal": "Multi-region consensus prevents false failover from local network blips.",
+      "protocol": "Cloud Monitoring Uptime Check",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Runbook Execution",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Workflows promotes secondary DB, instructs Cloud DNS to flip, and scales GKE pods.",
+      "why_traversal": "Completes full regional failover in under 4 minutes with zero human intervention.",
+      "protocol": "Cloud Workflows / REST APIs",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "dns-cache-poisoning",
+      "label": "High TTL Stalls Failover Redirection",
+      "changes": {
+        "failedNodes": [
+          "dns-failover-policy"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "DNS TTL was configured to 86,400 seconds (24 hours) instead of 60 seconds.",
+      "diverted_path": "Client ISP resolvers cached dead IP; failover took 24 hours to reach users.",
+      "blast_radius": "Customers unable to connect despite backup region being fully operational.",
+      "recovery": "Enforce maximum 60-second DNS TTLs on all disaster recovery failover routing policies."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "sentinel-probe"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "sentinel-probe"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Automated Warm Standby Failover Workflow: regional health degradation detection, replica promotion, DNS traffic flip, and autoscaling."
+}

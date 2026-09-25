@@ -1,0 +1,228 @@
+{
+  "id": "topic-007-d3",
+  "title": "Account, Tools and Access: Cloud Shell & gcloud \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "007",
+  "roadmap_id": "1.1",
+  "kind": "failure",
+  "purpose": "Simulates administrative failure modes: demonstrates OAuth token expiration, quota exhaustion, and automated credential refresh via gcloud auth.",
+  "routing_rationale": "When access tokens expire after 60 minutes, the gcloud SDK uses stored refresh tokens to acquire fresh credentials from Google OAuth servers without interrupting scripts.",
+  "groups": [
+    {
+      "id": "g-agent",
+      "label": "Automation Script / CLI Host",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-sts-fail",
+      "label": "Credential Refresh & Recovery",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "script-runner",
+      "label": "Terraform / Bash Runner",
+      "product": "CI/CD Runner",
+      "group": "g-agent",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Long-running automation pipeline provisioning 50 infrastructure resources."
+    },
+    {
+      "id": "auth-monitor",
+      "label": "Token Lifetime Monitor",
+      "product": "gcloud SDK",
+      "group": "g-agent",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Tracks 3600-second expiration timestamp; detects HTTP 401 response."
+    },
+    {
+      "id": "sts-refresh",
+      "label": "STS Refresh Endpoint",
+      "product": "oauth2.googleapis.com",
+      "group": "g-sts-fail",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Validates refresh token and returns fresh bearer access token within 200ms."
+    },
+    {
+      "id": "cloud-res",
+      "label": "Target Cloud Resource",
+      "product": "Google Cloud Resource",
+      "group": "g-sts-fail",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Successfully receives retried API request with fresh credentials."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "script-runner",
+      "to": "auth-monitor",
+      "label": "1. 401 Token Expired",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "auth-monitor",
+      "to": "sts-refresh",
+      "label": "2. Exchange Refresh Token",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sts-refresh",
+      "to": "script-runner",
+      "label": "3. Inject Fresh JWT",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "script-runner",
+      "to": "cloud-res",
+      "label": "4. Complete Transaction",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Token Expiration Trap",
+      "edges": [
+        "e1"
+      ],
+      "action": "Pipeline step fails with 401 Invalid Credentials after 65 minutes of execution.",
+      "why_traversal": "OAuth2 access tokens expire strictly after 3600 seconds.",
+      "protocol": "HTTP 401 Unauthorized",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Re-authentication",
+      "edges": [
+        "e2"
+      ],
+      "action": "gcloud SDK uses stored refresh token to issue refresh request to STS.",
+      "why_traversal": "Enables uninterrupted automation without storing permanent plaintext passwords.",
+      "protocol": "HTTPS POST",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Credential Rotation",
+      "edges": [
+        "e3"
+      ],
+      "action": "STS returns new token; SDK updates local credentials cache.",
+      "why_traversal": "Zero downtime recovery keeps deployment pipelines resilient.",
+      "protocol": "OAuth2 JSON Response",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Operation Success",
+      "edges": [
+        "e4"
+      ],
+      "action": "Pipeline replays failed API request with new credentials and completes successfully.",
+      "why_traversal": "Idempotent API retry guarantees consistent infrastructure state.",
+      "protocol": "gRPC / REST",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-ceiling",
+      "label": "Regional CPU Quota Exhausted",
+      "changes": {
+        "failedNodes": [
+          "cloud-res"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Project requested 64 vCPUs in us-central1 but regional limit is 32.",
+      "diverted_path": "API call rejected with HTTP 403 Quota Exceeded.",
+      "blast_radius": "New VM creation fails; existing running instances unaffected.",
+      "recovery": "Request regional quota increase in Cloud Console Service Quotas dashboard."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "script-runner"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "script-runner"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates administrative failure modes: demonstrates OAuth token expiration, quota exhaustion, and automated credential refresh via gcloud auth."
+}

@@ -1,0 +1,233 @@
+{
+  "id": "topic-012-d6",
+  "title": "Support, Governance Basics, and Asset Inventory \u2014 D6",
+  "topic_no": "012",
+  "roadmap_id": "1.6",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Asset Inventory maintains a real-time five-week historical time-series of every cloud resource, enabling compliance auditing and security analysis.",
+  "groups": [
+    {
+      "id": "g-gov",
+      "label": "Enterprise Governance & Audit",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-inv",
+      "label": "Cloud Asset Inventory Time-Series",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-ops",
+      "label": "Google Support & Service Health",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cai-stream",
+      "label": "Cloud Asset Inventory",
+      "product": "cloudasset.googleapis.com",
+      "group": "g-inv",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Maintains real-time 35-day historical snapshot of every metadata configuration."
+    },
+    {
+      "id": "realtime-feed",
+      "label": "Asset Change Feeds",
+      "product": "Cloud Pub/Sub Feed",
+      "group": "g-inv",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Streams resource creation, modification, and deletion events in real time."
+    },
+    {
+      "id": "compliance-officer",
+      "label": "Audit & Compliance Team",
+      "product": "Enterprise SecOps",
+      "group": "g-gov",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Queries historical state to verify HIPAA / PCI-DSS compliance at specific timestamps."
+    },
+    {
+      "id": "psh-api",
+      "label": "Personalized Service Health",
+      "product": "servicehealth.googleapis.com",
+      "group": "g-ops",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Provides project-specific incident feeds filtered only to impacted resources."
+    },
+    {
+      "id": "tam-support",
+      "label": "Google Premium Support (TAM)",
+      "product": "Technical Account Manager",
+      "group": "g-ops",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "15-minute P1 response SLA with proactive architectural reviews."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cai-stream",
+      "to": "compliance-officer",
+      "label": "1. Temporal Asset Query",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cai-stream",
+      "to": "realtime-feed",
+      "label": "2. Stream Configuration Delta",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "psh-api",
+      "to": "tam-support",
+      "label": "3. Targeted Disruption Signal",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "tam-support",
+      "to": "compliance-officer",
+      "label": "4. Proactive Incident Escalation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Asset Snapshot Query",
+      "edges": [
+        "e1"
+      ],
+      "action": "Auditor executes gcloud asset export to inspect IAM bindings from 14 days ago.",
+      "why_traversal": "Asset Inventory stores full configuration history, proving past compliance states.",
+      "protocol": "Cloud Asset API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Change Event Stream",
+      "edges": [
+        "e2"
+      ],
+      "action": "Compute Engine VM is provisioned; Asset Inventory publishes change notification to Pub/Sub.",
+      "why_traversal": "Enables automated security scanners to validate configurations within seconds of creation.",
+      "protocol": "Pub/Sub Event",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Personalized Health Alert",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Personalized Service Health detects fiber incident impacting project's specific zone.",
+      "why_traversal": "Filters out noisy global outages; alerts only when customer's actual instances are impacted.",
+      "protocol": "Service Health API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "untracked-drift",
+      "label": "Out-of-Band Resource Modification",
+      "changes": {
+        "failedNodes": [
+          "realtime-feed"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Engineer manually modified firewall rules via Cloud Shell without CI/CD pipeline.",
+      "diverted_path": "Asset Inventory change feed detects drift immediately; alerts SecOps within 60s.",
+      "blast_radius": "Security perimeter was briefly weakened.",
+      "recovery": "Automated Cloud Function reverts manual firewall changes to match Git repository."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cai-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cai-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

@@ -1,0 +1,43 @@
+{
+  "topic_no": "041",
+  "roadmap_id": "6.2",
+  "title": "Cloud City: Performance Optimization: Bottlenecks, Caching & Scaling",
+  "city_concept": "City Traffic Bottlenecks & Express Highway Lanes",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Every morning at 08:00, all cars and delivery trucks funnelled into a single one-lane cobblestone street, causing miles of gridlocked traffic.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Traffic Engineer Tilda built express bypass lanes (Cloud CDN) and neighborhood parking hubs (Memorystore) so local commuters never entered the center.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a stadium concert let out, automated traffic signals synchronized green lights (Predictive Autoscaling) to flush traffic in 10 minutes.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Paving physical bypass roads takes two years; configuring Cloud CDN edge caching takes 60 seconds via Cloud Console.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

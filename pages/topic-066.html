@@ -1,0 +1,688 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>066 (consult-1) Consultant communication and delivery | GCP Architect Explorer</title><link rel="stylesheet" href="../assets/site.css?v=20260924-2"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2"></head><body><header class="site-nav"><div class="nav-container"><a class="brand-link" href="../index.html">GCP ARCHITECT ROADMAP</a><nav class="nav-links"><a class="nav-link" href="../index.html">Overview</a><a class="nav-link" href="#diagrams">Diagrams</a><a class="nav-link" href="#demo-or-practice">Practice</a><a class="nav-link" href="#quiz">Review</a></nav></div></header><main class="main-content"><header class="page-header"><div class="page-meta"><span class="badge">Topic 066</span><span class="badge badge-type">Roadmap ID: consult-1</span><span class="badge">Hands-on, Consulting &amp; Framing</span><span class="badge badge-type">Type: concept</span><span>Verified: 2026-09-24</span></div><h1 class="page-title">Consultant communication and delivery</h1><p class="page-lead">A roadmap-aligned learning page for Consultant communication and delivery using Brightloaf and Cloud City as the recurring story.</p></header><nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world"><h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2><h3>The Situation</h3><p>Brightloaf is moving from a single bakery to a national business and needs a defensible design for Consultant communication and delivery.</p><div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Consultant communication and delivery design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Consultant communication and delivery gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap consult-1 · Consultant communication and delivery; use the previous topic for prerequisites and the next topic to extend the design.</p></div></section><section class="topic-section" id="technical"><h2 class="section-title"><span class="section-number">2</span> Technical Discussion &amp; Architecture Diagrams</h2><h3>2A — The Depth Ladder</h3><h4>Layer 1 — Foundation</h4><p>Define resource scope, vocabulary, control plane, data plane, and the common wrong picture.</p><h4>Layer 2 — Practitioner</h4><p>Set safe defaults and inspect IAM, APIs, quotas, networking, billing, and logs.</p><h4>Layer 3 — Architect</h4><p>Compare operational burden, scaling, consistency, cost, portability, and compliance.</p><h4>Layer 4 — Staff</h4><p>Predict behavior from internals, failure modes, blast radius, ownership, and day-two operations.</p><div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Consultant communication and delivery must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div><div id="diagrams"><h3>2B — Interactive Architecture Diagrams</h3><div id="diagram-d1"></div><div id="diagram-d2"></div><div id="diagram-d3"></div><div id="diagram-d4"></div><div id="diagram-d5"></div><div id="diagram-d6"></div></div></section><section class="topic-section" id="analogy"><h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2><p>The city story follows Brightloaf through a problem, solution, stress event, and explicit limit.</p><div class="analogy-stepper"><button class="stepper-btn" type="button" onclick="showAnalogyBeat(1)">1. The City Problem</button><button class="stepper-btn" type="button" onclick="showAnalogyBeat(2)">2. The City Solution</button><button class="stepper-btn" type="button" onclick="showAnalogyBeat(3)">3. City Under Stress</button><button class="stepper-btn" type="button" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button></div><div id="analogy-display" class="analogy-box"></div><div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div><div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<tr><td>Brightloaf city campus</td><td>Consultant communication and delivery</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
+<tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
+<tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
+<tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
+</tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div></section><section class="topic-section" id="demo-or-practice"><h2 class="section-title"><span class="section-number">4</span> Practice Exercise</h2><div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
+gcloud services list --enabled
+: "Guard: DEMO_PROJECT_ID must be set"
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+terraform fmt -check
+terraform validate
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in
+terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
+terraform output
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+gcloud projects describe "$DEMO_PROJECT_ID"
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div></section><section class="topic-section" id="quiz"><h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2><div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div></section><section class="topic-section" id="reading"><h2 class="section-title"><span class="section-number">6</span> Further Reading</h2><p><a href="https://cloud.google.com/architecture/framework" target="_blank" rel="noopener">Official Google Cloud Architecture Framework</a></p></section></main><footer class="site-footer">Static learning site · browse without credentials · verify time-sensitive facts against current documentation</footer><script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-066-d1",
+  "title": "Consultant communication and delivery \u2014 D1",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "map",
+  "purpose": "Architecture view for Consultant communication and delivery.",
+  "summary": "Accessible summary for Consultant communication and delivery.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-066-d2",
+  "title": "Consultant communication and delivery \u2014 D2",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "map",
+  "purpose": "Architecture view for Consultant communication and delivery.",
+  "summary": "Accessible summary for Consultant communication and delivery.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-066-d3",
+  "title": "Consultant communication and delivery \u2014 D3",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "map",
+  "purpose": "Architecture view for Consultant communication and delivery.",
+  "summary": "Accessible summary for Consultant communication and delivery.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-066-d4",
+  "title": "Consultant communication and delivery \u2014 D4",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-066-d5",
+  "title": "Consultant communication and delivery \u2014 D5",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "summary": "Shows what changes at 10x load and where operational cost moves.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-066-d6",
+  "title": "Consultant communication and delivery \u2014 D6",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+}
+</script>
+<script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">{
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "title": "Cloud City: Consultant communication and delivery",
+  "city_concept": "A district with roads, permits, warehouses, and an operations room",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf grows faster than its original city district can safely support.",
+      "analogy_elements": [
+        "Brightloaf city",
+        "crowded district"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The city assigns a clear district, permits, roads, and an operations owner.",
+      "analogy_elements": [
+        "permits",
+        "roads",
+        "operators"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A failed road, exhausted utility, or bad permit affects only its declared blast radius.",
+      "analogy_elements": [
+        "failure boundary",
+        "emergency route"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Cloud policies are software rules, not physical walls; verify the real behavior in documentation.",
+      "analogy_elements": [
+        "metaphor limit"
+      ]
+    }
+  ]
+}</script><script src="../assets/diagram-engine.js"></script><script>
+document.addEventListener("DOMContentLoaded",()=>{for(const kind of ["d1", "d2", "d3", "d4", "d5", "d6"]) new DiagramEngine("diagram-"+kind,JSON.parse(document.getElementById("spec-"+kind+"-data").textContent)); window.analogyData=JSON.parse(document.getElementById("analogy-data").textContent); showAnalogyBeat(1);});
+function checkQuiz(el,ok,msg){const card=el.closest(".quiz-card");card.querySelector(".quiz-explanation").style.display="block";card.querySelector(".quiz-explanation").textContent=msg;}
+function showAnalogyBeat(n){const beat=window.analogyData?.beats?.find(item=>item.step===n);if(!beat)return;document.getElementById("analogy-display").innerHTML="<h3>"+beat.name+"</h3><p>"+beat.story+"</p>";}
+</script><script src="../assets/site-interactions.js?v=20260924-4"></script></body></html>

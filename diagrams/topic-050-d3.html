@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA Exam Strategy &amp; Keyword Elimination — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-050.html">← Topic page</a><span>7.5 · TOPIC-050-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-050-d3",
+  "title": "PCA Exam Strategy & Keyword Elimination \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "050",
+  "roadmap_id": "7.5",
+  "kind": "failure",
+  "purpose": "Simulates Exam Distractor Trap Detection: identifies subtle trick phrases ('least cost', 'RTO = 0', 'global external consistency') that disqualify seemingly correct answers.",
+  "routing_rationale": "Recognizing exam trap phrasing prevents candidates from selecting technically functional but exam-incorrect distractor answers.",
+  "groups": [
+    {
+      "id": "g-trap-phrase",
+      "label": "Subtle Exam Trap Phrasing",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-trap-disarm",
+      "label": "Architectural Trap Disarmament",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "trap-least-cost",
+      "label": "Modifier: 'Most cost-effective'",
+      "product": "Budget is Primary Constraint",
+      "group": "g-trap-phrase",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Question asks for the most cost-effective backup storage for 7-year legal compliance."
+    },
+    {
+      "id": "distractor-standard",
+      "label": "Distractor: Standard Cloud Storage",
+      "product": "Cost: $0.020/GB/month",
+      "group": "g-trap-phrase",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Technically stores backups, but costs 16x more than Archive class."
+    },
+    {
+      "id": "winning-archive",
+      "label": "Correct: Archive Cloud Storage",
+      "product": "Cost: $0.0012/GB/month",
+      "group": "g-trap-disarm",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Lowest-cost storage class designed specifically for data accessed less than once a year."
+    },
+    {
+      "id": "bucket-lock-rule",
+      "label": "Add: Retention Policy (Bucket Lock)",
+      "product": "WORM Compliance Guaranteed",
+      "group": "g-trap-disarm",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Satisfies the 7-year regulatory retention requirement without operational overhead."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "trap-least-cost",
+      "to": "distractor-standard",
+      "label": "1. Disqualify High-Cost Standard Tier",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "trap-least-cost",
+      "to": "winning-archive",
+      "label": "2. Select Archive Tier (Lowest Cost)",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "winning-archive",
+      "to": "bucket-lock-rule",
+      "label": "3. Fulfill 7-Year Legal Hold Mandate",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Cost Modifier Analysis",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Recognizes 'most cost-effective' requires evaluating storage pricing per gigabyte.",
+      "why_traversal": "Archive class ($0.0012) beats Standard ($0.020) and Nearline ($0.010).",
+      "protocol": "Cost Optimization Analysis",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Regulatory Requirement Alignment",
+      "edges": [
+        "e3"
+      ],
+      "action": "Bucket Lock satisfies legal hold requirement cleanly.",
+      "why_traversal": "Delivers comprehensive answer satisfying all question clauses.",
+      "protocol": "Compliance Synthesis",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "overlooked-retrieval-fee",
+      "label": "Selected Archive Storage for Daily Active Backups",
+      "changes": {
+        "failedNodes": [
+          "winning-archive"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Workload required daily backup restoration tests; Archive retrieval fees made it more expensive than Standard.",
+      "diverted_path": "Retrieval fees exceeded storage savings by 500%.",
+      "blast_radius": "Incorrect answer selected.",
+      "recovery": "Only select Archive storage when data access frequency is strictly once a year or less."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "trap-least-cost"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "trap-least-cost"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Exam Distractor Trap Detection: identifies subtle trick phrases ('least cost', 'RTO = 0', 'global external consistency') that disqualify seemingly correct answers."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

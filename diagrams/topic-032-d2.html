@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Observability: Cloud Monitoring, Logging, Trace &amp; Profiler — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-032.html">← Topic page</a><span>4.5 · TOPIC-032-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-032-d2",
+  "title": "Observability: Cloud Monitoring, Logging, Trace & Profiler \u2014 Request & Control Flow",
+  "topic_no": "032",
+  "roadmap_id": "4.5",
+  "kind": "flow",
+  "purpose": "Traces distributed request propagation with W3C Traceparent headers: from ingress proxy across microservices to Cloud Trace latency waterfall analysis.",
+  "routing_rationale": "Trace context injection ensures every downstream database query and RPC call shares a unified TraceID, enabling instant root-cause analysis of p99 latency spikes.",
+  "groups": [
+    {
+      "id": "g-client-trace",
+      "label": "Customer Ingress Request",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-mesh-trace",
+      "label": "Microservices Service Mesh (Trace Propagation)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-trace-ui",
+      "label": "Cloud Trace Waterfall UI",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-req",
+      "label": "Client Ingress",
+      "product": "User Browser",
+      "group": "g-client-trace",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Initiates checkout request: POST /order/checkout."
+    },
+    {
+      "id": "gateway-trace",
+      "label": "API Gateway (Span 1)",
+      "product": "TraceID: 4bf92f35...",
+      "group": "g-client-trace",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Generates root span; injects traceparent header: 00-4bf92f35...-00f067aa0ba902b7-01."
+    },
+    {
+      "id": "order-srv-span",
+      "label": "Order Service (Span 2)",
+      "product": "Duration: 45ms",
+      "group": "g-mesh-trace",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Parses order items; makes downstream gRPC call to Inventory service."
+    },
+    {
+      "id": "db-query-span",
+      "label": "Database Lock (Span 3)",
+      "product": "Duration: 1,420ms (Slow)",
+      "group": "g-mesh-trace",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Cloud SQL query blocked waiting for row-level lock on inventory table."
+    },
+    {
+      "id": "waterfall-chart",
+      "label": "Cloud Trace Flame Chart",
+      "product": "Root Cause: SQL Lock",
+      "group": "g-trace-ui",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Instantly displays 1,420ms red bar pointing directly to inventory table lock."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-req",
+      "to": "gateway-trace",
+      "label": "1. Ingress Request",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "gateway-trace",
+      "to": "order-srv-span",
+      "label": "2. Propagate traceparent Header",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "order-srv-span",
+      "to": "db-query-span",
+      "label": "3. Execute SQL Query Span",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "db-query-span",
+      "to": "waterfall-chart",
+      "label": "4. Render Span Breakdown",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Root Span Creation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Gateway creates root span and injects traceparent header into HTTP/2 request.",
+      "why_traversal": "W3C standard header ensures distributed correlation across heterogeneous runtimes.",
+      "protocol": "W3C Trace Context",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Context Propagation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Order service propagates parent span ID into database driver.",
+      "why_traversal": "Maintains unbroken parent-child hierarchy across distributed microservice hops.",
+      "protocol": "gRPC Context",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Root Cause Identification",
+      "edges": [
+        "e4"
+      ],
+      "action": "Cloud Trace displays visual waterfall; developers identify row lock within seconds.",
+      "why_traversal": "Eliminates hours of manual log grepping during high-severity latency outages.",
+      "protocol": "Cloud Trace UI",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "missing-trace-context",
+      "label": "Broken Trace Context Propagation",
+      "changes": {
+        "failedNodes": [
+          "order-srv-span"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Developer used asynchronous goroutine/thread without passing context.Context.",
+      "diverted_path": "Downstream database span generates new disconnected TraceID.",
+      "blast_radius": "Waterfall is fragmented; root cause cannot be correlated.",
+      "recovery": "Enforce static analysis linter checking context propagation in microservice code."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-req"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-req"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces distributed request propagation with W3C Traceparent headers: from ingress proxy across microservices to Cloud Trace latency waterfall analysis."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

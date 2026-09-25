@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reference Architectures &amp; Enterprise Design Patterns — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-024.html">← Topic page</a><span>3.3 · TOPIC-024-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-024-d6",
+  "title": "Reference Architectures & Enterprise Design Patterns \u2014 D6",
+  "topic_no": "024",
+  "roadmap_id": "3.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Separating edge security, application business logic, and transactional storage into distinct tiers enforces defense-in-depth and independent scaling boundaries.",
+  "groups": [
+    {
+      "id": "g-edge",
+      "label": "Global Edge & Acceleration Tier",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-app",
+      "label": "Application Microservices Tier (Private)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-data",
+      "label": "Persistence & Cache Data Tier",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edge-lb",
+      "label": "External Application Load Balancer",
+      "product": "Global Anycast + Cloud Armor",
+      "group": "g-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Terminates TLS handshakes at edge, inspects OWASP Top 10 rules, and caches static assets."
+    },
+    {
+      "id": "cloud-cdn",
+      "label": "Cloud CDN Edge Cache",
+      "product": "Edge Cache Point of Presence",
+      "group": "g-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Serves 85% of static asset requests directly from Google edge PoP caches."
+    },
+    {
+      "id": "gke-app",
+      "label": "GKE App Microservices",
+      "product": "Autopilot Regional Cluster",
+      "group": "g-app",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Private cluster across 3 zones running business logic pods behind Internal ALB."
+    },
+    {
+      "id": "redis-cache",
+      "label": "Memorystore for Redis",
+      "product": "HA In-Memory Cache",
+      "group": "g-data",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Sub-millisecond latency cache for hot product catalog and session data."
+    },
+    {
+      "id": "spanner-db",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "Globally Consistent Relational DB",
+      "group": "g-data",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Multi-region database delivering 99.999% availability with external consistency."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "edge-lb",
+      "to": "cloud-cdn",
+      "label": "1. Check Edge Cache",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "edge-lb",
+      "to": "gke-app",
+      "label": "2. Forward Dynamic Requests",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "gke-app",
+      "to": "redis-cache",
+      "label": "3. Query Hot Cache",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "gke-app",
+      "to": "spanner-db",
+      "label": "4. Read/Write Persistent DB",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Inspection & Caching",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects request; Cloud CDN serves cached content or forwards to GKE.",
+      "why_traversal": "Absorbs traffic at Google edge, reducing load on backend microservices.",
+      "protocol": "HTTPS / QUIC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Microservice Processing",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "GKE pods check Redis for product data; fallback to Cloud Spanner on cache miss.",
+      "why_traversal": "Cache-aside pattern optimizes read latency to under 2ms for 90% of requests.",
+      "protocol": "gRPC / Spanner API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cache-stampede",
+      "label": "Cache Eviction Thundering Herd",
+      "changes": {
+        "failedNodes": [
+          "redis-cache"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Memorystore Redis node restarted during scheduled maintenance without cluster replication.",
+      "diverted_path": "50,000 requests/sec simultaneously bypass cache and hammer Cloud Spanner.",
+      "blast_radius": "Database latency spikes from 8ms to 850ms.",
+      "recovery": "Enable Memorystore HA with automatic failover and deploy client-side probabilistic early expiration."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "edge-lb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "edge-lb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

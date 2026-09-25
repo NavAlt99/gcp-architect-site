@@ -1,0 +1,232 @@
+{
+  "id": "topic-019-d6",
+  "title": "Cloud Storage, Object Lifecycle, and Enterprise File Systems \u2014 D6",
+  "topic_no": "019",
+  "roadmap_id": "2.7",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Cloud Storage provides 99.999999999% (11 9s) annual durability across multi-region geographic redundancy, supporting object lifecycle management and uniform access.",
+  "groups": [
+    {
+      "id": "g-client-ingest",
+      "label": "Client Object Ingestion",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-storage-tiers",
+      "label": "Cloud Storage Classes & Autoclass",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-nfs-mesh",
+      "label": "Filestore NFS & Immutable Governance",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "uploader",
+      "label": "Client Ingestion SDK",
+      "product": "gsutil / GCS API",
+      "group": "g-client-ingest",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Uploads multipart media files and transactional ledger documents."
+    },
+    {
+      "id": "autoclass-mgr",
+      "label": "Autoclass Engine",
+      "product": "Object Lifecycle Manager",
+      "group": "g-storage-tiers",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Monitors access patterns; transitions inactive data to cheaper tiers automatically."
+    },
+    {
+      "id": "std-tier",
+      "label": "Standard Storage Tier",
+      "product": "Hot Storage (11 9s Durability)",
+      "group": "g-storage-tiers",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Frequent access storage with high IOPS and zero retrieval fees."
+    },
+    {
+      "id": "bucket-lock",
+      "label": "Bucket Lock (WORM)",
+      "product": "Retention Policy",
+      "group": "g-nfs-mesh",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Immutable compliance lock: prevents deletion or overwrite for 7 years (SEC 17a-4)."
+    },
+    {
+      "id": "filestore-nfs",
+      "label": "Filestore Enterprise",
+      "product": "NFSv3 Shared Storage",
+      "group": "g-nfs-mesh",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "POSIX shared filesystem mounted simultaneously across 50 GKE worker pods."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "uploader",
+      "to": "std-tier",
+      "label": "1. Resumable Multipart Upload",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "autoclass-mgr",
+      "to": "std-tier",
+      "label": "2. Monitor Read Frequency",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "std-tier",
+      "to": "bucket-lock",
+      "label": "3. Apply Retention Lock",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "std-tier",
+      "to": "filestore-nfs",
+      "label": "4. Mount NFS File Share",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Multipart Ingestion",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client initiates resumable upload; object chunks replicated across multi-region facilities.",
+      "why_traversal": "Multi-region dual-region replication guarantees 11 9s data durability.",
+      "protocol": "HTTPS JSON API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Tiering",
+      "edges": [
+        "e2"
+      ],
+      "action": "Autoclass transitions data untouched for 90 days from Standard to Coldline.",
+      "why_traversal": "Reduces monthly storage cost by 70% without changing application bucket paths.",
+      "protocol": "Autoclass Lifecycle",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "WORM Retention Enforcement",
+      "edges": [
+        "e3"
+      ],
+      "action": "Bucket Lock policy locks retention period; prevents deletion even by project owners.",
+      "why_traversal": "Guarantees SEC 17a-4 and financial regulatory compliance.",
+      "protocol": "Storage Compliance API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "retention-block",
+      "label": "Unauthorized Deletion Intercept",
+      "changes": {
+        "failedNodes": [
+          "bucket-lock"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Rogue administrator script executed gsutil rm -r on compliance bucket.",
+      "diverted_path": "Cloud Storage rejects command with HTTP 403 Retention Policy Locked.",
+      "blast_radius": "Zero data loss; compliance documents preserved.",
+      "recovery": "Bucket Lock cannot be bypassed until retention timestamp expires."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "uploader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "uploader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

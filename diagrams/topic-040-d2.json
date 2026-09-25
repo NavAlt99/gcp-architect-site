@@ -1,0 +1,218 @@
+{
+  "id": "topic-040-d2",
+  "title": "Cost Optimization & FinOps \u2014 Request & Control Flow",
+  "topic_no": "040",
+  "roadmap_id": "6.1",
+  "kind": "flow",
+  "purpose": "Traces Automated Programmatic Budget Enforcement Flow: monthly spend threshold breached -> Pub/Sub notification -> Cloud Run execution -> sandbox project billing decoupling.",
+  "routing_rationale": "Programmatic budget enforcement provides an automated safety net for sandbox and development environments, ensuring runaway experiments cannot drain corporate budgets.",
+  "groups": [
+    {
+      "id": "g-spend-source",
+      "label": "Sandbox Development Project",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-billing-mon",
+      "label": "Cloud Billing Budget Watchdog",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-enforce-tier",
+      "label": "Automated Enforcement Handler",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rogue-gpu-job",
+      "label": "Runaway GPU Training Job",
+      "product": "8x A100 GPUs ($24/hour)",
+      "group": "g-spend-source",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Intern launched unconstrained ML model training loop over the weekend."
+    },
+    {
+      "id": "project-spend",
+      "label": "Current Monthly Spend",
+      "product": "$1,040 / $1,000 Budget Cap",
+      "group": "g-spend-source",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Exceeds 100% of allocated monthly sandbox development budget."
+    },
+    {
+      "id": "billing-budget-alert",
+      "label": "Budget Alert Triggered",
+      "product": "Pub/Sub Topic: billing-alerts",
+      "group": "g-billing-mon",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Emits JSON notification: costAmount: 1040.50, budgetAmount: 1000.00."
+    },
+    {
+      "id": "stop-vm-worker",
+      "label": "Cloud Function Cap Worker",
+      "product": "gcloud compute instances stop",
+      "group": "g-enforce-tier",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Iterates through sandbox project and cleanly shuts down all running VM instances."
+    },
+    {
+      "id": "slack-finops-notify",
+      "label": "Slack FinOps Alert",
+      "product": "Webhook: #finops-alerts",
+      "group": "g-enforce-tier",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Notifies developer and engineering manager of budget cap enforcement."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "rogue-gpu-job",
+      "to": "project-spend",
+      "label": "1. Accelerate Project Spend",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "project-spend",
+      "to": "billing-budget-alert",
+      "label": "2. Exceed 100% Threshold",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "billing-budget-alert",
+      "to": "stop-vm-worker",
+      "label": "3. Invoke Remediation Worker",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "stop-vm-worker",
+      "to": "slack-finops-notify",
+      "label": "4. Post Confirmation Alert",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Budget Breach Notification",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Cloud Billing publishes event to Pub/Sub within 15 minutes of budget breach.",
+      "why_traversal": "Enables proactive serverless intervention before runaway spend escalates.",
+      "protocol": "Cloud Pub/Sub Event",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Safe Compute Halting",
+      "edges": [
+        "e4"
+      ],
+      "action": "Function stops running instances without deleting persistent disks, preserving code and data.",
+      "why_traversal": "Cuts variable compute burn to zero immediately while preventing developer data loss.",
+      "protocol": "Compute Engine REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "billing-unlink-prod-trap",
+      "label": "Unlinking Billing Destroys Project Resources",
+      "changes": {
+        "failedNodes": [
+          "stop-vm-worker"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Automation unlinked billing from project instead of stopping VMs; triggered Google 30-day resource deletion countdown.",
+      "diverted_path": "Production database threatened with deletion.",
+      "blast_radius": "Critical risk to persistent infrastructure.",
+      "recovery": "Never unlink billing in production; use targeted compute instance stopping for sandbox cost control."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "rogue-gpu-job"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "rogue-gpu-job"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Automated Programmatic Budget Enforcement Flow: monthly spend threshold breached -> Pub/Sub notification -> Cloud Run execution -> sandbox project billing decoupling."
+}

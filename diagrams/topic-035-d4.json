@@ -1,0 +1,218 @@
+{
+  "id": "topic-035-d4",
+  "title": "Network Security: VPC Service Controls, Cloud Armor & Firewalls \u2014 D4",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Defense-in-depth requires filtering malicious inbound traffic at the Google edge (Cloud Armor) while simultaneously preventing authorized compute instances from exfiltrating sensitive data to unauthorized external endpoints (VPC-SC).",
+  "groups": [
+    {
+      "id": "g-armor-edge",
+      "label": "Google Edge: Cloud Armor WAF",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-dmz",
+      "label": "DMZ VPC: Frontend Microservices",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpcsc-perimeter",
+      "label": "VPC-SC Perimeter: Core Data Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "armor-waf",
+      "label": "Cloud Armor Enterprise",
+      "product": "OWASP Top 10 + DDoS Defense",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Blocks SQLi, XSS, and L7 HTTP floods; evaluates client IP reputation scores."
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Adaptive Rate Limiting",
+      "product": "Max 500 req/min per IP",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Throttles brute-force login attempts and automated credential stuffing bots."
+    },
+    {
+      "id": "frontend-gke",
+      "label": "GKE Microservice Fleet",
+      "product": "Internal Workloads (Private Subnet)",
+      "group": "g-vpc-dmz",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Processes client requests; calls backend storage via Private Service Connect."
+    },
+    {
+      "id": "vpcsc-guard",
+      "label": "VPC Service Perimeter",
+      "product": "Access Context Manager Rules",
+      "group": "g-vpcsc-perimeter",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Strict boundary enclosing BigQuery and GCS; blocks data transfers outside perimeter."
+    },
+    {
+      "id": "secure-bq",
+      "label": "Confidential BigQuery Data",
+      "product": "Protected Analytic Dataset",
+      "group": "g-vpcsc-perimeter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Customer PII data accessible only from authorized IPs and VPC perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "armor-waf",
+      "to": "frontend-gke",
+      "label": "1. Forward Sanitized Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limiter",
+      "to": "frontend-gke",
+      "label": "2. Allow Valid Rate Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "frontend-gke",
+      "to": "vpcsc-guard",
+      "label": "3. Cross-Perimeter PSC Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpcsc-guard",
+      "to": "secure-bq",
+      "label": "4. Verify Ingress Policy & Query",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Threat Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects HTTP request, blocks SQL injection attempt, and permits clean traffic.",
+      "why_traversal": "Eliminates attack payloads before they reach application containers.",
+      "protocol": "WAF Rule Engine",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Perimeter Verification & Data Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "VPC-SC validates that request originates from authorized GKE VPC and permits BigQuery read.",
+      "why_traversal": "Strictly isolates sensitive data from unauthorized exfiltration routes.",
+      "protocol": "VPC Service Controls Enforcement",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-exfil-attempt",
+      "label": "Insider Data Exfiltration Thwarted",
+      "changes": {
+        "failedNodes": [
+          "vpcsc-guard"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Compromised GKE pod attempted to copy BigQuery data to an external personal GCS bucket.",
+      "diverted_path": "VPC-SC blocks outbound transfer: VPC_SERVICE_CONTROLS_VIOLATION.",
+      "blast_radius": "Zero data leaked; security alert dispatched to SCC in real time.",
+      "recovery": "Investigate compromised pod, rotate pod service account, and quarantine node."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}

@@ -1,0 +1,43 @@
+{
+  "topic_no": "036",
+  "roadmap_id": "5.3",
+  "title": "Cloud City: Data Protection: Cloud KMS, Sensitive Data Protection & Encryption",
+  "city_concept": "City Vaults, Ciphers & Watermarking",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Tax records and patient health files were written in plain ink on parchment, readable by any courier walking down the hallway.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Archivist Arthur introduced cipher seals (Cloud KMS) and redacting ink stamps (Cloud DLP) to mask sensitive citizen identities.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a courier dropped a tax ledger in the street, onlookers could only see redacted black bars and scrambled cipher tokens.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Parchment redaction requires physical ink and shears; digital DLP transforms millions of rows in seconds using regex and machine learning.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

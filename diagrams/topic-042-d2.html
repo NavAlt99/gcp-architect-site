@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infrastructure as Code: Terraform &amp; GitOps — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-042.html">← Topic page</a><span>6.3 · TOPIC-042-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-042-d2",
+  "title": "Infrastructure as Code: Terraform & GitOps \u2014 Request & Control Flow",
+  "topic_no": "042",
+  "roadmap_id": "6.3",
+  "kind": "flow",
+  "purpose": "Traces Multi-Environment Terraform Promotion Flow: dev -> staging -> production directory isolation using Cloud Foundation Fabric modules and least-privilege service accounts.",
+  "routing_rationale": "Directory-level environment separation prevents accidental blast-radius leakage between development experiments and mission-critical production systems.",
+  "groups": [
+    {
+      "id": "g-env-dev",
+      "label": "Environments: Development (Isolated)",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-env-stage",
+      "label": "Environments: Staging (Pre-Prod)",
+      "type": "project",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-env-prod",
+      "label": "Environments: Production (Governed)",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dev-tf",
+      "label": "envs/dev/main.tf",
+      "product": "Fast Iteration / Ephemeral",
+      "group": "g-env-dev",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Deploys small e2-medium instances; auto-destroys nightly at 8 PM."
+    },
+    {
+      "id": "stage-tf",
+      "label": "envs/stage/main.tf",
+      "product": "Production-Parity Staging",
+      "group": "g-env-stage",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Deploys full multi-zone cluster mirroring production architecture."
+    },
+    {
+      "id": "prod-approval",
+      "label": "Mandatory Peer Approval",
+      "product": "2-Person Rule Sign-off",
+      "group": "g-env-prod",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Requires approvals from Lead SRE and Security Officer before applying."
+    },
+    {
+      "id": "prod-tf",
+      "label": "envs/prod/main.tf",
+      "product": "Highly-Available Production",
+      "group": "g-env-prod",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Provisions regional GKE cluster, Spanner multi-region, and Cloud Armor rules."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dev-tf",
+      "to": "stage-tf",
+      "label": "1. Validate Module in Dev -> Promote",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "stage-tf",
+      "to": "prod-approval",
+      "label": "2. Verify Load Tests -> Request Approval",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "prod-approval",
+      "to": "prod-tf",
+      "label": "3. Authorized -> Apply Production",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Progressive Environment Promotion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Changes tested in dev, promoted to staging for automated integration testing.",
+      "why_traversal": "Validates infrastructure code under realistic traffic before reaching production.",
+      "protocol": "Git Tag Promotion",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Governed Production Apply",
+      "edges": [
+        "e3"
+      ],
+      "action": "Production deployment requires explicit cryptographic sign-off from designated leads.",
+      "why_traversal": "Prevents unauthorized or unreviewed changes from impacting live users.",
+      "protocol": "GitHub Branch Protection",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "untested-prod-merge",
+      "label": "Emergency Direct Production Edit Disallowed",
+      "changes": {
+        "failedNodes": [
+          "prod-approval"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Engineer tried to bypass staging to apply hotfix directly to production Terraform.",
+      "diverted_path": "Branch protection rule rejects direct push.",
+      "blast_radius": "Production protected from unvalidated drift.",
+      "recovery": "Follow standard hotfix pipeline through staging with expedited review."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dev-tf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dev-tf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Multi-Environment Terraform Promotion Flow: dev -> staging -> production directory isolation using Cloud Foundation Fabric modules and least-privilege service accounts."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

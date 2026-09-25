@@ -1,0 +1,190 @@
+{
+  "id": "topic-054-d3",
+  "title": "Machine Learning: Vertex AI Architecture \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "054",
+  "roadmap_id": "D.4",
+  "kind": "failure",
+  "purpose": "Simulates Automated Model Retraining Triggered by Drift Alert: Vertex Model Monitoring detects feature drift exceeding Kolmogorov-Smirnov statistical threshold and triggers Kubeflow pipeline retraining.",
+  "routing_rationale": "Continuous machine learning requires closed-loop automation: monitoring drift automatically launches retraining pipelines, producing freshly calibrated models with zero human intervention.",
+  "groups": [
+    {
+      "id": "g-drift-alert-src",
+      "label": "Model Monitoring & Drift Detection",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-retrain-pipeline",
+      "label": "Automated Retraining & Champion-Challenger Rollout",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "drift-detected-alert",
+      "label": "Feature Drift Alert (p < 0.01)",
+      "product": "Distance: 0.18 > Threshold: 0.10",
+      "group": "g-drift-alert-src",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Statistical test confirms production input feature distribution has shifted from training data."
+    },
+    {
+      "id": "eventarc-retrain-trigger",
+      "label": "Eventarc Pipeline Trigger",
+      "product": "Triggers Cloud Function",
+      "group": "g-drift-alert-src",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Receives drift alert and launches Vertex AI Pipeline job with latest 30-day BigQuery dataset."
+    },
+    {
+      "id": "kfp-retrain-run",
+      "label": "Kubeflow Pipeline Execution",
+      "product": "Trains Challenger Model v2.2",
+      "group": "g-retrain-pipeline",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Retrains on modern feature distribution; confirms accuracy 95.2% exceeds v2.1 baseline."
+    },
+    {
+      "id": "champion-traffic-split",
+      "label": "Canary Traffic Promotion",
+      "product": "Traffic Split: 90% v2.1 / 10% v2.2",
+      "group": "g-retrain-pipeline",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Promotes newly retrained model as challenger canary; shifts 100% traffic once verified."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "drift-detected-alert",
+      "to": "eventarc-retrain-trigger",
+      "label": "1. Fire Drift Breach Notification",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "eventarc-retrain-trigger",
+      "to": "kfp-retrain-run",
+      "label": "2. Launch Vertex Retraining Pipeline",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "kfp-retrain-run",
+      "to": "champion-traffic-split",
+      "label": "3. Deploy Challenger Model to Endpoint",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Drift Triggering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Model Monitoring identifies distribution shift and launches training DAG automatically.",
+      "why_traversal": "Eliminates model performance degradation without requiring manual data science audits.",
+      "protocol": "Eventarc / Cloud Functions",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Champion-Challenger Canary Deployment",
+      "edges": [
+        "e3"
+      ],
+      "action": "New model deployed as canary; endpoint splits traffic to safely validate accuracy on live users.",
+      "why_traversal": "Guarantees retrained models perform safely in production before full cutover.",
+      "protocol": "Vertex AI Traffic Splitting",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pipeline-gpu-quota-fail",
+      "label": "Retraining Fails Due to GPU Quota Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "kfp-retrain-run"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Pipeline requested 8x NVIDIA A100 GPUs, but regional quota was capped at 4.",
+      "diverted_path": "Retraining job queued indefinitely; stale model continued degrading.",
+      "blast_radius": "Model accuracy decayed for another 2 weeks.",
+      "recovery": "Pre-allocate dedicated Vertex AI Custom Job GPU reservation or fallback to CPU training."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "drift-detected-alert"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "drift-detected-alert"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Automated Model Retraining Triggered by Drift Alert: Vertex Model Monitoring detects feature drift exceeding Kolmogorov-Smirnov statistical threshold and triggers Kubeflow pipeline retraining."
+}

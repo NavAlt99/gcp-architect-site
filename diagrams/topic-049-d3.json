@@ -1,0 +1,190 @@
+{
+  "id": "topic-049-d3",
+  "title": "Case Study: Helicopter Racing League \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "failure",
+  "purpose": "Simulates Cloud CDN Video Ingress Failure & Multi-Region Fallback: primary video transcoder facility loses power; traffic fails over to backup regional transcoder with zero stream interruption.",
+  "routing_rationale": "Live sports broadcasting demands zero buffering; dual-region active-active transcoding clusters paired with Cloud CDN origin failover eliminate viewer blackouts.",
+  "groups": [
+    {
+      "id": "g-pri-transcode",
+      "label": "Primary Transcoder: us-central1 (Outage)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-sec-transcode",
+      "label": "Secondary Transcoder: us-east4 (Failover)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pri-encoder-dead",
+      "label": "Primary Transcoder (Failed)",
+      "product": "Status: POWER_FAILURE",
+      "group": "g-pri-transcode",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Datacenter power glitch abruptly knocks out primary encoding cluster."
+    },
+    {
+      "id": "cdn-origin-shield",
+      "label": "Cloud CDN Origin Failover",
+      "product": "Automatic Backend Switching",
+      "group": "g-pri-transcode",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects HTTP 502 from primary origin; automatically shifts requests to secondary origin."
+    },
+    {
+      "id": "sec-encoder-live",
+      "label": "Secondary Transcoder (Active)",
+      "product": "Encoding 4K Stream in us-east4",
+      "group": "g-sec-transcode",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Warm standby transcoder picks up stream chunk encoding in < 2 seconds."
+    },
+    {
+      "id": "uninterrupted-fans",
+      "label": "Global Viewers (Zero Buffering)",
+      "product": "Continuous Video Playback",
+      "group": "g-sec-transcode",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Edge cache buffers absorb 2-second switchover; zero dropped frames for 10M viewers."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "pri-encoder-dead",
+      "to": "cdn-origin-shield",
+      "label": "1. Detect Origin Failure",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cdn-origin-shield",
+      "to": "sec-encoder-live",
+      "label": "2. Reroute Origin Traffic",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sec-encoder-live",
+      "to": "uninterrupted-fans",
+      "label": "3. Stream Secondary Video Chunks",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Origin Health Check Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud CDN detects primary origin failure and switches to secondary origin automatically.",
+      "why_traversal": "Eliminates single point of failure in video distribution pipeline.",
+      "protocol": "CDN Origin Failover Policy",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Zero-Buffer Viewer Experience",
+      "edges": [
+        "e3"
+      ],
+      "action": "Secondary origin continues segment stream; player video buffer plays through transition.",
+      "why_traversal": "Protects broadcast integrity and sponsor advertising revenue.",
+      "protocol": "HTTPS CMAF Video Chunks",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "origin-failover-timeout-stall",
+      "label": "Long Health Check Timeout Causes Player Buffering",
+      "changes": {
+        "failedNodes": [
+          "cdn-origin-shield"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Origin timeout set to 15 seconds; player 3-second buffer emptied before switch occurred.",
+      "diverted_path": "Viewers saw spinning loading wheel for 12 seconds.",
+      "blast_radius": "Viewer complaints during final race lap.",
+      "recovery": "Tune Cloud CDN origin timeout to 2 seconds with 2 consecutive retry limits."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "pri-encoder-dead"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "pri-encoder-dead"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cloud CDN Video Ingress Failure & Multi-Region Fallback: primary video transcoder facility loses power; traffic fails over to backup regional transcoder with zero stream interruption."
+}

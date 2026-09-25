@@ -1,0 +1,43 @@
+{
+  "topic_no": "013",
+  "roadmap_id": "2.1",
+  "title": "Cloud City: Compute Engine: VMs, Disks, and Managed Instance Groups",
+  "city_concept": "City Fleet of Commercial Bakeries & Automated Maintenance Garages",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery relied on one ancient, colossal oven. When its pilot light went out, all pastry production halted across the entire state for 14 hours.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Tomas the Treasurer and Kit the Builder replaced the giant oven with a fleet of modular ovens spread across three city districts (Regional MIG).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "One oven's heating element malfunctioned. Dispatcher Rae automatically rerouted orders to sister bakeries while the maintenance garage swapped in a fresh oven.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical factories, ovens cost millions and take months to install; in Compute Engine, MIGs spin up 50 instances in 45 seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advanced IAM, Federation &amp; Zero Trust — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-034.html">← Topic page</a><span>5.1 · TOPIC-034-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-034-d3",
+  "title": "Advanced IAM, Federation & Zero Trust \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "034",
+  "roadmap_id": "5.1",
+  "kind": "failure",
+  "purpose": "Simulates Service Account Key Compromise & Automated Quarantine: detects key leak on GitHub and revokes credentials within 5 seconds.",
+  "routing_rationale": "Cloud Asset Inventory and Eventarc integrate with secret scanning partners to detect leaked service account keys and automatically disable them before exploitation.",
+  "groups": [
+    {
+      "id": "g-leak-source",
+      "label": "Public GitHub Repository Leak",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-auto-defense",
+      "label": "Automated Key Revocation Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "leaked-key",
+      "label": "Exposed JSON SA Key",
+      "product": "Accidental Public Git Commit",
+      "group": "g-leak-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Developer accidentally committed service-account-key.json to public GitHub repo."
+    },
+    {
+      "id": "github-scanner",
+      "label": "GitHub Secret Scanning",
+      "product": "Real-time Partner Webhook",
+      "group": "g-leak-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Identifies Google Cloud private key pattern within 2 seconds of git push."
+    },
+    {
+      "id": "eventarc-ingest",
+      "label": "Eventarc Security Receiver",
+      "product": "Cloud Event Router",
+      "group": "g-auto-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Receives key compromise event; routes to automated revocation function."
+    },
+    {
+      "id": "iam-disabler",
+      "label": "Cloud Functions Key Revoker",
+      "product": "iam.serviceAccountKeys.disable",
+      "group": "g-auto-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Calls IAM Admin API to disable leaked key ID in 3.4 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "leaked-key",
+      "to": "github-scanner",
+      "label": "1. Git Push Exposes Secret",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "github-scanner",
+      "to": "eventarc-ingest",
+      "label": "2. Send Partner Compromise Alert",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "eventarc-ingest",
+      "to": "iam-disabler",
+      "label": "3. Trigger Automated Revocation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Secret Detection & Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "GitHub scans commit, identifies GCP private key, and notifies Google Security webhook.",
+      "why_traversal": "Catches exposure within seconds before malicious actors can exploit it.",
+      "protocol": "HTTPS Webhook Notification",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Key Deactivation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Function disables key immediately and notifies security operations in Slack.",
+      "why_traversal": "Reduces exposure window from days to under 4 seconds.",
+      "protocol": "IAM Admin REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "disabled-key-prod-outage",
+      "label": "Revoked Key Halts Production Batch Job",
+      "changes": {
+        "failedNodes": [
+          "iam-disabler"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "The leaked key was actively shared with a critical production billing batch process.",
+      "diverted_path": "Batch job fails with HTTP 401 Unauthorized.",
+      "blast_radius": "Temporary batch processing pause.",
+      "recovery": "Migrate production batch jobs to Workload Identity Federation, eliminating JSON keys forever."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "leaked-key"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "leaked-key"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Service Account Key Compromise & Automated Quarantine: detects key leak on GitHub and revokes credentials within 5 seconds."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

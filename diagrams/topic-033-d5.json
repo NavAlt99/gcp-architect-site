@@ -1,0 +1,218 @@
+{
+  "id": "topic-033-d5",
+  "title": "Testing for Reliability: Load, Chaos & Game Days \u2014 D5",
+  "topic_no": "033",
+  "roadmap_id": "4.6",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Reliability cannot be proven theoretically; it must be continuously validated in production under controlled synthetic failures with automated blast-radius circuit breakers.",
+  "groups": [
+    {
+      "id": "g-load-chaos-src",
+      "label": "Synthetic Load & Chaos Injector Fleet",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-target-gke",
+      "label": "Target Production GKE Cluster",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-blast-watchdog",
+      "label": "Blast Radius Watchdog & Kill Switch",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "locust-load",
+      "label": "Distributed Locust Fleet",
+      "product": "Synthetic 25,000 QPS Load",
+      "group": "g-load-chaos-src",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Generates realistic customer shopping cart transaction patterns at peak volume."
+    },
+    {
+      "id": "chaos-controller",
+      "label": "Chaos Mesh Controller",
+      "product": "Kubernetes CRD Injector",
+      "group": "g-load-chaos-src",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Injects synthetic 400ms network latency and terminates random payment pods."
+    },
+    {
+      "id": "gke-app-pods",
+      "label": "Payment Microservice Pods",
+      "product": "Target GKE Autopilot Pods",
+      "group": "g-target-gke",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Tested pods: verifies circuit breaker and retry with exponential backoff handling."
+    },
+    {
+      "id": "downstream-db",
+      "label": "Cloud SQL Database",
+      "product": "Production Transaction DB",
+      "group": "g-target-gke",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Monitored to ensure connection pools are not saturated by chaotic retries."
+    },
+    {
+      "id": "slo-watchdog",
+      "label": "SLO Error Budget Watchdog",
+      "product": "Burn Rate Circuit Breaker",
+      "group": "g-blast-watchdog",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Continuously evaluates error budget; triggers emergency chaos abort if > 0.5% budget burned."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "locust-load",
+      "to": "gke-app-pods",
+      "label": "1. Inject 25,000 QPS Synthetic Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "chaos-controller",
+      "to": "gke-app-pods",
+      "label": "2. Inject 400ms Latency & Kill Pods",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "gke-app-pods",
+      "to": "downstream-db",
+      "label": "3. Handle Retries with Exponential Backoff",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "gke-app-pods",
+      "to": "slo-watchdog",
+      "label": "4. Stream Telemetry to Budget Watchdog",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Synthetic Stress & Fault Injection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Locust hammers API with peak traffic while Chaos Mesh terminates random pods.",
+      "why_traversal": "Validates system resilience under combined peak load and hardware failure.",
+      "protocol": "Locust HTTP + Chaos CRD",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Circuit Breaker & Watchdog Guardrail",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Pods absorb latency via retries; watchdog monitors error budget to prevent customer impact.",
+      "why_traversal": "Proves auto-healing capability while guaranteeing blast radius is strictly contained.",
+      "protocol": "MQL Real-Time Metric Stream",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "retry-storm-meltdown",
+      "label": "Retry Storm Cascading Outage",
+      "changes": {
+        "failedNodes": [
+          "downstream-db"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Developers configured retries with immediate retry (no exponential backoff or jitter).",
+      "diverted_path": "50,000 retries hit database in 1 second, crashing Cloud SQL connection pool.",
+      "blast_radius": "Production database failure impacting all customers.",
+      "recovery": "Enforce circuit breaker pattern (Resilience4j / Envoy) and exponential backoff with full jitter."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "locust-load"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "locust-load"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}

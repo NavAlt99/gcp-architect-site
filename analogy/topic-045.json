@@ -1,0 +1,43 @@
+{
+  "topic_no": "045",
+  "roadmap_id": "7.1",
+  "title": "Cloud City: Case Analysis Method: The 6-Step Architect Discovery Framework",
+  "city_concept": "City Court of Inquest & Grand Architectural Jurors",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Builders were proposing ornate marble bridges across dry riverbeds while crowded slums lacked clean drinking water.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The Grand Inquest established the Six Civic Questions: Purpose, Budget, Flood Lines, Risks, Blueprint, and Rejected Ideas.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a builder proposed a gilded clocktower, the jury rejected it because the city water aqueduct was sinking.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Civic jury hearings take months; architectural discovery frameworks produce clear decision scorecards in hours.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

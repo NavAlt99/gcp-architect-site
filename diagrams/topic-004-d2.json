@@ -1,0 +1,238 @@
+{
+  "id": "topic-004-d2",
+  "title": "Elastic Auto-Scaling: Horizontal vs Vertical",
+  "topic_no": "004",
+  "roadmap_id": "0.4",
+  "kind": "flow",
+  "groups": [
+    {
+      "id": "g-lb",
+      "label": "Global Ingress Traffic",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 40,
+      "width": 260,
+      "height": 340
+    },
+    {
+      "id": "g-scale",
+      "label": "Compute Fleet (Managed Instance Group)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 320,
+      "y": 40,
+      "width": 570,
+      "height": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "traffic-spk",
+      "label": "Traffic Surge (10x QPS)",
+      "product": "External Users",
+      "group": "g-lb",
+      "plane": "data",
+      "x": 160,
+      "y": 140,
+      "detail": "Black Friday customer spike pouring into External HTTPS Load Balancer."
+    },
+    {
+      "id": "lb-node",
+      "label": "Cloud Load Balancing",
+      "product": "L7 Anycast LB",
+      "group": "g-lb",
+      "plane": "data",
+      "x": 160,
+      "y": 280,
+      "detail": "Monitors backend instance utilization and triggers autoscaling signal."
+    },
+    {
+      "id": "vm1",
+      "label": "Instance A (Zone A)",
+      "product": "Compute Engine",
+      "group": "g-scale",
+      "plane": "data",
+      "x": 480,
+      "y": 140,
+      "detail": "CPU utilization reaches 85% (threshold is 60%)."
+    },
+    {
+      "id": "vm2",
+      "label": "Instance B (Zone B)",
+      "product": "Compute Engine",
+      "group": "g-scale",
+      "plane": "data",
+      "x": 680,
+      "y": 140,
+      "detail": "MIG autoscaler provisions new instance horizontally in under 60 seconds."
+    },
+    {
+      "id": "vm3",
+      "label": "Instance C (Zone C)",
+      "product": "Compute Engine",
+      "group": "g-scale",
+      "plane": "data",
+      "x": 680,
+      "y": 280,
+      "detail": "Evenly distributes capacity across all three availability zones."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-trf",
+      "from": "traffic-spk",
+      "to": "lb-node",
+      "label": "1. HTTPS Requests",
+      "plane": "data"
+    },
+    {
+      "id": "e-sat",
+      "from": "lb-node",
+      "to": "vm1",
+      "label": "2. High CPU Saturation",
+      "plane": "data"
+    },
+    {
+      "id": "e-scale-out",
+      "from": "vm1",
+      "to": "vm2",
+      "label": "3. Autoscaler Triggers +1 VM",
+      "plane": "control"
+    },
+    {
+      "id": "e-balance",
+      "from": "lb-node",
+      "to": "vm3",
+      "label": "4. Distribute Traffic Evenly",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Client Connection & Endpoint Ingress",
+      "edges": [
+        "e-trf"
+      ],
+      "action": "Client user or automated workflow initiates API request to Cloud Load Balancing.",
+      "why_traversal": "Client establishes encrypted session with managed gateway; terminates TLS session and validates client token before accessing internal services.",
+      "protocol": "HTTPS / TLS 1.3",
+      "plane": "Data Plane",
+      "narration": "Hop 1: Ingress request received from Traffic Surge (10x QPS) at Cloud Load Balancing.",
+      "check": {
+        "commands": "curl -Iv https://service.brightloaf.internal",
+        "logs": "Ingress request received"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Policy Verification & Task Dispatch",
+      "edges": [
+        "e-sat"
+      ],
+      "action": "Cloud Load Balancing validates caller identity, evaluates routing rules, and dispatches workload to Instance A (Zone A).",
+      "why_traversal": "Internal service mesh routes traffic based on URL path or gRPC method, balancing connections evenly across available healthy worker replicas.",
+      "protocol": "gRPC / HTTP/2 over VPC",
+      "plane": "Data Plane",
+      "narration": "Hop 2: Cloud Load Balancing validates credentials and routes payload to Instance A (Zone A).",
+      "check": {
+        "commands": "gcloud logging read 'logName:cloudaudit'",
+        "metrics": "service/latency"
+      }
+    },
+    {
+      "n": 3,
+      "title": "State Persistence & Consistency",
+      "edges": [
+        "e-scale-out"
+      ],
+      "action": "Instance A (Zone A) processes computation and persists changes to Instance B (Zone B).",
+      "why_traversal": "Guarantees ACID transactions or persistent event ordering before returning success status to caller.",
+      "protocol": "Database Wire Protocol / RFC 1918",
+      "plane": "Data Plane",
+      "narration": "Hop 3: Instance A (Zone A) commits state to Instance B (Zone B).",
+      "check": {
+        "commands": "gcloud compute instances list",
+        "metrics": "storage/write_ops_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Audit Logging & Response Delivery",
+      "edges": [
+        "e-balance"
+      ],
+      "action": "Gateway emits non-repudiable Cloud Audit Log recording principal identity, method, and response code to Instance C (Zone C).",
+      "why_traversal": "Compliance frameworks mandate that all administrative and data-access requests maintain an immutable audit trail.",
+      "protocol": "Internal Logging Agent / OpenTelemetry",
+      "plane": "Control Plane",
+      "narration": "Hop 4: Gateway generates structured audit log and returns HTTP 200 OK.",
+      "check": {
+        "commands": "gcloud logging read 'logName:cloudaudit.googleapis.com/activity'",
+        "metrics": "logging.googleapis.com/log_entry_count"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-lock",
+      "label": "Regional vCPU Quota Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "vm3"
+        ]
+      },
+      "narration": "Project vCPU quota limit reached. MIG cannot spin up Instance C; existing VMs saturate at 100% CPU, increasing HTTP 503 errors.",
+      "check": {
+        "command": "gcloud compute project-info describe --project=$PROJECT",
+        "metric": "compute.googleapis.com/quota/allocation_exceeded"
+      },
+      "root_cause": "Project vCPU quota limit reached. MIG cannot spin up Instance C; existing VMs saturate at 100% CPU, increasing HTTP 503 errors.",
+      "diverted_path": "Normal request path is interrupted at Instance C (Zone C). Downstream components receive timeout errors or drop packets without acknowledgment, forcing client retries or failover redirection.",
+      "blast_radius": "All user sessions dependent on Instance C (Zone C) experience elevated latency, HTTP 5xx errors, or severed connections.",
+      "recovery": "Deploy multi-region Anycast failover, cross-zone active-standby redundancy, automated health check eviction, and exponential backoff circuit breakers."
+    },
+    {
+      "id": "transient-network-drop",
+      "label": "Cloud Load Balancing Network Degradation",
+      "changes": {
+        "failedNodes": [
+          "lb-node"
+        ]
+      },
+      "root_cause": "Underlying Andromeda vSwitch queue saturation or hypervisor host maintenance causing 40% packet loss on Cloud Load Balancing.",
+      "diverted_path": "Incoming TCP streams to Cloud Load Balancing experience high retransmission rates and latency spikes up to 4500ms; gateway circuit breaker opens to shed load.",
+      "blast_radius": "Transactions processed by Cloud Load Balancing slow down significantly; client applications encounter timeout errors.",
+      "recovery": "Configure client-side exponential backoff with full jitter; deploy Regional Managed Instance Groups with auto-healing and minimum 3-zone distribution.",
+      "narration": "Packet loss and connection timeouts detected on Cloud Load Balancing. Circuit breaker trips to protect cluster.",
+      "check": {
+        "command": "gcloud compute instances describe lb-node --format='yaml(status)'",
+        "metric": "compute.googleapis.com/instance/network/dropped_packets_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "traffic-spk"
+        ],
+        "failedEdges": [
+          "e-trf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "purpose": "Illustrates elastic horizontal auto-scaling (adding stateless container replicas) versus vertical scaling (resizing VM vCPU/RAM), detailing operational trade-offs.",
+  "routing_rationale": "Horizontal scaling dynamically matches capacity to traffic spikes without downtime, whereas vertical scaling requires instance restarts or maintenance windows.",
+  "summary": "Illustrates elastic horizontal auto-scaling (adding stateless container replicas) versus vertical scaling (resizing VM vCPU/RAM), detailing operational trade-offs."
+}

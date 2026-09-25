@@ -1,0 +1,43 @@
+{
+  "topic_no": "050",
+  "roadmap_id": "7.5",
+  "title": "Cloud City: PCA Exam Strategy: Keyword Elimination & Domain Mastery",
+  "city_concept": "City Master Builder Licensing Examination",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Apprentices were memorizing the weights of bricks without understanding how arches distribute load, failing when asked to build bridges.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Grand Master Marcus reformed the Master Builder Exam: presenting real-world city crises and testing judgment under strict time limits.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Candidates learned to spot trick questions: when asked for the fastest bridge, the answer was a pontoon bridge, not a five-year stone arch.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Apprentice exams test rote memory; Cloud Architect exams test strategic trade-off judgment under enterprise constraints.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

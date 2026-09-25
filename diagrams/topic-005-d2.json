@@ -1,0 +1,248 @@
+{
+  "id": "topic-005-d2",
+  "title": "Software Architecture & Delivery Basics \u2014 Request & Control Flow",
+  "topic_no": "005",
+  "roadmap_id": "0.5",
+  "kind": "flow",
+  "purpose": "Traces an automated release promotion: from git commit webhook trigger through container compilation, Binary Authorization signing, and multi-target canary verification.",
+  "routing_rationale": "Immutable artifact digests guarantee that the exact binary tested in staging is deployed to production, preventing configuration drift across deployment environments.",
+  "groups": [
+    {
+      "id": "g-src",
+      "label": "Source Control (GitHub Enterprise)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ci",
+      "label": "Cloud CI Pipeline (Cloud Build)",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-cd",
+      "label": "Automated CD (Cloud Deploy & GKE)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "git-commit",
+      "label": "Signed Git Commit",
+      "product": "Git Trunk",
+      "group": "g-src",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Developer commits verified cryptographic signature to main branch."
+    },
+    {
+      "id": "cb-worker",
+      "label": "Cloud Build Worker",
+      "product": "Cloud Build",
+      "group": "g-ci",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Compiles Go/Node binary inside ephemeral container worker."
+    },
+    {
+      "id": "binauth",
+      "label": "Binary Authorization Signer",
+      "product": "Cloud KMS & Attestor",
+      "group": "g-ci",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Cryptographically signs image digest with KMS private key after tests pass."
+    },
+    {
+      "id": "canary-gate",
+      "label": "Cloud Deploy Canary Gate",
+      "product": "Cloud Deploy",
+      "group": "g-cd",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Routes 10% traffic to canary pod and measures error budget for 10 minutes."
+    },
+    {
+      "id": "prod-pods",
+      "label": "Production Pod Fleet",
+      "product": "GKE Autopilot",
+      "group": "g-cd",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Full 100% production pods receiving stable customer traffic."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "git-commit",
+      "to": "cb-worker",
+      "label": "1. Trigger Webhook",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cb-worker",
+      "to": "binauth",
+      "label": "2. Verify Test Results",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "binauth",
+      "to": "canary-gate",
+      "label": "3. Attestation Signature",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "canary-gate",
+      "to": "prod-pods",
+      "label": "4. Promote 100% Release",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Build Invocation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Signed commit fires webhook to provision isolated Cloud Build worker.",
+      "why_traversal": "Hermetic worker guarantees reproducible compilation without host pollution.",
+      "protocol": "HTTPS POST",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Security Attestation",
+      "edges": [
+        "e2"
+      ],
+      "action": "After automated unit and SAST security tests pass, KMS signs attestation.",
+      "why_traversal": "Binary Authorization requires cryptographic proof of testing before deployment.",
+      "protocol": "Cloud KMS Sign RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Canary Verification",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Deploy admits signed image and spins up 10% canary pods.",
+      "why_traversal": "Validates real production traffic without risking full cluster outage.",
+      "protocol": "Kubernetes Admission Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Full Fleet Promotion",
+      "edges": [
+        "e4"
+      ],
+      "action": "Canary health metrics confirm zero errors; Cloud Deploy updates 100% of pods.",
+      "why_traversal": "Rolling update ensures zero downtime and seamless customer session persistence.",
+      "protocol": "Kubernetes RollingUpdate",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "signature-missing",
+      "label": "Missing Security Attestation",
+      "changes": {
+        "failedNodes": [
+          "binauth"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Unit test failure prevented KMS attestor from signing container image.",
+      "diverted_path": "GKE Admission Controller blocks pod scheduling with HTTP 403 Forbidden.",
+      "blast_radius": "Only current release is halted; active production remains stable.",
+      "recovery": "Fix failing tests, re-run CI pipeline to obtain valid KMS signature."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "git-commit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "git-commit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces an automated release promotion: from git commit webhook trigger through container compilation, Binary Authorization signing, and multi-target canary verification."
+}

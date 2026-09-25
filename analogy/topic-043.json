@@ -1,0 +1,43 @@
+{
+  "topic_no": "043",
+  "roadmap_id": "6.4",
+  "title": "Cloud City: CI/CD & Release Engineering: Cloud Build, Deploy & DORA",
+  "city_concept": "City Municipal Printing Press & Delivery Fleets",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Newspaper delivery boys were printing unverified rumors and distributing them directly to town doorsteps, causing riots.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Master Printer Paul established the Editorial Press Line (CI/CD): writers submit stories to editors, fact-checkers verify sources, and only approved papers are loaded onto wagons.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When an error slipped into the morning edition, Paul sent a boy on a bicycle to replace the front page before wagons reached Main Street (Canary Rollback).",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical paper printing cannot be retracted once read; digital cloud deployments can be rolled back in seconds with zero downtime.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

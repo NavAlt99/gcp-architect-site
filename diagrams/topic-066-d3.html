@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consultant communication and delivery — D3</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-066.html">← Topic page</a><span>consult-1 · TOPIC-066-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-066-d3",
+  "title": "Consultant communication and delivery \u2014 D3",
+  "topic_no": "066",
+  "roadmap_id": "consult-1",
+  "kind": "map",
+  "purpose": "Architecture view for Consultant communication and delivery.",
+  "summary": "Accessible summary for Consultant communication and delivery.",
+  "groups": [],
+  "nodes": [
+    {
+      "id": "brightloaf",
+      "label": "Brightloaf workload",
+      "product": "Consultant communication and delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 480,
+      "y": 220,
+      "detail": "The workload under review."
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Inspect the resource",
+      "edges": [],
+      "action": "Inspect the resource and its dependencies.",
+      "why_traversal": "This makes the boundary observable.",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "bad-rollout",
+      "label": "Bad rollout",
+      "changes": {
+        "failedNodes": [
+          "brightloaf"
+        ]
+      },
+      "root_cause": "A configuration or release changes a healthy behavior.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

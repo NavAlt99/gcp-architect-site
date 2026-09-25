@@ -1,0 +1,43 @@
+{
+  "topic_no": "060",
+  "roadmap_id": "cheat-7",
+  "title": "Cloud City: Cheat Sheet: Key Numbers, Limits & SLAs for the PCA Exam",
+  "city_concept": "City Standard Measures & Guild Hall Weights",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Every merchant in Cloud City used a different length of rope and a different weight of lead, causing endless trade disputes.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Grand Master Marcus cast standard brass weights and yardsticks (Key Numbers) displayed in the central Guild Hall.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Every apprentice memorized the standard civic measures before being granted their master builder license.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Brass standards are preserved in glass cases; cloud architectural metrics guide mission-critical enterprise design globally.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "id": "topic-048-d3",
+  "title": "Case Study: TerramEarth \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "048",
+  "roadmap_id": "7.4c",
+  "kind": "failure",
+  "purpose": "Simulates Cellular Blackout & Massive Post-Outage Ingestion Surge: 50,000 tractors reconnect simultaneously after a regional cellular outage.",
+  "routing_rationale": "Buffer-based streaming architecture (Pub/Sub + Dataflow) absorbs massive reconnection surges without dropping telemetry or crashing analytics backends.",
+  "groups": [
+    {
+      "id": "g-blackout-reconnect",
+      "label": "Post-Cellular Outage Influx (50,000 Tractors)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-pubsub-buffer",
+      "label": "Pub/Sub & Dataflow Elastic Cushion",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "backlog-surge",
+      "label": "Accumulated Telemetry Surge",
+      "product": "50k Units Uploading 6 Hours of Logs",
+      "group": "g-blackout-reconnect",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Tractors re-establish cellular link and dump buffered local memory simultaneously."
+    },
+    {
+      "id": "pubsub-backlog-absorber",
+      "label": "Pub/Sub Elastic Partition Buffer",
+      "product": "Absorbs 250k msgs/sec Spike",
+      "group": "g-blackout-reconnect",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Pub/Sub scales dynamically without provisioned partition limits, buffering messages safely."
+    },
+    {
+      "id": "dataflow-autoscale-fleet",
+      "label": "Dataflow Autoscaling Workers",
+      "product": "Scales 8 -> 64 n2-standard-4 Nodes",
+      "group": "g-pubsub-buffer",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Autoscaler monitors Pub/Sub backlog age and spins up 64 workers within 3 minutes."
+    },
+    {
+      "id": "bigtable-smooth-ingest",
+      "label": "Bigtable Writes Sustained",
+      "product": "Sub-8ms Write Latency Maintained",
+      "group": "g-pubsub-buffer",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Bigtable absorbs 250,000 writes/sec with zero dropped packets and no hotspotting."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "backlog-surge",
+      "to": "pubsub-backlog-absorber",
+      "label": "1. Influx Reconnection Telemetry",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "pubsub-backlog-absorber",
+      "to": "dataflow-autoscale-fleet",
+      "label": "2. Signal Backlog Growth to Autoscaler",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-autoscale-fleet",
+      "to": "bigtable-smooth-ingest",
+      "label": "3. Parallel Drain to Bigtable",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Surge Decoupling & Buffering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Pub/Sub absorbs 20x traffic surge without backpressure; Dataflow scales up worker nodes.",
+      "why_traversal": "Decouples unpredictable vehicle reconnection bursts from processing capacity.",
+      "protocol": "Cloud Pub/Sub Streaming",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Parallel Backlog Processing",
+      "edges": [
+        "e3"
+      ],
+      "action": "64 Dataflow workers drain backlog in 18 minutes, writing orderly time-series into Bigtable.",
+      "why_traversal": "Guarantees zero data loss while maintaining real-time processing SLAs.",
+      "protocol": "Apache Beam Pipeline",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "direct-db-write-crash",
+      "label": "Direct Database Write Anti-Pattern Meltdown",
+      "changes": {
+        "failedNodes": [
+          "pubsub-backlog-absorber"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "System attempted to write tractor telemetry directly to database without Pub/Sub buffer.",
+      "diverted_path": "50,000 simultaneous connections exhausted DB connection pool; 80% of packets lost.",
+      "blast_radius": "Permanent loss of critical field sensor data.",
+      "recovery": "Never connect external IoT devices directly to databases; always place Cloud Pub/Sub at ingress."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "backlog-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "backlog-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cellular Blackout & Massive Post-Outage Ingestion Surge: 50,000 tractors reconnect simultaneously after a regional cellular outage."
+}

@@ -1,0 +1,248 @@
+{
+  "id": "topic-005-d1",
+  "title": "Software Architecture & Delivery Basics \u2014 Scope & Architecture Map",
+  "topic_no": "005",
+  "roadmap_id": "0.5",
+  "kind": "map",
+  "purpose": "Establishes modern software delivery architecture: maps the progression from Git trunk-based development through Cloud Build CI to Artifact Registry and Cloud Deploy CD.",
+  "routing_rationale": "Direct manual deployments to production are forbidden. Code changes must pass automated testing in Cloud Build, generate cryptographically signed image digests in Artifact Registry, and promote via Cloud Deploy canary gates.",
+  "groups": [
+    {
+      "id": "g-src",
+      "label": "Source Control & Developer Edge",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ci",
+      "label": "Google Cloud CI/CD Perimeter (Cloud Build & Deploy)",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 320,
+      "height": 360
+    },
+    {
+      "id": "g-runtime",
+      "label": "Target Production Runtime (GKE & Cloud Run)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 650,
+      "y": 30,
+      "width": 280,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dev-git",
+      "label": "Developer Git Repo",
+      "product": "GitHub / Git",
+      "group": "g-src",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Trunk-based branch with signed commits triggering automated webhooks."
+    },
+    {
+      "id": "cb-trigger",
+      "label": "Cloud Build Trigger",
+      "product": "Cloud Build",
+      "group": "g-ci",
+      "plane": "control",
+      "x": 450,
+      "y": 120,
+      "detail": "Listens for push events; launches isolated build workers in Google VPC."
+    },
+    {
+      "id": "art-reg",
+      "label": "Artifact Registry",
+      "product": "Artifact Registry",
+      "group": "g-ci",
+      "plane": "data",
+      "x": 450,
+      "y": 270,
+      "detail": "Stores immutable, SHA256-verified OCI container images with vulnerability scan."
+    },
+    {
+      "id": "cloud-deploy",
+      "label": "Cloud Deploy Pipeline",
+      "product": "Cloud Deploy",
+      "group": "g-ci",
+      "plane": "control",
+      "x": 780,
+      "y": 120,
+      "detail": "Manages declarative release promotion across dev, staging, and production."
+    },
+    {
+      "id": "gke-prod",
+      "label": "GKE Production Cluster",
+      "product": "Google Kubernetes Engine",
+      "group": "g-runtime",
+      "plane": "data",
+      "x": 780,
+      "y": 270,
+      "detail": "Runs containerized microservices behind autoscaling pods and load balancers."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dev-git",
+      "to": "cb-trigger",
+      "label": "1. Git Push Webhook",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cb-trigger",
+      "to": "art-reg",
+      "label": "2. Push OCI Image Digest",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "art-reg",
+      "to": "cloud-deploy",
+      "label": "3. Register Release",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "cloud-deploy",
+      "to": "gke-prod",
+      "label": "4. Progressive Canary Rollout",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Commit Trigger",
+      "edges": [
+        "e1"
+      ],
+      "action": "Developer merges pull request; webhook notifies Cloud Build.",
+      "why_traversal": "Automates pipeline execution without manual developer credentials.",
+      "protocol": "HTTPS Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Hermetic Container Build",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud Build executes hermetic compilation and pushes image to Artifact Registry.",
+      "why_traversal": "Produces immutable digest (sha256:...) ensuring provenance integrity.",
+      "protocol": "Docker Registry v2",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Release Declaration",
+      "edges": [
+        "e3"
+      ],
+      "action": "Artifact Registry triggers Cloud Deploy to create release target manifest.",
+      "why_traversal": "Enforces separation of concerns between build phase and release rollout.",
+      "protocol": "Google Cloud API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Canary Rollout",
+      "edges": [
+        "e4"
+      ],
+      "action": "Cloud Deploy orchestrates 10% canary traffic shift onto GKE cluster.",
+      "why_traversal": "Verifies real user latency and error budgets before 100% promotion.",
+      "protocol": "Kubernetes API / Skaffold",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cve-detected",
+      "label": "Critical Vulnerability Intercept",
+      "changes": {
+        "failedNodes": [
+          "art-reg"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Automatic vulnerability scanning detects critical CVE-2026-1029 in base image.",
+      "diverted_path": "Artifact Registry blocks release promotion; Binary Authorization signature is withheld.",
+      "blast_radius": "Build is stopped in CI; production workloads remain untouched.",
+      "recovery": "Base image is patched in Git repo; automated pipeline re-runs to clear scan."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dev-git"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dev-git"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Establishes modern software delivery architecture: maps the progression from Git trunk-based development through Cloud Build CI to Artifact Registry and Cloud Deploy CD."
+}

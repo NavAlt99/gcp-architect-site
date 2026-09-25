@@ -1,0 +1,159 @@
+{
+  "id": "topic-030-d3",
+  "title": "High Availability by Layer \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "failure",
+  "purpose": "Simulates Multi-Zone Power Outage: demonstrates cross-zone failover resilience and automated capacity rebalancing.",
+  "routing_rationale": "Testing complete zone loss proves that regional topologies can sustain 33% physical capacity loss without degrading customer experience.",
+  "groups": [
+    {
+      "id": "g-outage-zone",
+      "label": "Zone us-central1-a (Total Power Loss)",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-surviving-zones",
+      "label": "Surviving Zones: us-central1-b & us-central1-c",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "zone-a-cluster",
+      "label": "Zone A Instances (Dead)",
+      "product": "Unresponsive Hardware",
+      "group": "g-outage-zone",
+      "plane": "data",
+      "x": 220,
+      "y": 200,
+      "detail": "Physical substation transformer failure drops all servers in us-central1-a."
+    },
+    {
+      "id": "zone-b-cluster",
+      "label": "Zone B Instances (Healthy)",
+      "product": "Operating at 75% Capacity",
+      "group": "g-surviving-zones",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Absorbs 50% of redirected traffic; autoscaler provisions additional nodes."
+    },
+    {
+      "id": "zone-c-cluster",
+      "label": "Zone C Instances (Healthy)",
+      "product": "Operating at 75% Capacity",
+      "group": "g-surviving-zones",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Absorbs remaining 50% of redirected traffic with zero dropped transactions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "zone-a-cluster",
+      "to": "zone-b-cluster",
+      "label": "1. Redirect 50% Ingress Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "zone-a-cluster",
+      "to": "zone-c-cluster",
+      "label": "2. Redirect 50% Ingress Traffic",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Zonal Evacuation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Regional load balancer immediately routes all traffic away from dead Zone A into Zones B and C.",
+      "why_traversal": "Regional architecture absorbs zonal catastrophes seamlessly.",
+      "protocol": "Maglev Dynamic Flow Table",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "insufficient-headroom",
+      "label": "Capacity Starvation in Surviving Zones",
+      "changes": {
+        "failedNodes": [
+          "zone-b-cluster",
+          "zone-c-cluster"
+        ],
+        "failedEdges": [
+          "e1",
+          "e2"
+        ]
+      },
+      "root_cause": "Cluster was running at 90% utilization before outage; surviving zones hit CPU saturation.",
+      "diverted_path": "Latency spikes from 25ms to 4,200ms; requests queue and timeout.",
+      "blast_radius": "Severe degradation across all users.",
+      "recovery": "Maintain N+1 capacity headroom: never exceed 66% baseline CPU utilization in a 3-zone regional cluster."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "zone-a-cluster"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "zone-a-cluster"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Multi-Zone Power Outage: demonstrates cross-zone failover resilience and automated capacity rebalancing."
+}

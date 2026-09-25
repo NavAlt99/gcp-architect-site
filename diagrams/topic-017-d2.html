@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloud Load Balancing, Cloud CDN, and Cloud Armor — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-017.html">← Topic page</a><span>2.5 · TOPIC-017-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-017-d2",
+  "title": "Cloud Load Balancing, Cloud CDN, and Cloud Armor \u2014 Request & Control Flow",
+  "topic_no": "017",
+  "roadmap_id": "2.5",
+  "kind": "flow",
+  "purpose": "Traces an external HTTPS request: from edge Anycast IP through Cloud Armor security evaluation and Cloud CDN cache check to backend Compute Engine VM.",
+  "routing_rationale": "Global External ALB terminates TLS handshakes at the edge nearest the client, routing decrypted payloads across Google's high-speed fiber backbone.",
+  "groups": [
+    {
+      "id": "g-ingress-edge",
+      "label": "Edge Anycast Ingress",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-inspection-mesh",
+      "label": "Cloud Armor Security Inspection",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-backend-origin",
+      "label": "VPC Origin Backend Instances",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client-browser",
+      "label": "Web Client (San Francisco)",
+      "product": "User Browser",
+      "group": "g-ingress-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Submits HTTPS GET /static/logo.png request."
+    },
+    {
+      "id": "edge-gfe",
+      "label": "Anycast Edge GFE (Bay Area)",
+      "product": "Google Front End",
+      "group": "g-ingress-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Terminates TCP/TLS; extracts URI path and client IP 198.51.100.24."
+    },
+    {
+      "id": "armor-eval",
+      "label": "Cloud Armor Evaluator",
+      "product": "Security Policy Rule",
+      "group": "g-inspection-mesh",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Confirms client IP is not on deny-list and request contains no SQLi signatures."
+    },
+    {
+      "id": "cdn-cache",
+      "label": "Cloud CDN Cache Hit",
+      "product": "Edge Cache HIT",
+      "group": "g-inspection-mesh",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Finds valid cached copy of logo.png; prepares immediate HTTP 200 payload."
+    },
+    {
+      "id": "origin-vm",
+      "label": "Origin Backend VM",
+      "product": "App Server (Idle)",
+      "group": "g-backend-origin",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Origin server remains untouched; zero CPU cycles spent on static asset requests."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client-browser",
+      "to": "edge-gfe",
+      "label": "1. HTTPS GET /static/logo.png",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "edge-gfe",
+      "to": "armor-eval",
+      "label": "2. Evaluate Security Policy",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "armor-eval",
+      "to": "cdn-cache",
+      "label": "3. Lookup Asset Cache Key",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "cdn-cache",
+      "to": "client-browser",
+      "label": "4. Immediate Cache Hit Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Ingress",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client request lands on San Francisco Anycast PoP; TLS handshakes in 8ms.",
+      "why_traversal": "Edge termination eliminates long cross-country TLS negotiation latency.",
+      "protocol": "TLS 1.3 TCP 443",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Armor Validation",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud Armor inspects request headers and parameters at hardware speed.",
+      "why_traversal": "Ensures malicious payloads are dropped before touching cache or backends.",
+      "protocol": "Inline Policy Filter",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Cache Hit Return",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Cloud CDN retrieves cached asset from RAM and streams HTTP 200 to client.",
+      "why_traversal": "Total response time is 12ms; origin backend VM is never contacted.",
+      "protocol": "HTTP/2 200 OK",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cache-miss-stampede",
+      "label": "Cache Stampede / Origin Overload",
+      "changes": {
+        "failedNodes": [
+          "cdn-cache"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Cache expired during viral traffic surge; 50,000 concurrent requests bypassed CDN to origin.",
+      "diverted_path": "Origin VM CPU saturates to 100%; request latency spikes to 4,000ms.",
+      "blast_radius": "Dynamic API calls queued behind static image processing.",
+      "recovery": "Enable Cloud CDN request collapsing and serve-stale-while-revalidating settings."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client-browser"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client-browser"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces an external HTTPS request: from edge Anycast IP through Cloud Armor security evaluation and Cloud CDN cache check to backend Compute Engine VM."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

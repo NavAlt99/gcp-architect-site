@@ -1,0 +1,43 @@
+{
+  "topic_no": "052",
+  "roadmap_id": "D.2",
+  "title": "Cloud City: Data Processing: Dataflow (Beam), Dataproc & Cloud Composer",
+  "city_concept": "City Water Treatment Plant & Filtration Sluices",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Muddy river water was pouring into city taps because the water department had no filtration sluices to separate silt, leaves, and clean water.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Hydraulic Engineer Hugh designed tiered filtration basins (Dataflow): fast settling pools for continuous flow (Streaming) and overnight settling tanks (Batch).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When storm runoff brought heavy debris late at night, automated overflow sluices (Allowed Lateness) routed silt to secondary holding basins.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical water filters clog with sand; software pipelines scale compute workers dynamically to process gigabytes of data per second.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

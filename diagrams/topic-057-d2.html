@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Load Balancer Decision Cheat Sheet — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-057.html">← Topic page</a><span>cheat-3 · TOPIC-057-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-057-d2",
+  "title": "Load Balancer Decision Cheat Sheet \u2014 Request & Control Flow",
+  "topic_no": "057",
+  "roadmap_id": "cheat-3",
+  "kind": "flow",
+  "purpose": "Traces Load Balancer Selection Decision Traversal: External vs Internal -> Layer 7 vs Layer 4 -> Global vs Regional -> Client IP preservation requirement.",
+  "routing_rationale": "Decision paths cleanly resolve complex networking scenarios to the exact Google Cloud load balancer SKU.",
+  "groups": [
+    {
+      "id": "g-boundary-q",
+      "label": "Step 1: Public Internet or Private VPC?",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-layer-q",
+      "label": "Step 2: Layer 7 (HTTP) or Layer 4 (TCP/UDP)?",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-winner-lb",
+      "label": "Step 3: Optimal Load Balancer Match",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "q-public-facing",
+      "label": "Public External Clients",
+      "product": "Users on Internet Worldwide",
+      "group": "g-boundary-q",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Millions of global users connecting from web browsers and mobile apps."
+    },
+    {
+      "id": "q-l7-features",
+      "label": "Requires WAF & Edge Caching",
+      "product": "Cloud Armor & Cloud CDN Needed",
+      "group": "g-layer-q",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Must protect against DDoS and cache static media assets at edge."
+    },
+    {
+      "id": "select-global-alb",
+      "label": "External Application LB (Global)",
+      "product": "Selected: Global Anycast L7 LB",
+      "group": "g-winner-lb",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Single Anycast VIP delivering Cloud Armor WAF, Cloud CDN, and multi-region routing."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "q-public-facing",
+      "to": "q-l7-features",
+      "label": "1. External Ingress Confirmed",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "q-l7-features",
+      "to": "select-global-alb",
+      "label": "2. L7 Features Required -> External ALB",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Boundary & Feature Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Confirms external internet exposure and Layer 7 feature requirements.",
+      "why_traversal": "Pinpoints External Application Load Balancer with 100% confidence.",
+      "protocol": "Load Balancer Rubric",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "wrong-regional-lb-pick",
+      "label": "Selected Regional ALB for Multi-Region Workload",
+      "changes": {
+        "failedNodes": [
+          "select-global-alb"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Selected Regional External ALB, preventing cross-region failover between US and Europe.",
+      "diverted_path": "Regional outage took down service globally.",
+      "blast_radius": "Unnecessary downtime.",
+      "recovery": "Select Global External ALB when backends span multiple Google Cloud regions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "q-public-facing"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "q-public-facing"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Load Balancer Selection Decision Traversal: External vs Internal -> Layer 7 vs Layer 4 -> Global vs Regional -> Client IP preservation requirement."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Identity Basics: IAM, Principals, and Service Accounts — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-009.html">← Topic page</a><span>1.3 · TOPIC-009-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-009-d2",
+  "title": "Identity Basics: IAM, Principals, and Service Accounts \u2014 Request & Control Flow",
+  "topic_no": "009",
+  "roadmap_id": "1.3",
+  "kind": "flow",
+  "purpose": "Traces Workload Identity authentication: shows how a GKE Kubernetes ServiceAccount (KSA) securely exchanges tokens for a Google ServiceAccount (GSA) without service account keys.",
+  "routing_rationale": "Workload Identity eliminates downloaded JSON keys. The GKE metadata server intercepts STS token exchanges, dynamically issuing short-lived Google OAuth tokens.",
+  "groups": [
+    {
+      "id": "g-k8s",
+      "label": "Kubernetes Pod & Node Subnet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-sts-mid",
+      "label": "Google Security Token Service (STS)",
+      "type": "project",
+      "scope": "global",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-api-target",
+      "label": "Target Google Cloud APIs",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-container",
+      "label": "App Container (KSA: web-sa)",
+      "product": "Kubernetes Workload",
+      "group": "g-k8s",
+      "plane": "data",
+      "x": 150,
+      "y": 140,
+      "detail": "Container running inside GKE Autopilot pod with mounted KSA token."
+    },
+    {
+      "id": "node-meta",
+      "label": "GKE Metadata Concealment",
+      "product": "Metadata Server",
+      "group": "g-k8s",
+      "plane": "control",
+      "x": 150,
+      "y": 280,
+      "detail": "Blocks access to legacy instance metadata; enforces Workload Identity exclusively."
+    },
+    {
+      "id": "sts-broker",
+      "label": "Google STS Token Broker",
+      "product": "sts.googleapis.com",
+      "group": "g-sts-mid",
+      "plane": "control",
+      "x": 450,
+      "y": 140,
+      "detail": "Verifies OIDC JSON Web Key Sets (JWKS) signature emitted by GKE cluster."
+    },
+    {
+      "id": "iam-creds",
+      "label": "IAM Credentials API",
+      "product": "iamcredentials.googleapis.com",
+      "group": "g-sts-mid",
+      "plane": "control",
+      "x": 450,
+      "y": 280,
+      "detail": "Generates 1-hour Google OAuth bearer access token for mapped GSA."
+    },
+    {
+      "id": "cloud-api",
+      "label": "Cloud SQL / Secret Manager",
+      "product": "Google Cloud Services",
+      "group": "g-api-target",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Consumes verified OAuth token to release encrypted database credentials."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-container",
+      "to": "node-meta",
+      "label": "1. Retrieve OAuth Token",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "node-meta",
+      "to": "sts-broker",
+      "label": "2. Exchange KSA JWT via OIDC",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sts-broker",
+      "to": "iam-creds",
+      "label": "3. Mint Short-Lived GSA Token",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "app-container",
+      "to": "cloud-api",
+      "label": "4. Call API with Token",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Metadata Interception",
+      "edges": [
+        "e1"
+      ],
+      "action": "Application client invokes Google Cloud SDK; SDK queries 169.254.169.254.",
+      "why_traversal": "Zero code modification required; SDK natively detects metadata server.",
+      "protocol": "HTTP GET",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "OIDC Token Validation",
+      "edges": [
+        "e2"
+      ],
+      "action": "STS broker validates Kubernetes cluster OIDC discovery document and token signature.",
+      "why_traversal": "Cryptographic proof that request originated inside authorized GKE cluster.",
+      "protocol": "OIDC Federation",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Token Generation",
+      "edges": [
+        "e3"
+      ],
+      "action": "IAM Credentials API generates ephemeral 3600-second bearer token.",
+      "why_traversal": "Ephemeral tokens mean zero credential leakage risk if container memory dumps.",
+      "protocol": "Google IAM API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Authorized API Dispatch",
+      "edges": [
+        "e4"
+      ],
+      "action": "Container presents access token to Secret Manager; secret payload is returned.",
+      "why_traversal": "Fine-grained secret retrieval over encrypted Google private transport.",
+      "protocol": "HTTPS REST",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "service-account-key-leak",
+      "label": "Leaked Static Key Attempt",
+      "changes": {
+        "failedNodes": [
+          "sts-broker"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Legacy developer attempted to authenticate using downloaded service-account-key.json.",
+      "diverted_path": "Organization policy constraints/iam.disableServiceAccountKeyCreation blocks key.",
+      "blast_radius": "Key-based attack vectors completely nullified across organization.",
+      "recovery": "Standardize all pipelines on Workload Identity Federation."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app-container"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "app-container"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Workload Identity authentication: shows how a GKE Kubernetes ServiceAccount (KSA) securely exchanges tokens for a Google ServiceAccount (GSA) without service account keys."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

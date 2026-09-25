@@ -1,0 +1,43 @@
+{
+  "topic_no": "018",
+  "roadmap_id": "2.6",
+  "title": "Cloud City: Hybrid and Multi-Cloud Connectivity: VPN & Interconnect",
+  "city_concept": "City Inter-State Freight Tunnels & Secured Border Rail",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery's corporate headquarters was located in Chicago, while cloud kitchens were in Oregon. Delivery trucks got stuck in snowstorms on public interstates.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Rae the Dispatcher excavated a twin-bore underground high-speed freight tunnel (HA VPN / Interconnect) directly between the city depot and the bakery headquarters.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A flood collapsed Tunnel A. Automated rail signals (BGP) instantly switched all freight trains into Tunnel B without delaying a single shipment.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical construction, digging tunnels takes years; in Google Cloud, provisioning an HA VPN takes 5 minutes.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

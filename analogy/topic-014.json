@@ -1,0 +1,43 @@
+{
+  "topic_no": "014",
+  "roadmap_id": "2.2",
+  "title": "Cloud City: Google Kubernetes Engine (GKE): Autopilot & Enterprise Clusters",
+  "city_concept": "City Container Terminal & Harbor Fleet Coordination",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery was shipping bread using thousands of individual delivery mopeds. Drivers collided in traffic, half got lost, and keeping maintenance logs was impossible.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian constructed a state-of-the-art container terminal (GKE). Standardized shipping crates (Containers) are loaded onto automated regional rail lines.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a flash storm, a rail dock was flooded. The harbor master (GKE Scheduler) rerouted all incoming shipping crates to dry docks across town without dropping a single package.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical shipping, cranes take minutes to reposition; in GKE Autopilot, pods scale out in seconds with zero node management required.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

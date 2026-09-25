@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: Mountkirk Games — Global Multiplayer &amp; Spanner — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-047.html">← Topic page</a><span>7.4b · TOPIC-047-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-047-d5",
+  "title": "Case Study: Mountkirk Games \u2014 Global Multiplayer & Spanner \u2014 D5",
+  "topic_no": "047",
+  "roadmap_id": "7.4b",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Mountkirk Games requires global low-latency multiplayer matchmaking, dynamic scaling to absorb millions of concurrent players during new game releases, and global consistency for game economies and leaderboards.",
+  "groups": [
+    {
+      "id": "g-gamers-edge",
+      "label": "Global Gamers & Anycast Edge",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-agones-fleet",
+      "label": "GKE Agones Game Server Fleets",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-game-persistence",
+      "label": "Cloud Spanner & Analytics Pipeline",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "mobile-gamer",
+      "label": "Global Mobile Gamers",
+      "product": "UDP / WebSockets (Low Latency)",
+      "group": "g-gamers-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Millions of concurrent players connecting from North America, Europe, and Asia."
+    },
+    {
+      "id": "anycast-game-lb",
+      "label": "External Passthrough LB",
+      "product": "Global Anycast VIP (UDP)",
+      "group": "g-gamers-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Terminates player UDP traffic at edge and routes to nearest regional cluster."
+    },
+    {
+      "id": "agones-controller",
+      "label": "Agones Game Controller",
+      "product": "Kubernetes Custom Resource (CRD)",
+      "group": "g-agones-fleet",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Allocates game session pods; marks pods as 'Allocated' so autoscaler will not terminate them."
+    },
+    {
+      "id": "game-pod",
+      "label": "Dedicated Game Server Pod",
+      "product": "C++ / Go Game Engine (UDP)",
+      "group": "g-agones-fleet",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Runs 60 FPS real-time match simulation for 100 players with sub-30ms tick rate."
+    },
+    {
+      "id": "spanner-economy",
+      "label": "Cloud Spanner Leaderboards",
+      "product": "Global Consistency / Inventory",
+      "group": "g-game-persistence",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Guarantees zero item duplication or currency race conditions across global players."
+    },
+    {
+      "id": "pubsub-telemetry",
+      "label": "Pub/Sub Game Analytics",
+      "product": "500,000 Events/sec Ingestion",
+      "group": "g-game-persistence",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Streams game event telemetry to Dataflow and BigQuery for anti-cheat detection."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "mobile-gamer",
+      "to": "anycast-game-lb",
+      "label": "1. Connect over Anycast UDP",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "anycast-game-lb",
+      "to": "agones-controller",
+      "label": "2. Request Matchmaking Allocation",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "agones-controller",
+      "to": "game-pod",
+      "label": "3. Allocate Dedicated Game Pod",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "game-pod",
+      "to": "spanner-economy",
+      "label": "4. Persist Match Rewards & Items",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "game-pod",
+      "to": "pubsub-telemetry",
+      "label": "5. Stream In-Game Telemetry",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Low-Latency Ingress & Session Allocation",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Anycast routes players to local region; Agones allocates dedicated match server pod.",
+      "why_traversal": "Keeps network latency under 30ms while preventing pod eviction mid-game.",
+      "protocol": "UDP / Agones API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Economy Persistence & Analytics Streaming",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Game server records loot to Cloud Spanner and streams match metrics to Pub/Sub.",
+      "why_traversal": "Prevents virtual currency duplication and feeds real-time anti-cheat analytics.",
+      "protocol": "Spanner gRPC / Pub/Sub API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pod-termination-mid-match",
+      "label": "Autoscaler Prematurely Terminates Active Game",
+      "changes": {
+        "failedNodes": [
+          "agones-controller"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Generic Kubernetes Horizontal Pod Autoscaler was used instead of Agones custom controller.",
+      "diverted_path": "HPA terminated 50 active match pods during traffic dip, disconnecting 5,000 players.",
+      "blast_radius": "Player frustration and app store ratings drop.",
+      "recovery": "Always use Agones Fleet Autoscaler which respects 'Allocated' state and never kills active sessions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "mobile-gamer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "mobile-gamer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

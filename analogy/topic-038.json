@@ -1,0 +1,43 @@
+{
+  "topic_no": "038",
+  "roadmap_id": "5.5",
+  "title": "Cloud City: Security Operations: Security Command Center & Threat Detection",
+  "city_concept": "City Night Watch & Central Citadel Sirens",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "When bandits infiltrated the outer warehouse district at night, guards in the north tower had no way to alert guards in the southern garrison.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The Night Watch built signal beacons and telegraph sirens (Security Command Center) linking all city gates to the Central Citadel.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a suspicious cart was spotted at Midnight Gate, the Citadel signaled all inner gates to lock immediately, capturing the intruders.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Signal fire beacons require clear weather and manual watchmen; cloud threat detection analyzes millions of network flows per second automatically.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

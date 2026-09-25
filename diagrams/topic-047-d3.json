@@ -1,0 +1,190 @@
+{
+  "id": "topic-047-d3",
+  "title": "Case Study: Mountkirk Games \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "047",
+  "roadmap_id": "7.4b",
+  "kind": "failure",
+  "purpose": "Simulates Game Launch Day Flash Mob Surge: 10x traffic spike tests GKE Autopilot cluster node autoscaling and Spanner automatic splitting.",
+  "routing_rationale": "Game launch spikes represent massive unpredictable demand; serverless elasticity cushions surges by provisioning thousands of nodes in parallel.",
+  "groups": [
+    {
+      "id": "g-viral-influx",
+      "label": "Viral Game Launch Influx (5M Players)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-scaling-shield",
+      "label": "Autopilot & Spanner Elastic Headroom",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gamer-tsunami",
+      "label": "5,000,000 Concurrent Players",
+      "product": "Peak Launch Surge (10x Normal)",
+      "group": "g-viral-influx",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Worldwide release triggers unprecedented simultaneous login surge."
+    },
+    {
+      "id": "traffic-buffer",
+      "label": "Cloud Armor DDoS & Rate Limiter",
+      "product": "Traffic Smoothing Shield",
+      "group": "g-viral-influx",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Smooths packet bursts and blocks malicious bot registration scripts."
+    },
+    {
+      "id": "gke-node-surge",
+      "label": "GKE Cluster Autoscaler",
+      "product": "Scales 200 -> 2,500 Nodes",
+      "group": "g-scaling-shield",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Provisions Compute Engine compute instances across 3 regional zones dynamically."
+    },
+    {
+      "id": "spanner-auto-split",
+      "label": "Spanner Automatic Split Engine",
+      "product": "Splits Load Across 48 Nodes",
+      "group": "g-scaling-shield",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Automatically splits hot database split ranges across new compute nodes in seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "gamer-tsunami",
+      "to": "traffic-buffer",
+      "label": "1. Ingress 10x Launch Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "traffic-buffer",
+      "to": "gke-node-surge",
+      "label": "2. Trigger GKE Rapid Node Expansion",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "traffic-buffer",
+      "to": "spanner-auto-split",
+      "label": "3. Distribute Database Read/Write Spikes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Traffic Absorption & Cluster Expansion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor smooths traffic; GKE Autoscaler provisions 2,300 additional nodes in 4 minutes.",
+      "why_traversal": "Absorbs viral launch demand without crashing existing game matches.",
+      "protocol": "Compute Engine API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Linear Database Scaling",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Spanner splits player data ranges across expanded node fleet seamlessly.",
+      "why_traversal": "Maintains sub-10ms transactional latency despite 1000% load increase.",
+      "protocol": "Paxos Split Rebalancing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "gcp-quota-limit-crash",
+      "label": "Regional vCPU Quota Ceiling Blocks Scaling",
+      "changes": {
+        "failedNodes": [
+          "gke-node-surge"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Project hit hard default regional vCPU quota (limit: 5,000 vCPUs).",
+      "diverted_path": "GKE Autoscaler events show 'QUOTA_EXCEEDED'; players queued in matchmaking for hours.",
+      "blast_radius": "Launch day failure and lost player revenue.",
+      "recovery": "Submit proactive quota increase requests 3 weeks prior to major game launch events."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "gamer-tsunami"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "gamer-tsunami"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Game Launch Day Flash Mob Surge: 10x traffic spike tests GKE Autopilot cluster node autoscaling and Spanner automatic splitting."
+}

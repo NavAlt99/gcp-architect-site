@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Processing: Dataflow &amp; Dataproc — Scope &amp; Architecture Map</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-052.html">← Topic page</a><span>D.2 · TOPIC-052-D1</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-052-d1",
+  "title": "Data Processing: Dataflow & Dataproc \u2014 Scope & Architecture Map",
+  "topic_no": "052",
+  "roadmap_id": "D.2",
+  "kind": "map",
+  "purpose": "Visualizes Unified Data Processing Architecture: Cloud Dataflow (Apache Beam, Streaming Engine, auto-scaling) vs Cloud Dataproc (Managed Spark/Hadoop, Ephemeral clusters, Cloud Storage connector).",
+  "routing_rationale": "Data processing architecture divides into serverless unified stream/batch (Cloud Dataflow with Apache Beam) vs open-source ecosystem compatibility (Cloud Dataproc running native Apache Spark, Hive, and Presto on ephemeral compute).",
+  "groups": [
+    {
+      "id": "g-input-streams",
+      "label": "Enterprise Streaming & Batch Ingestion",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-dataflow-tier",
+      "label": "Cloud Dataflow (Serverless Apache Beam)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dataproc-tier",
+      "label": "Cloud Dataproc (Managed Apache Spark)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pubsub-stream",
+      "label": "Real-Time Event Stream",
+      "product": "Cloud Pub/Sub (100k msg/s)",
+      "group": "g-input-streams",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Continuous clickstream and IoT telemetry requiring sub-second windowed processing."
+    },
+    {
+      "id": "gcs-raw-files",
+      "label": "Historical Parquet Files",
+      "product": "Cloud Storage Data Lake (50TB)",
+      "group": "g-input-streams",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Nightly batch logs stored in GCS buckets ready for ETL aggregation."
+    },
+    {
+      "id": "dataflow-engine",
+      "label": "Dataflow Streaming Engine",
+      "product": "Exactly-Once Stateful Processing",
+      "group": "g-dataflow-tier",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Offloads state to dedicated backend; auto-scales worker fleet based on watermark lag."
+    },
+    {
+      "id": "dataproc-cluster",
+      "label": "Dataproc Ephemeral Cluster",
+      "product": "Managed Spark / Hadoop (Spot VMs)",
+      "group": "g-dataproc-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Spins up 100 Spot VM workers; runs 45-minute Spark job; auto-terminates upon completion."
+    },
+    {
+      "id": "bigquery-sink",
+      "label": "BigQuery Storage Write API",
+      "product": "Unified Analytical Target",
+      "group": "g-dataproc-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Direct streaming ingestion into partitioned tables with exactly-once delivery."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "pubsub-stream",
+      "to": "dataflow-engine",
+      "label": "1. Ingest Unbounded Stream",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "gcs-raw-files",
+      "to": "dataproc-cluster",
+      "label": "2. Ingest Nightly Parquet Batches",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "dataflow-engine",
+      "to": "bigquery-sink",
+      "label": "3. Stream Exactly-Once Windowed Results",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "dataproc-cluster",
+      "to": "bigquery-sink",
+      "label": "4. Write Transformed Analytics Tables",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Serverless Streaming & Ephemeral Batch Ingestion",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Pub/Sub streams into Dataflow; Dataproc reads historical Parquet from GCS.",
+      "why_traversal": "Applies the optimal compute runtime to each workload type.",
+      "protocol": "Pub/Sub / GCS Connector",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Unified Analytics Delivery",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Both pipelines persist transformed records into BigQuery tables with zero data duplication.",
+      "why_traversal": "Creates unified analytical layer supporting real-time operational BI and historical reporting.",
+      "protocol": "BigQuery Storage Write API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "spot-vm-eviction-cascade",
+      "label": "Dataproc Spot VM Eviction Outage",
+      "changes": {
+        "failedNodes": [
+          "dataproc-cluster"
+        ],
+        "failedEdges": [
+          "e2",
+          "e4"
+        ]
+      },
+      "root_cause": "Dataproc cluster configured with 100% Spot VMs including master node; Google reclaimed master.",
+      "diverted_path": "Cluster crashed mid-job; entire 4-hour batch job failed.",
+      "blast_radius": "Delayed nightly financial reporting.",
+      "recovery": "Configure standard persistent VMs for master and primary workers; use Spot VMs strictly for secondary task workers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "pubsub-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "pubsub-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes Unified Data Processing Architecture: Cloud Dataflow (Apache Beam, Streaming Engine, auto-scaling) vs Cloud Dataproc (Managed Spark/Hadoop, Ephemeral clusters, Cloud Storage connector)."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

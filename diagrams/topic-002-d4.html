@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linux and Command Line for Cloud Architects — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-002.html">← Topic page</a><span>0.2 · TOPIC-002-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-002-d4",
+  "title": "Linux and Command Line for Cloud Architects \u2014 D4",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "User applications never interact directly with cloud physical hardware. System calls traverse kernel cgroups and netfilter before paravirtualized VirtIO drivers pass packet buffers across memory-mapped rings to Google's physical Andromeda SDN.",
+  "groups": [
+    {
+      "id": "g-user",
+      "label": "User Space (POSIX Applications & Daemons)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 350
+    },
+    {
+      "id": "g-kernel",
+      "label": "Linux Kernel Space (Subsystems & Isolation)",
+      "type": "project",
+      "scope": "project",
+      "x": 320,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-hyper",
+      "label": "Google Cloud Hypervisor (KVM & Andromeda)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 630,
+      "y": 30,
+      "width": 270,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "gcloud & jq CLI",
+      "product": "Admin Shell",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 110,
+      "detail": "Interacts with REST APIs via IPC and pipes JSON data to jq for declarative automation."
+    },
+    {
+      "id": "systemd",
+      "label": "systemd (PID 1)",
+      "product": "Init & Service Supervisor",
+      "group": "g-user",
+      "plane": "control",
+      "x": 160,
+      "y": 260,
+      "detail": "Supervises daemon lifecycles, bounds cgroup limits, and captures stdout/stderr into journald."
+    },
+    {
+      "id": "cgroups",
+      "label": "cgroups & Namespaces",
+      "product": "Kernel Isolation Subsystem",
+      "group": "g-kernel",
+      "plane": "control",
+      "x": 460,
+      "y": 110,
+      "detail": "Enforces CPU/RAM resource ceilings and provides PID, network, and mount isolation."
+    },
+    {
+      "id": "netfilter",
+      "label": "netfilter & Conntrack",
+      "product": "Kernel Network Engine",
+      "group": "g-kernel",
+      "plane": "data",
+      "x": 460,
+      "y": 260,
+      "detail": "Performs stateful packet filtering, NAT, and routing table lookups for all socket traffic."
+    },
+    {
+      "id": "virtio",
+      "label": "VirtIO NIC & Ring Buffer",
+      "product": "Paravirtualized Hardware",
+      "group": "g-hyper",
+      "plane": "data",
+      "x": 765,
+      "y": 185,
+      "detail": "Zero-copy shared memory queue transmitting ethernet frames directly to Google Andromeda SDN."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-cmd",
+      "from": "cli",
+      "to": "systemd",
+      "label": "1. systemctl / D-Bus IPC",
+      "plane": "control"
+    },
+    {
+      "id": "e-cgroup",
+      "from": "systemd",
+      "to": "cgroups",
+      "label": "2. Apply Quotas & Cgroups",
+      "plane": "control"
+    },
+    {
+      "id": "e-sock",
+      "from": "systemd",
+      "to": "netfilter",
+      "label": "3. Open Socket / Net I/O",
+      "plane": "data"
+    },
+    {
+      "id": "e-virt",
+      "from": "netfilter",
+      "to": "virtio",
+      "label": "4. DMA Memory Ring Push",
+      "plane": "data"
+    },
+    {
+      "id": "e-irq",
+      "from": "virtio",
+      "to": "cgroups",
+      "label": "5. VirtIO IRQ Interrupt",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Admin Shell Execution & IPC Dispatch",
+      "edges": [
+        "e-cmd"
+      ],
+      "action": "Operator executes administrative or deployment commands; shell sends D-Bus IPC messages to systemd (PID 1).",
+      "why_traversal": "All managed services must be orchestrated by PID 1 rather than backgrounded ad-hoc, ensuring clean daemonization, environment preservation, and predictable signal handling.",
+      "protocol": "UNIX Domain Socket / D-Bus IPC",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin CLI tool signals systemd (PID 1) via local D-Bus IPC to supervise and bootstrap the application daemon.",
+      "check": {
+        "commands": "systemctl status custom-app.service",
+        "logs": "systemd[1]: Starting custom-app.service..."
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kernel Resource Bounding & Process Isolation",
+      "edges": [
+        "e-cgroup"
+      ],
+      "action": "systemd provisions process isolation namespaces (PID, mount, net) and binds CPU/memory quotas in /sys/fs/cgroup.",
+      "why_traversal": "cgroups prevent rogue workloads from starving neighboring processes of RAM and CPU cycles, establishing intra-node defense-in-depth.",
+      "protocol": "Kernel VFS Sysfs Interface (/sys/fs/cgroup)",
+      "plane": "Control Plane",
+      "narration": "Step 2: systemd writes resource ceilings into Linux kernel cgroups and sets up execution namespaces.",
+      "check": {
+        "commands": "systemd-cgls && cat /sys/fs/cgroup/memory/system.slice/custom-app.service/memory.limit_in_bytes",
+        "metrics": "guest/cpu/usage_time"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Socket Allocation & Netfilter Traversal",
+      "edges": [
+        "e-sock"
+      ],
+      "action": "Workload process creates TCP socket via syscall; outbound network packets enter kernel netfilter framework.",
+      "why_traversal": "Every TCP/UDP packet must traverse Linux conntrack and iptables/nftables to verify egress policy and local routing tables before reaching physical interfaces.",
+      "protocol": "POSIX socket() / TCP SYN",
+      "plane": "Data Plane",
+      "narration": "Step 3: Application opens network socket; kernel netfilter evaluates connection tracking and route table.",
+      "check": {
+        "commands": "ss -tulpn | grep ':8080' && conntrack -L",
+        "metrics": "guest/network/sent_packets_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "VirtIO Paravirtualized Memory Ring Buffer Transit",
+      "edges": [
+        "e-virt"
+      ],
+      "action": "Kernel packet driver places sk_buff ethernet frames directly into VirtIO DMA shared memory ring buffer.",
+      "why_traversal": "Paravirtualized VirtIO drivers bypass slow hardware emulation, enabling direct zero-copy packet dispatch between guest OS and Google Cloud hypervisor.",
+      "protocol": "PCIe / Shared Memory DMA",
+      "plane": "Data Plane",
+      "narration": "Step 4: Linux kernel copies ethernet frames into VirtIO ring buffer for high-throughput guest-to-host transit.",
+      "check": {
+        "commands": "ethtool -S eth0 | grep tx_packets",
+        "metrics": "compute.googleapis.com/instance/network/sent_bytes_count"
+      }
+    },
+    {
+      "n": 5,
+      "title": "Hypervisor Interrupt & Andromeda SDN Handoff",
+      "edges": [
+        "e-irq"
+      ],
+      "action": "VirtIO virtual NIC signals KVM hypervisor via virtual IRQ; packet is ingested into Google Andromeda SDN fabric.",
+      "why_traversal": "Hypervisor handles physical encapsulation (Geneve/GRE) and offloads packet switching to Google's Jupiter datacenter network fabric.",
+      "protocol": "VirtIO vhost-net / KVM Exit",
+      "plane": "Control Plane",
+      "narration": "Step 5: Google Cloud KVM hypervisor acknowledges transmission and routes packet across Andromeda SDN.",
+      "check": {
+        "commands": "lspci -v | grep -i 'virtio'",
+        "metrics": "andromeda/packet_latency_us"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "oom-killer-breach",
+      "label": "cgroup Memory Ceiling Breach (OOM Kill 137)",
+      "changes": {
+        "failedNodes": [
+          "cgroups"
+        ]
+      },
+      "narration": "Workload process exceeds allocated cgroup memory limit. Linux kernel invokes oom_killer, terminating the primary daemon with SIGKILL (Exit code 137).",
+      "root_cause": "Application memory leak or inadequate cgroup MemoryMax configuration in systemd unit file.",
+      "path_divergence": "Kernel abruptly drops application process tree; all socket descriptors are closed immediately, dropping client connections.",
+      "blast_radius": "Single supervised daemon on the VM. Other system units and SSH administrative sessions remain unaffected.",
+      "durable_prevention": "Configure systemd MemoryMax with 25% safety headroom and implement memory profiling in CI/CD pipeline.",
+      "check": {
+        "command": "dmesg -T | grep -i 'killed process'",
+        "metric": "guest/memory/usage_ratio > 0.98"
+      }
+    },
+    {
+      "id": "virtio-ring-starvation",
+      "label": "VirtIO TX Ring Buffer Saturation",
+      "changes": {
+        "failedNodes": [
+          "virtio"
+        ]
+      },
+      "narration": "Burst of microsecond network traffic exceeds VirtIO TX descriptor queue size. Outbound packets are dropped before reaching Google Andromeda SDN.",
+      "root_cause": "High-throughput workload generates bursts faster than guest OS vCPUs can process VirtIO completion interrupts.",
+      "path_divergence": "Packets are dropped at the guest/hypervisor interface, triggering TCP retransmissions and exponential latency spikes.",
+      "blast_radius": "All outbound network connections from the Compute Engine VM instance.",
+      "durable_prevention": "Enable Google Virtual NIC (gVNIC) on Compute Engine instance and tune TX ring size via ethtool -G eth0 tx 4096.",
+      "check": {
+        "command": "ethtool -S eth0 | grep -i 'drop'",
+        "metric": "guest/network/sent_packets_dropped"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cli"
+        ],
+        "failedEdges": [
+          "e-cmd"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

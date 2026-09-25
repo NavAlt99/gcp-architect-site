@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning: Vertex AI Architecture &amp; MLOps Pipelines — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-054.html">← Topic page</a><span>D.4 · TOPIC-054-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-054-d4",
+  "title": "Machine Learning: Vertex AI Architecture & MLOps Pipelines \u2014 D4",
+  "topic_no": "054",
+  "roadmap_id": "D.4",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Production MLOps requires treating machine learning like software engineering: feature stores eliminate training-serving skew, automated pipelines retrain models on concept drift, and model registries enforce governance before deployment.",
+  "groups": [
+    {
+      "id": "g-feature-lake",
+      "label": "Data & Feature Engineering Tier",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-mlops-pipeline",
+      "label": "Vertex AI Continuous Training (Pipelines)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-serving-endpoints",
+      "label": "Vertex AI Model Serving & Monitoring",
+      "type": "project",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "feature-store",
+      "label": "Vertex AI Feature Store",
+      "product": "Sub-10ms Online Feature Serving",
+      "group": "g-feature-lake",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Serves real-time customer behavioral features (e.g. 7-day spend, last login time)."
+    },
+    {
+      "id": "bq-training-data",
+      "label": "BigQuery Training Set",
+      "product": "Point-in-Time Accurate Features",
+      "group": "g-feature-lake",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Generates training datasets with point-in-time joins to eliminate data leakage."
+    },
+    {
+      "id": "kfp-pipeline",
+      "label": "Vertex AI Pipelines (Kubeflow)",
+      "product": "Automated Model Training DAG",
+      "group": "g-mlops-pipeline",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Orchestrates data prep, model training on A100 GPUs, and evaluation metrics."
+    },
+    {
+      "id": "model-registry",
+      "label": "Vertex AI Model Registry",
+      "product": "Versioned Model Governance",
+      "group": "g-mlops-pipeline",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Tracks model versions (v1.0, v1.1), metrics, and approval status before rollout."
+    },
+    {
+      "id": "prediction-endpoint",
+      "label": "Vertex Prediction Endpoint",
+      "product": "Autoscaling GPU/TPU Service",
+      "group": "g-serving-endpoints",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Serves real-time online inference with sub-15ms p99 response times."
+    },
+    {
+      "id": "drift-monitor",
+      "label": "Vertex Model Monitoring",
+      "product": "Feature Skew & Drift Detection",
+      "group": "g-serving-endpoints",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Calculates distance between serving features and training baseline; triggers retrain."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "bq-training-data",
+      "to": "kfp-pipeline",
+      "label": "1. Ingest Point-in-Time Features",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "kfp-pipeline",
+      "to": "model-registry",
+      "label": "2. Register Validated Model",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "model-registry",
+      "to": "prediction-endpoint",
+      "label": "3. Deploy to GPU Endpoint",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "feature-store",
+      "to": "prediction-endpoint",
+      "label": "4. Enrich Inference with Online Features",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "prediction-endpoint",
+      "to": "drift-monitor",
+      "label": "5. Monitor Prediction Requests for Drift",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Continuous Training & Registration",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Pipeline trains model on GPU cluster, validates accuracy, and deploys to endpoint.",
+      "why_traversal": "Automates machine learning deployment with strict governance controls.",
+      "protocol": "Kubeflow Pipeline / REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Real-Time Inference & Drift Supervision",
+      "edges": [
+        "e4",
+        "e5"
+      ],
+      "action": "Endpoint fetches live features from Feature Store in 4ms; Model Monitoring watches for drift.",
+      "why_traversal": "Eliminates training-serving skew and guarantees long-term model accuracy.",
+      "protocol": "gRPC Online Prediction",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "concept-drift-accuracy-collapse",
+      "label": "Undetected Concept Drift Degrades Fraud Detection",
+      "changes": {
+        "failedNodes": [
+          "prediction-endpoint"
+        ],
+        "failedEdges": [
+          "e5"
+        ]
+      },
+      "root_cause": "Attacker changed fraud patterns; model accuracy dropped from 94% to 52% over 3 weeks.",
+      "diverted_path": "Model continued approving fraudulent transactions due to disabled Model Monitoring.",
+      "blast_radius": "$450,000 in fraudulent transaction losses.",
+      "recovery": "Enable Vertex AI Model Monitoring with automated email alerting and automated retraining triggers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "feature-store"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "feature-store"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

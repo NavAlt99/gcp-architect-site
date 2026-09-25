@@ -1,0 +1,236 @@
+{
+  "id": "topic-027-d5",
+  "title": "Diagramming & Documentation: C4 Model & Visual Standards \u2014 D5",
+  "topic_no": "027",
+  "roadmap_id": "3.5",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "The C4 model provides hierarchical zoom levels, ensuring business executives, systems architects, and software engineers understand the system at their required depth without visual clutter.",
+  "groups": [
+    {
+      "id": "g-c1-context",
+      "label": "C4 Level 1: System Context",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-c2-container",
+      "label": "C4 Level 2: Cloud Container Architecture",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-c3-component",
+      "label": "C4 Level 3: Microservice Components",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "c1-actor",
+      "label": "Online Retail Customer",
+      "product": "Web & Mobile Endpoints",
+      "group": "g-c1-context",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Interacts with checkout and search systems over HTTPS."
+    },
+    {
+      "id": "c1-banking-saas",
+      "label": "Stripe Payment Gateway",
+      "product": "External Banking SaaS",
+      "group": "g-c1-context",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Authorizes credit card transactions via external REST API."
+    },
+    {
+      "id": "c2-gke-cluster",
+      "label": "GKE Order Service Container",
+      "product": "Order Microservice Pods",
+      "group": "g-c2-container",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Encapsulates order management and payment orchestration business logic."
+    },
+    {
+      "id": "c2-spanner",
+      "label": "Cloud Spanner Database",
+      "product": "Orders Relational Storage",
+      "group": "g-c2-container",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Persists transactional order items and customer billing records."
+    },
+    {
+      "id": "c3-auth-filter",
+      "label": "JWT Authentication Filter",
+      "product": "Go Middleware Component",
+      "group": "g-c3-component",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Validates OAuth2 bearer tokens against Google Cloud Identity / Firebase."
+    },
+    {
+      "id": "c3-order-repo",
+      "label": "Spanner Repository Layer",
+      "product": "Go Data Access Object",
+      "group": "g-c3-component",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Encapsulates SQL queries and connection pooling to Cloud Spanner."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "c1-actor",
+      "to": "c2-gke-cluster",
+      "label": "1. Place Order (HTTPS)",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "c2-gke-cluster",
+      "to": "c1-banking-saas",
+      "label": "2. Charge Payment Card",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "c2-gke-cluster",
+      "to": "c3-auth-filter",
+      "label": "3. Validate Token Inside Pod",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "c3-auth-filter",
+      "to": "c3-order-repo",
+      "label": "4. Invoke Repository",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "c3-order-repo",
+      "to": "c2-spanner",
+      "label": "5. Commit SQL Transaction",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Context to Container Traversal",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Customer triggers order; GKE container invokes external SaaS payment gateway.",
+      "why_traversal": "Shows high-level external boundaries (C1 Context).",
+      "protocol": "HTTPS REST",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Container to Component Traversal",
+      "edges": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "action": "Inside the GKE pod, request traverses Auth Filter to Order Repository and writes to Spanner.",
+      "why_traversal": "Reveals internal structural design without losing the bigger picture (C2 to C3).",
+      "protocol": "In-Memory Go Function Calls",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "c4-drift-failure",
+      "label": "Architecture Diagram Out of Sync",
+      "changes": {
+        "failedNodes": [
+          "c3-order-repo"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Engineers added direct Redis cache bypass without updating C3 component diagram.",
+      "diverted_path": "New developers debug stale flow assumption, wasting 2 days.",
+      "blast_radius": "Engineering onboarding confusion.",
+      "recovery": "Adopt Diagram-as-Code (Mermaid / Structurizr) embedded in Git repo with automated CI verification."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "c1-actor"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "c1-actor"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}

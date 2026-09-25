@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Warehousing: BigQuery &amp; Looker — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-051.html">← Topic page</a><span>D.1 · TOPIC-051-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-051-d2",
+  "title": "Data Warehousing: BigQuery & Looker \u2014 Request & Control Flow",
+  "topic_no": "051",
+  "roadmap_id": "D.1",
+  "kind": "flow",
+  "purpose": "Traces Query Optimization Traversal: full table scan vs partitioned & clustered table scan comparing bytes processed, slot usage, and query execution time.",
+  "routing_rationale": "Partitioning and clustering dramatically reduce the number of bytes read, cutting query costs by over 95% while speeding up execution tenfold.",
+  "groups": [
+    {
+      "id": "g-raw-query",
+      "label": "SQL Query Formulation",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-slot-execution",
+      "label": "BigQuery Optimizer & Partition Pruner",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-result-delivery",
+      "label": "Query Results & Financial Impact",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-sql",
+      "label": "WHERE order_date = '2026-09-24'",
+      "product": "Targeted Date Filter",
+      "group": "g-raw-query",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Queries orders for a single business day out of a 5-year historical dataset."
+    },
+    {
+      "id": "partition-pruner",
+      "label": "Partition Pruning Engine",
+      "product": "Prunes 1,824 out of 1,825 Days",
+      "group": "g-slot-execution",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Skips 99.9% of storage files; only scans the single matching daily partition block."
+    },
+    {
+      "id": "cluster-sorter",
+      "label": "Cluster Key Sorter",
+      "product": "Filter: customer_id = 'C9921'",
+      "group": "g-slot-execution",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Within the partition, cluster metadata identifies the exact 128MB block containing customer."
+    },
+    {
+      "id": "cost-optimized-result",
+      "label": "Bytes Scanned: 42MB (vs 12TB)",
+      "product": "Cost: $0.0002 / Duration: 1.1s",
+      "group": "g-result-delivery",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Returns query result in 1.1 seconds with virtually zero compute cost."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-sql",
+      "to": "partition-pruner",
+      "label": "1. Evaluate Partition Filter",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "partition-pruner",
+      "to": "cluster-sorter",
+      "label": "2. Isolate Clustered Data Blocks",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cluster-sorter",
+      "to": "cost-optimized-result",
+      "label": "3. Stream Compact Results",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Partition & Cluster Pruning",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BigQuery query planner reads table metadata and discards 99.9% of storage blocks.",
+      "why_traversal": "Eliminates scanning unreferenced historical data.",
+      "protocol": "Metadata Optimization Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Instant Economical Execution",
+      "edges": [
+        "e3"
+      ],
+      "action": "Reads 42MB instead of 12TB, returning answers in 1.1 seconds.",
+      "why_traversal": "Delivers massive cost savings and high concurrency without slot contention.",
+      "protocol": "Capacitor Vector Read",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unclustered-performance-degradation",
+      "label": "High-Cardinality Unclustered Scan",
+      "changes": {
+        "failedNodes": [
+          "cluster-sorter"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Table was clustered on high-cardinality unique UUID instead of date/country.",
+      "diverted_path": "Cluster blocks could not be pruned effectively; bytes scanned increased by 50x.",
+      "blast_radius": "Slow query performance and higher costs.",
+      "recovery": "Cluster tables on low-to-medium cardinality columns frequently used in WHERE or GROUP BY clauses."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Query Optimization Traversal: full table scan vs partitioned & clustered table scan comparing bytes processed, slot usage, and query execution time."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

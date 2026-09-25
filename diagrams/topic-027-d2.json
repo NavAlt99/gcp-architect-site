@@ -1,0 +1,218 @@
+{
+  "id": "topic-027-d2",
+  "title": "Diagramming & Docs: C4 Model \u2014 Request & Control Flow",
+  "topic_no": "027",
+  "roadmap_id": "3.5",
+  "kind": "flow",
+  "purpose": "Traces the Diagram-as-Code CI/CD Pipeline: from markdown/Mermaid commit in Git through automated rendering to the Developer Portal.",
+  "routing_rationale": "Treating diagrams as code versioned alongside Terraform configurations prevents architectural documentation from drifting out of sync with production.",
+  "groups": [
+    {
+      "id": "g-dev-git",
+      "label": "Git Version Control Repository",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-builder-ci",
+      "label": "Cloud Build Documentation CI",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-portal-hosting",
+      "label": "Internal Developer Portal (Backstage)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "git-commit",
+      "label": "architecture.c4 Git Commit",
+      "product": "Structurizr DSL / Mermaid",
+      "group": "g-dev-git",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Developer pushes updated C4 container topology alongside feature branch."
+    },
+    {
+      "id": "ci-linter",
+      "label": "C4 Model Syntax Linter",
+      "product": "Automated Diagram Linter",
+      "group": "g-builder-ci",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Validates boundary tags, relationships, and ensures no orphan nodes exist."
+    },
+    {
+      "id": "ci-renderer",
+      "label": "Mermaid SVG Generator",
+      "product": "Headless CLI Renderer",
+      "group": "g-builder-ci",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Compiles text DSL into responsive vector SVG diagrams and embeds into HTML docs."
+    },
+    {
+      "id": "portal-bucket",
+      "label": "Docs GCS Bucket",
+      "product": "Cloud Storage Static Site",
+      "group": "g-portal-hosting",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Stores static documentation artifacts behind Cloud CDN."
+    },
+    {
+      "id": "backstage-ui",
+      "label": "Backstage Catalog Portal",
+      "product": "Enterprise Service Catalog",
+      "group": "g-portal-hosting",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Displays interactive C4 diagrams with zoomable components for 500+ engineers."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "git-commit",
+      "to": "ci-linter",
+      "label": "1. Trigger Webhook on PR",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ci-linter",
+      "to": "ci-renderer",
+      "label": "2. Pass Lint -> Generate SVGs",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "ci-renderer",
+      "to": "portal-bucket",
+      "label": "3. Upload Vector Assets to GCS",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "portal-bucket",
+      "to": "backstage-ui",
+      "label": "4. Render in Developer Portal",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Validation & Compilation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Build runs linter on C4 DSL and renders vector SVGs.",
+      "why_traversal": "Treats documentation with the same testing rigor as application code.",
+      "protocol": "Cloud Build Pipeline",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Publication & Discovery",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Artifacts published to GCS bucket; Backstage Developer Portal displays latest architecture.",
+      "why_traversal": "Provides single source of architectural truth accessible to the entire organization.",
+      "protocol": "Static Asset Ingestion",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "syntax-lint-failure",
+      "label": "Invalid Diagram Syntax Blocks PR Merge",
+      "changes": {
+        "failedNodes": [
+          "ci-linter"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Pull request contained broken Mermaid syntax with unclosed relationship arrow.",
+      "diverted_path": "CI check fails; PR blocked from merging into main branch.",
+      "blast_radius": "Prevents broken documentation from contaminating production portal.",
+      "recovery": "Fix syntax error locally, test with mermaid-cli, and push revised commit."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "git-commit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "git-commit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Diagram-as-Code CI/CD Pipeline: from markdown/Mermaid commit in Git through automated rendering to the Developer Portal."
+}

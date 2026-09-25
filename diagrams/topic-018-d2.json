@@ -1,0 +1,233 @@
+{
+  "id": "topic-018-d2",
+  "title": "Hybrid and Multi-Cloud Connectivity: VPN & Interconnect \u2014 Request & Control Flow",
+  "topic_no": "018",
+  "roadmap_id": "2.6",
+  "kind": "flow",
+  "purpose": "Traces on-premises to Google Cloud private packet flow: from corporate datacenter router across Dedicated Interconnect to private VPC workloads.",
+  "routing_rationale": "Cloud Router exchanges BGP routes dynamically, ensuring on-premises clients reach Google Cloud subnets across the lowest-latency interconnect path.",
+  "groups": [
+    {
+      "id": "g-onprem-src",
+      "label": "On-Premises ERP Server",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-interconnect-pipe",
+      "label": "Dedicated Interconnect Fiber & VLAN",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-target-vpc",
+      "label": "GCP Target Subnet (us-east4)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "erp-client",
+      "label": "SAP ERP Host (192.168.1.50)",
+      "product": "On-Prem Linux Server",
+      "group": "g-onprem-src",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Submits batch financial ledger sync to cloud database."
+    },
+    {
+      "id": "dc-switch",
+      "label": "Datacenter Core Switch",
+      "product": "802.1Q VLAN Tagging",
+      "group": "g-onprem-src",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Tags frames with VLAN ID 450; forwards to Google Interconnect cross-connect."
+    },
+    {
+      "id": "interconnect-pipe",
+      "label": "Interconnect LAG (2x10G)",
+      "product": "Direct Fiber Cross-Connect",
+      "group": "g-interconnect-pipe",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Private physical circuit terminating in Google Ashburn colocation facility."
+    },
+    {
+      "id": "vlan-attachment",
+      "label": "Cloud Interconnect Attachment",
+      "product": "Partner / Dedicated VLAN",
+      "group": "g-interconnect-pipe",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Binds physical VLAN into private VPC network routing table."
+    },
+    {
+      "id": "cloud-db-target",
+      "label": "Cloud SQL Replica (10.0.4.12)",
+      "product": "PostgreSQL Target",
+      "group": "g-target-vpc",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Receives streaming replication packets at sub-3ms latency without public internet hops."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "erp-client",
+      "to": "dc-switch",
+      "label": "1. Dispatch Private Payload",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dc-switch",
+      "to": "interconnect-pipe",
+      "label": "2. VLAN Encapsulation (802.1Q)",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "interconnect-pipe",
+      "to": "vlan-attachment",
+      "label": "3. Terminate on Cloud Attachment",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "vlan-attachment",
+      "to": "cloud-db-target",
+      "label": "4. Direct Private Subnet Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Datacenter Frame Tagging",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Core switch attaches VLAN tag 450 and transmits packet over 10G optical transceiver.",
+      "why_traversal": "VLAN attachments segment different enterprise tenants across physical circuits.",
+      "protocol": "Ethernet 802.1Q",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Optical Transit",
+      "edges": [
+        "e3"
+      ],
+      "action": "Packet traverses Google fiber cross-connect; attachment verifies BGP route entry.",
+      "why_traversal": "Guaranteed bandwidth with zero packet loss or encryption CPU overhead.",
+      "protocol": "Optical Fiber Line Rate",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Database Ingestion",
+      "edges": [
+        "e4"
+      ],
+      "action": "Andromeda delivers packet to Cloud SQL internal IP 10.0.4.12.",
+      "why_traversal": "High-throughput database synchronization completes within SLA.",
+      "protocol": "TCP Port 5432",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "bgp-asn-mismatch",
+      "label": "BGP Peer ASN Configuration Error",
+      "changes": {
+        "failedNodes": [
+          "vlan-attachment"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Network engineer misconfigured remote ASN as 65002 instead of 65001 on Cloud Router.",
+      "diverted_path": "BGP session remains in Connect/Active state; routes not installed into VPC table.",
+      "blast_radius": "All traffic across VLAN attachment blocked.",
+      "recovery": "Correct peer ASN configuration on Cloud Router to match on-premises router."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "erp-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "erp-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces on-premises to Google Cloud private packet flow: from corporate datacenter router across Dedicated Interconnect to private VPC workloads."
+}

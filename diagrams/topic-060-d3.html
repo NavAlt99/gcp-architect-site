@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Key Numbers, Limits &amp; SLAs to Memorise — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-060.html">← Topic page</a><span>cheat-7 · TOPIC-060-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-060-d3",
+  "title": "Key Numbers, Limits & SLAs to Memorise \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "060",
+  "roadmap_id": "cheat-7",
+  "kind": "failure",
+  "purpose": "Simulates Network Bandwidth Quota Exhaustion: single Compute Engine VM attempts to egress 15Gbps on 4 vCPUs; packets throttled at 8Gbps (2Gbps/core ceiling).",
+  "routing_rationale": "Understanding compute bandwidth caps (2Gbps per vCPU) prevents network starvation on data-intensive workloads; scaling vCPUs or enabling Tier 1 unlocks higher throughput.",
+  "groups": [
+    {
+      "id": "g-egress-source",
+      "label": "Under-Sized Compute Engine VM",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-network-throttle",
+      "label": "Google Andromeda SDN Bandwidth Enforcer",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "stream-attempt",
+      "label": "15Gbps Video Stream Influx",
+      "product": "4 vCPUs (e2-standard-4)",
+      "group": "g-egress-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Application attempts to stream 15Gbps of data to external clients."
+    },
+    {
+      "id": "andromeda-policer",
+      "label": "Andromeda Rate Policer",
+      "product": "Hard Limit: 8 Gbps (4 vCPU * 2Gbps)",
+      "group": "g-egress-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Andromeda virtual switch drops packets exceeding the 8Gbps hardware ceiling."
+    },
+    {
+      "id": "packet-drop-penalty",
+      "label": "46% Packet Drop Rate",
+      "product": "TCP Retransmission Storm",
+      "group": "g-network-throttle",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Video streams stutter; clients experience severe buffering and disconnects."
+    },
+    {
+      "id": "upsized-tier1-vm",
+      "label": "Resize to 16 vCPU (Tier 1)",
+      "product": "Unlocks 32 Gbps - 100 Gbps",
+      "group": "g-network-throttle",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Upsizing VM or enabling Tier 1 networking restores smooth packet delivery with zero drops."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "stream-attempt",
+      "to": "andromeda-policer",
+      "label": "1. Exceed 2Gbps/core Bandwidth Ceiling",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "andromeda-policer",
+      "to": "packet-drop-penalty",
+      "label": "2. Drop Packets Exceeding 8Gbps",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "packet-drop-penalty",
+      "to": "upsized-tier1-vm",
+      "label": "3. Upgrade VM Size to Remove Bottleneck",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Bandwidth Policing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Andromeda SDN enforces hard 2Gbps/vCPU limit, dropping 46% of packets.",
+      "why_traversal": "Demonstrates the physical compute engine network egress limit.",
+      "protocol": "SDN Rate Limiter",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Capacity Expansion Resolution",
+      "edges": [
+        "e3"
+      ],
+      "action": "Resizing to 16 vCPUs elevates bandwidth limit to 32Gbps, eliminating packet drops.",
+      "why_traversal": "Sizes network throughput mathematically based on core count.",
+      "protocol": "Compute Engine Machine Sizing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unmonitored-egress-drop",
+      "label": "Network Drop Overlooked as CPU Health Looked Normal",
+      "changes": {
+        "failedNodes": [
+          "packet-drop-penalty"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "VM CPU utilization was only 35%; engineers did not realize network bandwidth quota was being throttled.",
+      "diverted_path": "Engineers spent 3 days debugging application code instead of network quota.",
+      "blast_radius": "Delayed resolution of customer buffering.",
+      "recovery": "Monitor 'instance/network/dropped_packets' metric in Cloud Monitoring to alert on bandwidth policing."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "stream-attempt"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "stream-attempt"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Network Bandwidth Quota Exhaustion: single Compute Engine VM attempts to egress 15Gbps on 4 vCPUs; packets throttled at 8Gbps (2Gbps/core ceiling)."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

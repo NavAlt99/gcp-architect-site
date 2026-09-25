@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: EHR Healthcare — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-046.html">← Topic page</a><span>7.4a · TOPIC-046-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-046-d3",
+  "title": "Case Study: EHR Healthcare \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "046",
+  "roadmap_id": "7.4a",
+  "kind": "failure",
+  "purpose": "Simulates Healthcare Ransomware Outage & Immutable Backup Recovery: hospital on-premises EMR is encrypted by ransomware; Google Cloud Spanner and GCS immutable backups restore operations.",
+  "routing_rationale": "Immutable Object Retention policies (Bucket Lock) prevent ransomware from overwriting or deleting historical cloud backups even if administrative credentials are stolen.",
+  "groups": [
+    {
+      "id": "g-hospital-ransom",
+      "label": "Compromised On-Premises Hospital",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-immutable-cloud",
+      "label": "Google Cloud Immutable Recovery Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ransom-locked-emr",
+      "label": "Ransomware-Encrypted EMR",
+      "product": "Status: DOWN (Cipher Locked)",
+      "group": "g-hospital-ransom",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "On-premise SAN storage encrypted by malware; hospital clinical staff locked out."
+    },
+    {
+      "id": "cut-interconnect",
+      "label": "Sever Interconnect Connection",
+      "product": "Emergency Air-Gap Isolation",
+      "group": "g-hospital-ransom",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Network team disables BGP session to prevent ransomware from propagating to cloud."
+    },
+    {
+      "id": "locked-gcs-backup",
+      "label": "Locked GCS Backup Vault",
+      "product": "Bucket Lock (WORM Compliant)",
+      "group": "g-immutable-cloud",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Holds hourly EHR snapshots; immutable retention policy guarantees files cannot be deleted."
+    },
+    {
+      "id": "cloud-ehr-portal",
+      "label": "Cloud Run Emergency Portal",
+      "product": "Disaster Standby EHR Portal",
+      "group": "g-immutable-cloud",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Clinicians log into secure Google Cloud portal over BeyondCorp, resuming patient care in 12 minutes."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "ransom-locked-emr",
+      "to": "cut-interconnect",
+      "label": "1. Isolate Hospital Network",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cut-interconnect",
+      "to": "locked-gcs-backup",
+      "label": "2. Verify Cloud Backup Integrity",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "locked-gcs-backup",
+      "to": "cloud-ehr-portal",
+      "label": "3. Hydrate Emergency EHR Portal",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Air-Gap Network Isolation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Interconnect severed to protect cloud environment; Cloud Storage Bucket Lock verified intact.",
+      "why_traversal": "WORM (Write Once, Read Many) compliance prevents ransomware from tampering with cloud backups.",
+      "protocol": "BGP Shutdown",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Emergency Cloud Activation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Emergency clinical portal activated; doctors access patient medical records securely.",
+      "why_traversal": "Restores life-saving clinical operations without paying ransom.",
+      "protocol": "BeyondCorp Zero Trust Ingress",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "stolen-admin-delete-fail",
+      "label": "Attacker Tries to Delete Immutable Backups",
+      "changes": {
+        "failedNodes": [
+          "locked-gcs-backup"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Attacker obtained GCP Project Owner credentials and ran 'gsutil rm -r gs://ehr-backups'.",
+      "diverted_path": "Cloud Storage Bucket Lock strictly rejects deletion: retention policy active.",
+      "blast_radius": "Zero backup data lost.",
+      "recovery": "Revoke compromised admin credentials and notify enterprise incident response team."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "ransom-locked-emr"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "ransom-locked-emr"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Healthcare Ransomware Outage & Immutable Backup Recovery: hospital on-premises EMR is encrypted by ransomware; Google Cloud Spanner and GCS immutable backups restore operations."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

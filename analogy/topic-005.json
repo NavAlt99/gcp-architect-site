@@ -1,0 +1,43 @@
+{
+  "topic_no": "005",
+  "roadmap_id": "0.5",
+  "title": "Cloud City: Software Architecture & Delivery Basics",
+  "city_concept": "City Construction Blueprints & Inspection Crews",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery was deploying new store signs and recipes without blueprints. Half the stores served raw bread while others used expired yeast.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Kit the Builder introduced standardized city blueprints (Git & 12-Factor principles). Every recipe is versioned and inspected before rollout.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a city festival, an experimental pastry recipe caused kitchen fires. Inspector Ines triggered an automated fire rollback protocol.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In software, rollbacks take seconds; in physical construction, tearing down a crooked skyscraper takes months.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

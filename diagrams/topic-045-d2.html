@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Analysis Method &amp; Discovery — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-045.html">← Topic page</a><span>7.1 · TOPIC-045-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-045-d2",
+  "title": "Case Analysis Method & Discovery \u2014 Request & Control Flow",
+  "topic_no": "045",
+  "roadmap_id": "7.1",
+  "kind": "flow",
+  "purpose": "Traces Case Study Technical Translation: converting business requirements into explicit GCP component choices via decision rubric.",
+  "routing_rationale": "Systematic decision rubrics eliminate guesswork when matching high-level business goals to specific Google Cloud services.",
+  "groups": [
+    {
+      "id": "g-bus-req",
+      "label": "Business Goal Statement",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-rubric-logic",
+      "label": "Architectural Translation Rubric",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gcp-service",
+      "label": "Selected Google Cloud Service",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "req-statement",
+      "label": "'Zero downtime global SQL database'",
+      "product": "Customer Requirement",
+      "group": "g-bus-req",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Must maintain strong ACID consistency across North America and Europe."
+    },
+    {
+      "id": "rule-acid",
+      "label": "Constraint: ACID + Global SQL",
+      "product": "Relational + Horizontal Scaling",
+      "group": "g-rubric-logic",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Filters out NoSQL (Firestore/Bigtable) and single-region relational (Cloud SQL)."
+    },
+    {
+      "id": "rule-sla",
+      "label": "Constraint: 99.999% SLA",
+      "product": "Max 5 min downtime/year",
+      "group": "g-rubric-logic",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Requires synchronous multi-region Paxos consensus."
+    },
+    {
+      "id": "selected-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "Optimal GCP Service Match",
+      "group": "g-gcp-service",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Globally distributed relational database delivering 99.999% SLA with external consistency."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "req-statement",
+      "to": "rule-acid",
+      "label": "1. Evaluate SQL / ACID Need",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "req-statement",
+      "to": "rule-sla",
+      "label": "2. Evaluate SLA & Global Reach",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "rule-acid",
+      "to": "selected-spanner",
+      "label": "3. Eliminate Incompatible Options",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "rule-sla",
+      "to": "selected-spanner",
+      "label": "4. Select Cloud Spanner",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Constraint Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Applies technical constraints: relational SQL + multi-region consistency.",
+      "why_traversal": "Eliminates Cloud SQL (single-region limit) and Bigtable (NoSQL).",
+      "protocol": "Decision Filter",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Product Confirmation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Cloud Spanner identified as the only GCP service meeting all criteria.",
+      "why_traversal": "Guarantees mathematically sound service selection.",
+      "protocol": "Service Selection Rubric",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "wrong-service-selection",
+      "label": "Selected Cloud SQL for Multi-Region Active-Active",
+      "changes": {
+        "failedNodes": [
+          "selected-spanner"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Architect selected Cloud SQL with cross-region read replica, failing write availability in secondary region.",
+      "diverted_path": "Secondary region cannot accept writes during regional failover.",
+      "blast_radius": "Architectural failure during disaster.",
+      "recovery": "Select Cloud Spanner Multi-Region when write availability is required across multiple regions."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "req-statement"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "req-statement"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Case Study Technical Translation: converting business requirements into explicit GCP component choices via decision rubric."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

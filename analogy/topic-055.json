@@ -1,0 +1,43 @@
+{
+  "topic_no": "055",
+  "roadmap_id": "cheat-1",
+  "title": "Cloud City: Cheat Sheet: Compute Engine vs GKE vs Cloud Run vs Functions",
+  "city_concept": "City Municipal Transport Fleet: Cabs, Buses, Trains & Freighters",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Commuters were hiring private 18-wheel freight trucks to drive two blocks to work, wasting fuel and clogging streets.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Transit Master Tilda organized the civic fleet: Bicycles for quick errands (Functions), Cabs for individuals (Cloud Run), Subways for crowds (GKE), and Heavy Rail for heavy freight (Compute Engine).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Commuters picked the exact vehicle suited to their cargo, reducing city traffic by 75%.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical vehicles must be parked somewhere; cloud serverless compute scales to zero when traffic stops.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

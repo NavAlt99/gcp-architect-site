@@ -1,0 +1,43 @@
+{
+  "topic_no": "027",
+  "roadmap_id": "3.5",
+  "title": "Cloud City: Diagramming & Documentation: C4 Model & Visual Standards",
+  "city_concept": "City Blueprints & Geological Survey Maps",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "A construction crew built an electrical substation on top of the main freshwater aqueduct because they were working from a tourist cartoon map.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "The Chief Surveyor instituted layered blueprints: Level 1 City Overview, Level 2 District Utilities, Level 3 Building Schematics.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a gas leak emergency, repair crews pulled the Level 2 utility schematic and located the shutoff valve in 90 seconds.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Paper blueprints fade and tear; modern diagrams-as-code are version-controlled, automated, and permanently accurate.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

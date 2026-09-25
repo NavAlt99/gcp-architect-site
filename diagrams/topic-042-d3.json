@@ -1,0 +1,190 @@
+{
+  "id": "topic-042-d3",
+  "title": "Infrastructure as Code: Terraform & GitOps \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "042",
+  "roadmap_id": "6.3",
+  "kind": "failure",
+  "purpose": "Simulates Terraform Drift Detection & Auto-Remediation: detects out-of-band manual console edits and automatically reverts production state.",
+  "routing_rationale": "Configuration drift occurs when engineers make manual emergency changes in the Google Cloud Console; automated drift detection restores git-defined desired state.",
+  "groups": [
+    {
+      "id": "g-manual-tamper",
+      "label": "Out-of-Band Console Modification",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-drift-corrector",
+      "label": "Automated Drift Detection & Healing",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "manual-edit",
+      "label": "Manual Console Modification",
+      "product": "Changed Machine Type: e2-micro -> n2-32",
+      "group": "g-manual-tamper",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Developer manually enlarged VM in Cloud Console, introducing $1,800/mo cost increase."
+    },
+    {
+      "id": "cai-asset-event",
+      "label": "Cloud Asset Inventory Event",
+      "product": "Resource Update Event",
+      "group": "g-manual-tamper",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Captures instant resource mutation event and emits CloudEvent."
+    },
+    {
+      "id": "drift-cron-job",
+      "label": "Scheduled Drift Runner",
+      "product": "Cloud Scheduler (Hourly)",
+      "group": "g-drift-corrector",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Executes 'terraform plan -detailed-exitcode' to detect discrepancy."
+    },
+    {
+      "id": "auto-revert-apply",
+      "label": "terraform apply -auto-approve",
+      "product": "Reverts to Git Desired State",
+      "group": "g-drift-corrector",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Reverts VM back to git-defined e2-micro, eliminating configuration drift."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "manual-edit",
+      "to": "cai-asset-event",
+      "label": "1. Mutate Live Cloud Resource",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cai-asset-event",
+      "to": "drift-cron-job",
+      "label": "2. Trigger Drift Evaluation",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "drift-cron-job",
+      "to": "auto-revert-apply",
+      "label": "3. Revert Live State to Git Spec",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Drift Discovery",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Automated runner detects live VM differs from Terraform code in repository.",
+      "why_traversal": "Identifies shadow IT and unauthorized production modifications.",
+      "protocol": "Terraform Plan Diff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Reconciliation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Build applies Git code, overriding manual change and restoring compliance.",
+      "why_traversal": "Enforces Git as the single source of truth across all cloud infrastructure.",
+      "protocol": "Terraform Revert Apply",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "revert-production-incident",
+      "label": "Auto-Revert Destroys Emergency Hotfix",
+      "changes": {
+        "failedNodes": [
+          "auto-revert-apply"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "The manual edit was a legitimate emergency fix during an active P1 outage.",
+      "diverted_path": "Automated runner reverted the fix, re-breaking the production service.",
+      "blast_radius": "Recurrence of customer outage.",
+      "recovery": "Engineers executing emergency fixes must add an emergency override freeze lock to the CI pipeline."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "manual-edit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "manual-edit"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Terraform Drift Detection & Auto-Remediation: detects out-of-band manual console edits and automatically reverts production state."
+}

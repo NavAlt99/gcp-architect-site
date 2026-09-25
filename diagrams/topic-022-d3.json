@@ -1,0 +1,205 @@
+{
+  "id": "topic-022-d3",
+  "title": "Requirements Analysis: Business & Technical Discovery \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "022",
+  "roadmap_id": "3.1",
+  "kind": "failure",
+  "purpose": "Simulates sudden 10x traffic spike breaching calculated headroom: demonstrates automated quota ceiling alerts and dynamic capacity expansion.",
+  "routing_rationale": "Architectural elasticity cushions unexpected demand spikes by automatically requesting quota increases and autoscaling secondary regional clusters.",
+  "groups": [
+    {
+      "id": "g-surge-traffic",
+      "label": "Unforeseen 10x Demand Influx",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-elastic-cushion",
+      "label": "Elastic Headroom Buffer & Quota Escalation",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "unplanned-surge",
+      "label": "10x Black Friday Spike",
+      "product": "200,000 QPS (Flash Surge)",
+      "group": "g-surge-traffic",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Traffic exceeds planned 20,000 QPS capacity ceiling by 1000%."
+    },
+    {
+      "id": "quota-ceiling-alert",
+      "label": "Quota Saturation Sentinel",
+      "product": "Cloud Monitoring MQL",
+      "group": "g-surge-traffic",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects regional vCPU quota utilization reaching 95% ceiling."
+    },
+    {
+      "id": "multi-region-drain",
+      "label": "Multi-Region Overflow Route",
+      "product": "Global Anycast ALB",
+      "group": "g-elastic-cushion",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Automatically overflows excess traffic to secondary Europe and Asia clusters."
+    },
+    {
+      "id": "auto-quota-api",
+      "label": "Service Quotas Auto-Request",
+      "product": "Service Quotas API",
+      "group": "g-elastic-cushion",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Programmatically requests emergency vCPU limit expansion."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "unplanned-surge",
+      "to": "quota-ceiling-alert",
+      "label": "1. Saturate Regional Compute",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "quota-ceiling-alert",
+      "to": "multi-region-drain",
+      "label": "2. Overflow Excess Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "quota-ceiling-alert",
+      "to": "auto-quota-api",
+      "label": "3. Emergency Quota Request",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Saturation Event",
+      "edges": [
+        "e1"
+      ],
+      "action": "Traffic surges to 200,000 QPS; local region reaches 95% CPU quota limit.",
+      "why_traversal": "Real-world traffic surges can overwhelm single-region capacity limits.",
+      "protocol": "Traffic Influx",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Global Overflow Balancing",
+      "edges": [
+        "e2"
+      ],
+      "action": "Global Anycast load balancer overflows excess requests to secondary regions worldwide.",
+      "why_traversal": "Global load balancing shields saturated backends and absorbs massive surges.",
+      "protocol": "Anycast BGP Redistribution",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Emergency Quota Elevation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Service Quotas API fires automated expansion request to unblock local scaling.",
+      "why_traversal": "Eliminates manual ticket delays during major revenue-generating traffic spikes.",
+      "protocol": "Service Quotas API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "regional-quota-wall",
+      "label": "Regional Quota Hard Stop",
+      "changes": {
+        "failedNodes": [
+          "quota-ceiling-alert"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "System lacked multi-region backend configuration; hit hard CPU quota in single region.",
+      "diverted_path": "Excess requests rejected with HTTP 503 Service Unavailable.",
+      "blast_radius": "Customers dropped during peak sales spike.",
+      "recovery": "Always design multi-region backends behind Global External Application Load Balancers."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "unplanned-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "unplanned-surge"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates sudden 10x traffic spike breaching calculated headroom: demonstrates automated quota ceiling alerts and dynamic capacity expansion."
+}

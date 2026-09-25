@@ -1,0 +1,233 @@
+{
+  "id": "topic-021-d2",
+  "title": "Messaging and Integration: Pub/Sub, Cloud Tasks, and Eventarc \u2014 Request & Control Flow",
+  "topic_no": "021",
+  "roadmap_id": "2.9",
+  "kind": "flow",
+  "purpose": "Traces event message publishing and consumption: from producer API call across Pub/Sub topic to push/pull subscriber acknowledgment and dead-letter handling.",
+  "routing_rationale": "Pub/Sub replicates messages across multiple zones before acknowledging publish requests, guaranteeing durable delivery even during infrastructure failures.",
+  "groups": [
+    {
+      "id": "g-producer-lane",
+      "label": "Event Ingress Lane",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-buffer-lane",
+      "label": "Pub/Sub Ingestion & Storage Buffer",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-worker-lane",
+      "label": "StreamingPull Consumer Workers",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "checkout-api",
+      "label": "Checkout API Service",
+      "product": "Event Publisher",
+      "group": "g-producer-lane",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Generates order payload: {order_id: 9942, amount: 45.00}."
+    },
+    {
+      "id": "pubsub-frontend",
+      "label": "Pub/Sub Frontend Proxy",
+      "product": "pubsub.googleapis.com",
+      "group": "g-producer-lane",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Validates schema definition and authenticates service account token."
+    },
+    {
+      "id": "storage-buffer",
+      "label": "Multi-Zone Storage Buffer",
+      "product": "Replicated Log",
+      "group": "g-buffer-lane",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Writes message log to SSD across 3 zones; assigns ordering key and ack deadline."
+    },
+    {
+      "id": "sub-lease-mgr",
+      "label": "Ack Deadline Manager",
+      "product": "Subscription Lease (60s)",
+      "group": "g-buffer-lane",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Monitors unacknowledged messages; redelivers if worker fails to ack within 60s."
+    },
+    {
+      "id": "worker-pull",
+      "label": "GKE Worker (Pull Client)",
+      "product": "Subscriber Daemon",
+      "group": "g-worker-lane",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Receives message via persistent StreamingPull connection; executes database commit."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "checkout-api",
+      "to": "pubsub-frontend",
+      "label": "1. Publish Request",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "pubsub-frontend",
+      "to": "storage-buffer",
+      "label": "2. Write 3-Zone Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "storage-buffer",
+      "to": "worker-pull",
+      "label": "3. Dispatch via StreamingPull",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "worker-pull",
+      "to": "sub-lease-mgr",
+      "label": "4. Return Acknowledge (ACK)",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Publish and Durability",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Publisher sends message; Pub/Sub commits to multi-zone storage before sending 200 OK.",
+      "why_traversal": "Synchronous replication ensures no message loss even under catastrophic host failure.",
+      "protocol": "Pub/Sub gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "StreamingPull Dispatch",
+      "edges": [
+        "e3"
+      ],
+      "action": "Pub/Sub pushes message over open bidirectional gRPC stream to GKE worker.",
+      "why_traversal": "StreamingPull minimizes delivery latency compared to polling.",
+      "protocol": "HTTP/2 Bidirectional gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Acknowledgment Commitment",
+      "edges": [
+        "e4"
+      ],
+      "action": "Worker completes database write and sends ACK; Pub/Sub removes message from queue.",
+      "why_traversal": "At-least-once delivery guarantees every event is processed to completion.",
+      "protocol": "Acknowledge RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "duplicate-delivery",
+      "label": "At-Least-Once Duplicate Message Delivery",
+      "changes": {
+        "failedNodes": [
+          "sub-lease-mgr"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Worker took 65 seconds to process; ack deadline expired at 60 seconds.",
+      "diverted_path": "Pub/Sub redelivers message to secondary worker; worker must enforce idempotency.",
+      "blast_radius": "Duplicate processing risk if database insert is not idempotent.",
+      "recovery": "Use unique transaction ID as database primary key; use modifyAckDeadline to extend lease."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "checkout-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "checkout-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces event message publishing and consumption: from producer API call across Pub/Sub topic to push/pull subscriber acknowledgment and dead-letter handling."
+}

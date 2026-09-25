@@ -1,0 +1,218 @@
+{
+  "id": "topic-030-d6",
+  "title": "High Availability by Layer: Compute, Network, Storage & Database \u2014 D6",
+  "topic_no": "030",
+  "roadmap_id": "4.3",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "System availability is only as strong as its weakest link; true high availability requires redundancy, automated failover, and isolation at every single layer of the stack.",
+  "groups": [
+    {
+      "id": "g-dns-net",
+      "label": "Layer 1 & 2: DNS & Network Layer",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-compute-migs",
+      "label": "Layer 3: Regional Compute Fleet",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-db",
+      "label": "Layer 4 & 5: Storage & Database HA",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "anycast-dns",
+      "label": "Cloud DNS Anycast Routing",
+      "product": "Global 100% SLA DNS",
+      "group": "g-dns-net",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Anycast BGP routes client to closest healthy edge PoP worldwide with 100% SLA."
+    },
+    {
+      "id": "dual-interconnect",
+      "label": "Dual Cloud Interconnects",
+      "product": "99.99% Enterprise Interconnect",
+      "group": "g-dns-net",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Dual redundant 10Gbps links across two distinct metropolitan colocation facilities."
+    },
+    {
+      "id": "regional-mig",
+      "label": "Regional MIG (3 Zones)",
+      "product": "Compute Engine MIG (a, b, c)",
+      "group": "g-compute-migs",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Spreads instances evenly across zones a, b, and c with auto-healing health checks."
+    },
+    {
+      "id": "dual-gcs",
+      "label": "Dual-Region Cloud Storage",
+      "product": "Dual-Region (nam4) Bucket",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Replicates objects across us-central1 and us-east4 with turbo replication."
+    },
+    {
+      "id": "multi-spanner",
+      "label": "Cloud Spanner Multi-Region",
+      "product": "99.999% SLA Relational DB",
+      "group": "g-storage-db",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Replicated across 3 regions with Paxos consensus, surviving full regional loss."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "anycast-dns",
+      "to": "regional-mig",
+      "label": "1. Anycast Route to Closest Region",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "dual-interconnect",
+      "to": "regional-mig",
+      "label": "2. Redundant Hybrid Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "regional-mig",
+      "to": "dual-gcs",
+      "label": "3. Access Replicated Storage",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "regional-mig",
+      "to": "multi-spanner",
+      "label": "4. Multi-Region Synchronous Writes",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Ingress Redundancy",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anycast DNS and dual interconnects guarantee zero-downtime client packet ingress.",
+      "why_traversal": "Eliminates single point of failure before traffic reaches cloud compute.",
+      "protocol": "BGP Anycast / 802.1q",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Compute & Data Resiliency",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Regional MIG distributes traffic across 3 zones; data persists across dual-region storage and Spanner.",
+      "why_traversal": "Ensures entire physical datacenter loss results in zero data loss and zero downtime.",
+      "protocol": "HTTPS / Spanner Paxos",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-zone-db-trap",
+      "label": "Single-Zone Cloud SQL Bottleneck",
+      "changes": {
+        "failedNodes": [
+          "regional-mig"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "System used multi-zone compute but pointed to a single-zone non-HA database.",
+      "diverted_path": "Zone outage takes down database; all compute pods crash due to database timeouts.",
+      "blast_radius": "100% application outage despite multi-zone compute.",
+      "recovery": "Upgrade database to Cloud SQL High Availability with automatic failover replica."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "anycast-dns"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}

@@ -1,0 +1,172 @@
+{
+  "id": "topic-031-d3",
+  "title": "Disaster Recovery Patterns (RTO & RPO) \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "031",
+  "roadmap_id": "4.4",
+  "kind": "failure",
+  "purpose": "Simulates Split-Brain DR Disaster Mode: illustrates Spanner Paxos consensus preventing two isolated regions from both accepting writes.",
+  "routing_rationale": "Split-brain scenarios corrupt databases when partitioned regions both accept contradictory updates; Paxos quorum algorithms mathematically eliminate this hazard.",
+  "groups": [
+    {
+      "id": "g-part-a",
+      "label": "Partitioned Region A (us-central1)",
+      "type": "region",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-part-b",
+      "label": "Partitioned Region B (us-east4 + Witness)",
+      "type": "region",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "spanner-a-iso",
+      "label": "Spanner Node A (Minority: 1/3)",
+      "product": "Isolated Replica",
+      "group": "g-part-a",
+      "plane": "data",
+      "x": 220,
+      "y": 200,
+      "detail": "Cannot reach other nodes; cannot achieve 2/3 majority vote."
+    },
+    {
+      "id": "spanner-b-maj",
+      "label": "Spanner Node B (Majority: 2/3)",
+      "product": "Active Paxos Quorum",
+      "group": "g-part-b",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Forms quorum with Witness region; continues safely committing customer transactions."
+    },
+    {
+      "id": "witness-c",
+      "label": "Witness Node (us-west1)",
+      "product": "Quorum Voting Partner",
+      "group": "g-part-b",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Casts second vote required for majority quorum."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "spanner-a-iso",
+      "to": "spanner-b-maj",
+      "label": "1. WAN Partition Severed (Fiber Cut)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "spanner-b-maj",
+      "to": "witness-c",
+      "label": "2. Form 2/3 Majority Quorum",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Partition Isolation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Network cut separates Region A. Node A recognizes it is in a minority partition.",
+      "why_traversal": "Node A voluntarily blocks writes, preventing split-brain corruption.",
+      "protocol": "Paxos Heartbeat Loss",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Majority Quorum Continuation",
+      "edges": [
+        "e2"
+      ],
+      "action": "Region B pairs with Witness to maintain 2/3 majority and safely accepts writes.",
+      "why_traversal": "Provides zero RPO and continuous availability despite catastrophic network partitioning.",
+      "protocol": "Paxos Quorum Consensus",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "two-node-quorum-trap",
+      "label": "Two-Node Even Split Deadlock",
+      "changes": {
+        "failedNodes": [
+          "witness-c"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "System was deployed with only 2 nodes across 2 regions without an odd tie-breaker witness.",
+      "diverted_path": "50/50 partition causes both nodes to freeze; entire global database halts.",
+      "blast_radius": "Global system outage.",
+      "recovery": "Always deploy an odd number of voting replicas (minimum 3 or 5) across distinct fault domains."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "spanner-a-iso"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "spanner-a-iso"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Split-Brain DR Disaster Mode: illustrates Spanner Paxos consensus preventing two isolated regions from both accepting writes."
+}

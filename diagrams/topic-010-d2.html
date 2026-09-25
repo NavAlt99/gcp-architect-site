@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing, Cost Hygiene, and FinOps Architecture — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-010.html">← Topic page</a><span>1.4 · TOPIC-010-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-010-d2",
+  "title": "Billing, Cost Hygiene, and FinOps Architecture \u2014 Request & Control Flow",
+  "topic_no": "010",
+  "roadmap_id": "1.4",
+  "kind": "flow",
+  "purpose": "Traces automated cost alerting and remediation: from billing budget threshold breach to Pub/Sub notification and Cloud Function auto-capping.",
+  "routing_rationale": "Budget alerts notify financial teams before cost overruns occur. Automated Cloud Functions can disable project billing or reduce VM instance capacity.",
+  "groups": [
+    {
+      "id": "g-usage",
+      "label": "Project Workload Consumption",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-pubsub",
+      "label": "Asynchronous Event Fabric",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-action-target",
+      "label": "Automated Remediation Targets",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "vm-fleet",
+      "label": "Autoscaling Compute Fleet",
+      "product": "Compute Engine MIG",
+      "group": "g-usage",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Spins up 100 GPU instances due to unthrottled worker queue surge."
+    },
+    {
+      "id": "budget-eval",
+      "label": "Budget Monitoring Engine",
+      "product": "Cloud Budgets API",
+      "group": "g-usage",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Detects actual spend exceeding 100% ($10,000) ceiling."
+    },
+    {
+      "id": "alert-topic",
+      "label": "billing-alerts-topic",
+      "product": "Cloud Pub/Sub",
+      "group": "g-pubsub",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Decoupled pub/sub topic receiving JSON schema with costAmount and budgetAmount."
+    },
+    {
+      "id": "slack-bot",
+      "label": "FinOps Slack Notifier",
+      "product": "Notification Webhook",
+      "group": "g-action-target",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Broadcasts high-priority alert to #cloud-finops channel."
+    },
+    {
+      "id": "mig-capper",
+      "label": "MIG Capacity Auto-Capper",
+      "product": "Cloud Functions",
+      "group": "g-action-target",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Invokes Compute API to set maxNumReplicas = 10, capping further spend immediately."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "vm-fleet",
+      "to": "budget-eval",
+      "label": "1. Aggregate Cost Influx",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "budget-eval",
+      "to": "alert-topic",
+      "label": "2. Publish 100% Breach Payload",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "alert-topic",
+      "to": "slack-bot",
+      "label": "3a. Notify On-Call FinOps",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "alert-topic",
+      "to": "mig-capper",
+      "label": "3b. Execute Scale Cap Function",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Budget Breach Trigger",
+      "edges": [
+        "e1"
+      ],
+      "action": "GPU usage trips $10k monthly budget ceiling.",
+      "why_traversal": "Budgets API polls billing accounts every 15 minutes to evaluate thresholds.",
+      "protocol": "Internal Cloud Billing",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Pub/Sub Event Dispatch",
+      "edges": [
+        "e2"
+      ],
+      "action": "Budgets pushes structured JSON alert payload to billing-alerts-topic.",
+      "why_traversal": "Decouples alerting trigger from custom automation actions.",
+      "protocol": "Pub/Sub Publish",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Dual Remediation",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Slack notifies human on-call while Cloud Function automatically caps MIG size.",
+      "why_traversal": "Halts runaway spend in seconds while keeping team fully informed.",
+      "protocol": "HTTPS Webhook / Compute API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "capping-failure",
+      "label": "Cloud Function IAM Missing (403)",
+      "changes": {
+        "failedNodes": [
+          "mig-capper"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Cloud Function service account lacked roles/compute.instanceAdmin.v1.",
+      "diverted_path": "Function crashes; spend continues accumulating until human intervenes.",
+      "blast_radius": "Budget exceeded by additional 40% before manual intervention.",
+      "recovery": "Grant least-privilege instanceAdmin role to auto-remediation service account."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "vm-fleet"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "vm-fleet"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces automated cost alerting and remediation: from billing budget threshold breach to Pub/Sub notification and Cloud Function auto-capping."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

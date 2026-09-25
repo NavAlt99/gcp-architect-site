@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Network Security: VPC-SC &amp; Cloud Armor — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-035.html">← Topic page</a><span>5.2 · TOPIC-035-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-035-d3",
+  "title": "Network Security: VPC-SC & Cloud Armor \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "failure",
+  "purpose": "Simulates Cloud Armor Adaptive Protection: automated machine learning detects a Layer 7 HTTP flood attack, generates a custom WAF signature, and blocks attack traffic.",
+  "routing_rationale": "Adaptive Protection analyzes traffic baselines using machine learning, automatically producing targeted rules to neutralize novel zero-day application attacks.",
+  "groups": [
+    {
+      "id": "g-ddos-flood",
+      "label": "Distributed Botnet (100,000 IPs)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-armor-defense",
+      "label": "Cloud Armor Adaptive Protection Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "botnet-flood",
+      "label": "L7 HTTP Flood (1M QPS)",
+      "product": "Automated Headless Browsers",
+      "group": "g-ddos-flood",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Botnet sends 1,000,000 requests/sec with rotating User-Agent strings."
+    },
+    {
+      "id": "ml-detector",
+      "label": "Adaptive Threat Analyzer",
+      "product": "Real-time Traffic Anomaly ML",
+      "group": "g-ddos-flood",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Identifies common attack fingerprint in HTTP headers within 45 seconds."
+    },
+    {
+      "id": "auto-waf-rule",
+      "label": "Dynamic WAF Rule Generated",
+      "product": "Rule: deny if header matches signature",
+      "group": "g-armor-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Generates rule with confidence score 0.98; deploys to edge proxy in 2 seconds."
+    },
+    {
+      "id": "edge-drop",
+      "label": "Edge Traffic Drop (HTTP 429)",
+      "product": "Google Anycast PoP Edge",
+      "group": "g-armor-defense",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Drops 99.8% of botnet traffic at edge PoPs worldwide; backend origin CPU drops to 20%."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "botnet-flood",
+      "to": "ml-detector",
+      "label": "1. Analyze Influx Fingerprint",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ml-detector",
+      "to": "auto-waf-rule",
+      "label": "2. Synthesize Signature & Rule",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "auto-waf-rule",
+      "to": "edge-drop",
+      "label": "3. Enforce Rule at Global Edge",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Anomaly Identification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Adaptive Protection ML correlates requests across 100k IPs and extracts distinguishing header.",
+      "why_traversal": "Identifies complex distributed attacks that evade simple rate limiters.",
+      "protocol": "Machine Learning Anomaly Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Edge Mitigation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Armor deploys targeted rule to all edge points of presence, dropping flood packets.",
+      "why_traversal": "Protects backend web servers from exhaustion and eliminates origin egress charges.",
+      "protocol": "Cloud Armor Rule Deployment",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "rule-false-positive-risk",
+      "label": "Overly Broad Signature Drops Legitimate Users",
+      "changes": {
+        "failedNodes": [
+          "auto-waf-rule"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Signature used common header shared by legitimate mobile application users.",
+      "diverted_path": "Legitimate customers receive HTTP 429 errors.",
+      "blast_radius": "Customer checkout disruption.",
+      "recovery": "Deploy Adaptive Protection rules in preview mode first and refine signature with multi-attribute matching."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "botnet-flood"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "botnet-flood"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cloud Armor Adaptive Protection: automated machine learning detects a Layer 7 HTTP flood attack, generates a custom WAF signature, and blocks attack traffic."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

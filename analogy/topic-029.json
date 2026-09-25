@@ -1,0 +1,43 @@
+{
+  "topic_no": "029",
+  "roadmap_id": "4.2",
+  "title": "Cloud City: SRE Concepts: SLIs, SLOs, Error Budgets & The Four Golden Signals",
+  "city_concept": "City Public Transit Reliability Pledges",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Commuters complained subway trains were always late, but city transit managers insisted operations were 'fine'.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Transit Director Tilda defined the Transit Pledge (SLO): 99% of subway trains must arrive within 3 minutes of scheduled time.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When track construction caused train delays that consumed 80% of the monthly delay budget, all non-essential upgrades were halted to prioritize repairs.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Subway schedules are adjusted on paper quarterly; cloud SLO burn rates can automatically throttle deployment pipelines in real time.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

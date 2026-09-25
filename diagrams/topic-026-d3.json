@@ -1,0 +1,172 @@
+{
+  "id": "topic-026-d3",
+  "title": "Decision Frameworks: ADRs & Trade-offs \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "026",
+  "roadmap_id": "3.4b",
+  "kind": "failure",
+  "purpose": "Simulates Architecture Drift & Enforcement: detects rogue resource creation violating approved ADR-019 and enforces organizational policy guardrails.",
+  "routing_rationale": "Policy Controller and Organization Policies act as runtime enforcers for architectural decisions, rejecting configurations that diverge from signed ADRs.",
+  "groups": [
+    {
+      "id": "g-unauthorized-action",
+      "label": "Unauthorized Deployment Attempt",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-guardrail-enforce",
+      "label": "Org Policy & Policy Controller Guardrail",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rogue-vm-launch",
+      "label": "Rogue GCE VM Creation",
+      "product": "Unapproved e2-standard-16",
+      "group": "g-unauthorized-action",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Developer tries to deploy unmanaged VM contrary to ADR-019 serverless mandate."
+    },
+    {
+      "id": "policy-validator",
+      "label": "Policy Controller / Gatekeeper",
+      "product": "Admission Webhook",
+      "group": "g-guardrail-enforce",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Intercepts API request; evaluates constraint template enforcing approved compute types."
+    },
+    {
+      "id": "rejection-event",
+      "label": "Admission Rejected (403)",
+      "product": "Violates Constraint ADR-019",
+      "group": "g-guardrail-enforce",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Rejects resource creation with actionable feedback pointing developer to Cloud Run docs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "rogue-vm-launch",
+      "to": "policy-validator",
+      "label": "1. Intercept Compute API Request",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "policy-validator",
+      "to": "rejection-event",
+      "label": "2. Block & Enforce Architectural Policy",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "API Interception",
+      "edges": [
+        "e1"
+      ],
+      "action": "Cloud Resource Manager and Policy Controller intercept resource creation attempt.",
+      "why_traversal": "Prevents unauthorized infrastructure from ever spinning up in production.",
+      "protocol": "Admission Control Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Enforcement & Education",
+      "edges": [
+        "e2"
+      ],
+      "action": "Request blocked with error: 'Compute Engine not permitted for HTTP microservices. Use Cloud Run per ADR-019'.",
+      "why_traversal": "Educates developers and enforces architectural consistency across teams.",
+      "protocol": "HTTP 403 Forbidden Response",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "bypass-guardrail",
+      "label": "Policy Bypass via Personal Test Project",
+      "changes": {
+        "failedNodes": [
+          "policy-validator"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Developer deployed rogue VM in sandbox folder missing organizational policy inheritance.",
+      "diverted_path": "Unmonitored VM runs for 2 months accumulating $1,200/month unapproved charges.",
+      "blast_radius": "Shadow IT cost leak.",
+      "recovery": "Attach Org Policy constraints at root organization level so child folders cannot evade guardrails."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "rogue-vm-launch"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "rogue-vm-launch"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Architecture Drift & Enforcement: detects rogue resource creation violating approved ADR-019 and enforces organizational policy guardrails."
+}

@@ -1,0 +1,190 @@
+{
+  "id": "topic-056-d3",
+  "title": "Database Decision Cheat Sheet \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "056",
+  "roadmap_id": "cheat-2",
+  "kind": "failure",
+  "purpose": "Simulates Database Failover & Replication Resiliency: Cloud SQL High Availability zonal failover vs Cloud Spanner Multi-Region Paxos consensus during datacenter failure.",
+  "routing_rationale": "Comparing failover mechanisms highlights the difference between Cloud SQL's 60-second active-standby restart versus Cloud Spanner's continuous sub-second Paxos quorum.",
+  "groups": [
+    {
+      "id": "g-datacenter-outage",
+      "label": "Datacenter Outage Zone us-central1-a",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-surviving-failover",
+      "label": "Surviving Zone us-central1-b (Failover Target)",
+      "type": "zone",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dead-primary-sql",
+      "label": "Cloud SQL Primary (Dead)",
+      "product": "Status: HARDWARE_FAILURE",
+      "group": "g-datacenter-outage",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Hardware failure in zone us-central1-a terminates primary database instance."
+    },
+    {
+      "id": "heartbeat-watchdog",
+      "label": "Cloud SQL HA Watchdog",
+      "product": "Heartbeat Timeout (60 Seconds)",
+      "group": "g-datacenter-outage",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects 30 seconds of missed heartbeats; initiates automated regional disk failover."
+    },
+    {
+      "id": "standby-promoted-sql",
+      "label": "Promoted Standby Cloud SQL",
+      "product": "Promoted to Primary in Zone B",
+      "group": "g-surviving-failover",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Attaches regional persistent disk and recovers crash logs in 52 seconds."
+    },
+    {
+      "id": "app-reconnect-pool",
+      "label": "GKE App Pods Reconnected",
+      "product": "Cloud SQL Proxy Auto-Reconnect",
+      "group": "g-surviving-failover",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Cloud SQL Proxy seamlessly updates connection IP; application resumes transactions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "dead-primary-sql",
+      "to": "heartbeat-watchdog",
+      "label": "1. Loss of Primary Heartbeat",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "heartbeat-watchdog",
+      "to": "standby-promoted-sql",
+      "label": "2. Promote Standby Instance",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "standby-promoted-sql",
+      "to": "app-reconnect-pool",
+      "label": "3. Re-establish Application Connections",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Automated Zonal Failover",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Watchdog detects failure and promotes standby instance on regional persistent disk.",
+      "why_traversal": "Provides automated disaster recovery without data loss within the region.",
+      "protocol": "Cloud SQL HA Orchestrator",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Application Recovery",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud SQL Proxy transparently redirects client queries to the new primary in Zone B in under 60s.",
+      "why_traversal": "Restores production database availability with zero manual intervention.",
+      "protocol": "Cloud SQL Proxy gRPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "app-crash-on-reconnect",
+      "label": "Application Crashes Due to Stale Connection Pool",
+      "changes": {
+        "failedNodes": [
+          "app-reconnect-pool"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Application connection pool was configured without validation query or max-lifetime.",
+      "diverted_path": "Pods held dead TCP connections to dead Zone A; threw continuous 500 errors.",
+      "blast_radius": "Outage persisted for 30 minutes until pods were manually restarted.",
+      "recovery": "Configure HikariCP / DB pool with testOnBorrow=true and maxLifetime=1800000ms."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "dead-primary-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "dead-primary-sql"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Database Failover & Replication Resiliency: Cloud SQL High Availability zonal failover vs Cloud Spanner Multi-Region Paxos consensus during datacenter failure."
+}

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA Exam Strategy: Keyword Elimination &amp; Domain Mastery — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-050.html">← Topic page</a><span>7.5 · TOPIC-050-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-050-d5",
+  "title": "PCA Exam Strategy: Keyword Elimination & Domain Mastery \u2014 D5",
+  "topic_no": "050",
+  "roadmap_id": "7.5",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "The PCA exam tests decision-making under constraints: identify the question's explicit business trade-offs ('minimal operational overhead' = serverless; 'lift-and-shift' = M4VM; 'global SQL' = Spanner) to eliminate distractors with certainty.",
+  "groups": [
+    {
+      "id": "g-exam-stem",
+      "label": "Question Stem & Keyword Extraction",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-distractor-filter",
+      "label": "Distractor Elimination & Antipattern Filter",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-winning-choice",
+      "label": "Validated Exam-Winning GCP Architecture",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "exam-question",
+      "label": "PCA Exam Scenario Stem",
+      "product": "Constraint: 'Minimal Ops + Container'",
+      "group": "g-exam-stem",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Question specifies deploying stateless web container with automated scaling and zero server management."
+    },
+    {
+      "id": "keyword-extractor",
+      "label": "Keyword Matcher",
+      "product": "Flags: 'Minimal Ops' -> Serverless",
+      "group": "g-exam-stem",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Keywords strictly demand fully managed serverless over self-managed VMs."
+    },
+    {
+      "id": "eliminate-gce",
+      "label": "Discard: Compute Engine VMs",
+      "product": "Eliminated: High Operational Burden",
+      "group": "g-distractor-filter",
+      "plane": "control",
+      "x": 440,
+      "y": 100,
+      "detail": "Requires OS patching, custom scaling scripts, and manual VM maintenance."
+    },
+    {
+      "id": "eliminate-gke-std",
+      "label": "Discard: GKE Standard",
+      "product": "Eliminated: Node Pool Management",
+      "group": "g-distractor-filter",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Requires configuring node pools, upgrading kubelet versions, and rightsizing nodes."
+    },
+    {
+      "id": "winning-cloudrun",
+      "label": "Correct Option: Cloud Run",
+      "product": "Serverless Container Execution",
+      "group": "g-winning-choice",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Zero server management, native OCI container support, scale-to-zero, per-second billing."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "exam-question",
+      "to": "keyword-extractor",
+      "label": "1. Extract Core Constraint Keywords",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "keyword-extractor",
+      "to": "eliminate-gce",
+      "label": "2. Rule Out Self-Managed VMs",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "keyword-extractor",
+      "to": "eliminate-gke-std",
+      "label": "3. Rule Out Complex Node Mgmt",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "keyword-extractor",
+      "to": "winning-cloudrun",
+      "label": "4. Match Google-Recommended Best Practice",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Keyword Isolation & Elimination",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Extracts 'minimal ops'; eliminates Compute Engine and GKE Standard as high maintenance.",
+      "why_traversal": "Eliminates 2 of 4 multiple-choice options within 15 seconds.",
+      "protocol": "Keyword Elimination Logic",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Best-Practice Selection",
+      "edges": [
+        "e4"
+      ],
+      "action": "Selects Cloud Run as the optimal fit meeting 100% of functional and operational criteria.",
+      "why_traversal": "Aligns with Google Cloud Architecture Framework principles.",
+      "protocol": "Decision Tree Match",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "overlooked-caveat-trap",
+      "label": "Overlooked 'Non-HTTP' Constraint Fails Selection",
+      "changes": {
+        "failedNodes": [
+          "winning-cloudrun"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Candidate missed that the container required custom raw TCP/UDP protocol not supported by Cloud Run.",
+      "diverted_path": "Cloud Run selection fails; GKE Autopilot was the correct choice.",
+      "blast_radius": "Incorrect answer selected on exam.",
+      "recovery": "Always verify protocol constraints (HTTP/gRPC vs raw TCP/UDP) before finalizing compute choice."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "exam-question"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "exam-question"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

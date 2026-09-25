@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cheat Sheet: Cloud Load Balancing Selection Matrix — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-057.html">← Topic page</a><span>cheat-3 · TOPIC-057-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-057-d5",
+  "title": "Cheat Sheet: Cloud Load Balancing Selection Matrix \u2014 D5",
+  "topic_no": "057",
+  "roadmap_id": "cheat-3",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Selecting the correct Google Cloud Load Balancer requires evaluating three precise criteria: Layer 7 HTTP/S vs Layer 4 TCP/UDP, Global Anycast edge termination vs Regional routing, and whether client IP preservation is mandatory.",
+  "groups": [
+    {
+      "id": "g-protocol-scope",
+      "label": "Traffic Protocol & Geographic Scope",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-global-proxies",
+      "label": "Global Anycast Proxy Load Balancers",
+      "type": "vpc",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-regional-passthrough",
+      "label": "Regional Passthrough Load Balancers",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "traffic-l7-http",
+      "label": "Traffic: HTTP / HTTPS / gRPC?",
+      "product": "L7 Application Traffic",
+      "group": "g-protocol-scope",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Requires URL path routing, TLS termination, Cloud CDN caching, and Cloud Armor WAF."
+    },
+    {
+      "id": "traffic-l4-tcp-udp",
+      "label": "Traffic: Raw TCP / UDP / VoIP?",
+      "product": "L4 Transport Traffic",
+      "group": "g-protocol-scope",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Non-HTTP protocols, gaming UDP streams, or requires direct client source IP preservation."
+    },
+    {
+      "id": "global-alb-pick",
+      "label": "External Application LB (Global)",
+      "product": "Global Anycast L7 Proxy",
+      "group": "g-global-proxies",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Single Anycast IP; terminates TLS at edge; routes to backends across multiple regions."
+    },
+    {
+      "id": "global-tcp-proxy-pick",
+      "label": "External Proxy Network LB",
+      "product": "Global Anycast L4 Proxy",
+      "group": "g-global-proxies",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Terminates non-HTTP TCP/SSL traffic at Google edge; routes over private fiber."
+    },
+    {
+      "id": "passthrough-nlb-pick",
+      "label": "External Passthrough Network LB",
+      "product": "Regional Maglev L4 (Direct IP)",
+      "group": "g-regional-passthrough",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Preserves client IP directly; supports UDP; routes traffic directly without proxy hops."
+    },
+    {
+      "id": "internal-alb-pick",
+      "label": "Internal Application LB",
+      "product": "Regional RFC 1918 Private LB",
+      "group": "g-regional-passthrough",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Internal microservice-to-microservice traffic routing within Shared VPC subnets."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "traffic-l7-http",
+      "to": "global-alb-pick",
+      "label": "1. L7 + Global Anycast -> External ALB",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "traffic-l7-http",
+      "to": "internal-alb-pick",
+      "label": "2. L7 + Private Internal -> Internal ALB",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "traffic-l4-tcp-udp",
+      "to": "global-tcp-proxy-pick",
+      "label": "3. L4 TCP + Global Anycast -> Proxy NLB",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "traffic-l4-tcp-udp",
+      "to": "passthrough-nlb-pick",
+      "label": "4. L4 UDP / Preserve IP -> Passthrough NLB",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Layer 7 Ingress Selection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "HTTP/HTTPS traffic routes to External ALB for edge caching or Internal ALB for microservices.",
+      "why_traversal": "Provides URL-based routing and edge security policies.",
+      "protocol": "HTTP/2 & HTTP/3",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Layer 4 Ingress Selection",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "TCP/UDP traffic routes to Proxy NLB for Anycast or Passthrough NLB for direct IP preservation.",
+      "why_traversal": "Supports gaming, streaming, and custom non-HTTP enterprise protocols.",
+      "protocol": "TCP / UDP Transport",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "udp-dropped-by-alb-trap",
+      "label": "Configured Application LB for UDP Gaming Traffic",
+      "changes": {
+        "failedNodes": [
+          "global-alb-pick"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "External Application Load Balancer only supports HTTP, HTTPS, and gRPC; dropped all UDP packets.",
+      "diverted_path": "Game client connection timeouts.",
+      "blast_radius": "Total multiplayer outage.",
+      "recovery": "Use External Passthrough Network Load Balancer for UDP gaming and streaming protocols."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "traffic-l7-http"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "traffic-l7-http"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

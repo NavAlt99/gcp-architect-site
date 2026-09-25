@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Serverless Compute: Cloud Run, Functions, and Workflows — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-015.html">← Topic page</a><span>2.3 · TOPIC-015-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-015-d3",
+  "title": "Serverless Compute: Cloud Run, Functions, and Workflows \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "015",
+  "roadmap_id": "2.3",
+  "kind": "failure",
+  "purpose": "Simulates container cold-start latency spike and concurrency saturation: demonstrates min-instances configuration eliminating cold starts under surge.",
+  "routing_rationale": "Setting min-instances maintains warm container replicas, ensuring zero-latency request handling during unpredictable traffic spikes.",
+  "groups": [
+    {
+      "id": "g-cold-spike",
+      "label": "Unpredictable Influx Spike",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-min-pool",
+      "label": "Warm Min-Instances Pool & Concurrency Governor",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "burst-traffic",
+      "label": "Sudden 5,000 QPS Burst",
+      "product": "Flash Traffic Influx",
+      "group": "g-cold-spike",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Marketing campaign launches; sudden 100x traffic spike hits serverless service."
+    },
+    {
+      "id": "concurrency-meter",
+      "label": "Concurrency Monitor",
+      "product": "Cloud Run Governor",
+      "group": "g-cold-spike",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Monitors active concurrent requests per container instance (limit: 80)."
+    },
+    {
+      "id": "warm-pool",
+      "label": "Warm Min-Instances Fleet",
+      "product": "min-instances = 10",
+      "group": "g-min-pool",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Pre-warmed running containers ready to absorb immediate 800 concurrent connections."
+    },
+    {
+      "id": "rapid-scale",
+      "label": "Rapid Autoscaling Engine",
+      "product": "Auto-scale up to 100",
+      "group": "g-min-pool",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Spins up 90 additional container instances dynamically within 5 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "burst-traffic",
+      "to": "concurrency-meter",
+      "label": "1. Influx Wave",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "concurrency-meter",
+      "to": "warm-pool",
+      "label": "2. Absorb Immediate Wave",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "concurrency-meter",
+      "to": "rapid-scale",
+      "label": "3. Trigger Dynamic Scale-Out",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "rapid-scale",
+      "to": "warm-pool",
+      "label": "4. Expand Active Fleet",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Zero-Latency Absorption",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "5,000 QPS influx arrives; pre-warmed min-instances absorb first wave instantly.",
+      "why_traversal": "Min-instances eliminates cold-start penalty for critical user journeys.",
+      "protocol": "HTTPS 443",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Scale-Out Trigger",
+      "edges": [
+        "e3"
+      ],
+      "action": "Concurrency governor detects 80% saturation on warm instances; calls rapid scaler.",
+      "why_traversal": "Predictive scaling prevents container memory exhaustion.",
+      "protocol": "Internal Scale RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Fleet Expansion",
+      "edges": [
+        "e4"
+      ],
+      "action": "Autoscaler launches 90 additional container instances across multiple zones.",
+      "why_traversal": "Accommodates full 5,000 QPS load while maintaining sub-80ms p95 latency.",
+      "protocol": "gVisor Provisioning",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "db-connection-exhaustion",
+      "label": "Downstream Database Connection Pool Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "warm-pool"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "100 Cloud Run instances each opened 20 direct connections to PostgreSQL (2,000 total).",
+      "diverted_path": "Cloud SQL rejects new TCP connections with 'FATAL: sorry, too many clients already'.",
+      "blast_radius": "All API endpoints requiring database queries fail.",
+      "recovery": "Deploy Cloud SQL Auth Proxy with built-in connection pooling or use PgBouncer."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "burst-traffic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "burst-traffic"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates container cold-start latency spike and concurrency saturation: demonstrates min-instances configuration eliminating cold starts under surge."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

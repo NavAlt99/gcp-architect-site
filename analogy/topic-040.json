@@ -1,0 +1,43 @@
+{
+  "topic_no": "040",
+  "roadmap_id": "6.1",
+  "title": "Cloud City: Cost Optimization & FinOps: CUDs, Spot VMs & Billing Analytics",
+  "city_concept": "City Budget Office & Municipal Utility Meters",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Municipal departments were leaving streetlights blazing at noon and running unused water pumps because nobody received a broken-down electricity bill.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Treasurer Tomas installed smart digital meters (Billing Export) and gave each department a monthly utility dashboard (FinOps).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Tomas signed a 3-year municipal coal contract at a 50% discount (Committed Use Discount) for the steady-state baseline power grid.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "City power contracts take months to negotiate; cloud Committed Use Discounts can be purchased instantly via Console or API.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

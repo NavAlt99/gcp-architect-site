@@ -1,0 +1,200 @@
+{
+  "id": "topic-048-d2",
+  "title": "Case Study: TerramEarth \u2014 Request & Control Flow",
+  "topic_no": "048",
+  "roadmap_id": "7.4c",
+  "kind": "flow",
+  "purpose": "Traces Predictive Maintenance Pipeline Flow: raw sensor anomaly detection in Bigtable -> BigQuery ML model inference -> automated parts dispatch to local dealership.",
+  "routing_rationale": "Predictive maintenance bridges real-time telemetry with supply chain logistics, ensuring replacement parts arrive at the dealership before the tractor breaks down.",
+  "groups": [
+    {
+      "id": "g-anomaly-detect",
+      "label": "Real-Time Sensor Anomaly Trigger",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ml-prediction",
+      "label": "BigQuery Machine Learning Inference",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-dispatch-supply",
+      "label": "Automated Dealership Logistics",
+      "type": "organization",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sensor-spike",
+      "label": "Turbine RPM Vibration Spike",
+      "product": "Vibration > 4.2 Gs (Anomaly)",
+      "group": "g-anomaly-detect",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Harvester sensor detects abnormal high-frequency vibration in main cutting drum."
+    },
+    {
+      "id": "bqml-model",
+      "label": "BigQuery ML Classification",
+      "product": "ML.PREDICT (Failure Prob: 94%)",
+      "group": "g-ml-prediction",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Evaluates vibration pattern against 10 years of historical failure telemetry."
+    },
+    {
+      "id": "dealer-parts-order",
+      "label": "Automated SAP Parts Order",
+      "product": "Part #CR-8891 Bearing Assembly",
+      "group": "g-dispatch-supply",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Automatically triggers replacement part shipment from regional warehouse."
+    },
+    {
+      "id": "farmer-mobile-app",
+      "label": "Farmer Notification Push",
+      "product": "Schedule Service Warning",
+      "group": "g-dispatch-supply",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Alerts farmer via mobile app to bring harvester to dealer before harvest season begins."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sensor-spike",
+      "to": "bqml-model",
+      "label": "1. Feed Anomaly to ML Model",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "bqml-model",
+      "to": "dealer-parts-order",
+      "label": "2. Failure Probability > 90% -> Order Part",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dealer-parts-order",
+      "to": "farmer-mobile-app",
+      "label": "3. Notify Farmer with Available Appointment",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "ML Failure Prediction",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BQML evaluates live sensor stream against failure patterns; flags 94% failure risk.",
+      "why_traversal": "Identifies impending failure weeks before human operators can detect symptoms.",
+      "protocol": "BigQuery SQL ML.PREDICT",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Autonomous Supply Chain Dispatch",
+      "edges": [
+        "e3"
+      ],
+      "action": "ERP system automatically orders parts and sends appointment slot to farmer's mobile phone.",
+      "why_traversal": "Eliminates downtime during critical 14-day annual crop harvest window.",
+      "protocol": "REST API / Cloud Tasks",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "false-positive-parts-flood",
+      "label": "Model Overfitting Orders Unneeded Parts",
+      "changes": {
+        "failedNodes": [
+          "bqml-model"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Model was trained on unnormalized data from rocky field terrain; flagged normal bumps as failures.",
+      "diverted_path": "500 unnecessary parts shipped to rural dealerships.",
+      "blast_radius": "Logistical waste.",
+      "recovery": "Retrain model with accelerometer normalization and feature engineering on soil terrain type."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "sensor-spike"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "sensor-spike"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Predictive Maintenance Pipeline Flow: raw sensor anomaly detection in Bigtable -> BigQuery ML model inference -> automated parts dispatch to local dealership."
+}

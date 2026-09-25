@@ -1,0 +1,271 @@
+{
+  "id": "topic-002-d2",
+  "title": "SSH Bastion Jump & IAP TCP Forwarding Flow",
+  "topic_no": "002",
+  "roadmap_id": "0.2",
+  "kind": "flow",
+  "purpose": "Visualizes the zero-trust administrative access flow into private Compute Engine instances using Google Cloud IAP TCP Forwarding and OS Login PAM, eliminating public IP exposures.",
+  "routing_rationale": "Rather than opening SSH port 22 to the public internet or managing vulnerable bastion jump boxes, administrative sessions are tunneled through Google's edge over TLS port 443, authenticated via IAM, and forwarded across Andromeda SDN directly to the private VM.",
+  "groups": [
+    {
+      "id": "g-client",
+      "label": "Admin Workstation (Local Environment)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 350
+    },
+    {
+      "id": "g-iap",
+      "label": "Google Cloud Edge Perimeter (IAP & IAM)",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 280,
+      "height": 350
+    },
+    {
+      "id": "g-vpc",
+      "label": "Private VPC Subnet (No Public IP)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 610,
+      "y": 30,
+      "width": 290,
+      "height": 350
+    }
+  ],
+  "nodes": [
+    {
+      "id": "admin",
+      "label": "gcloud compute ssh",
+      "product": "Admin Workstation",
+      "group": "g-client",
+      "plane": "control",
+      "x": 150,
+      "y": 120,
+      "detail": "Initiates authenticated connection request using local user Google Cloud credentials and OAuth2 tokens."
+    },
+    {
+      "id": "iap-proxy",
+      "label": "Identity-Aware Proxy",
+      "product": "Cloud IAP TCP Forwarding",
+      "group": "g-iap",
+      "plane": "control",
+      "x": 440,
+      "y": 120,
+      "detail": "Terminates TLS 1.3 WebSocket on port 443 and verifies IAM permission roles/iap.tunnelResourceAccessor."
+    },
+    {
+      "id": "audit",
+      "label": "Cloud Audit Logging",
+      "product": "Admin Activity Audit",
+      "group": "g-iap",
+      "plane": "control",
+      "x": 440,
+      "y": 260,
+      "detail": "Generates immutable audit logs of tunnel initiation, source IP, user identity, and session duration."
+    },
+    {
+      "id": "sshd",
+      "label": "sshd Daemon (Private VM)",
+      "product": "Private Compute Engine",
+      "group": "g-vpc",
+      "plane": "data",
+      "x": 750,
+      "y": 120,
+      "detail": "Listens on private IP port 22; accepts ingress traffic only from Google IAP netblock 35.235.240.0/20."
+    },
+    {
+      "id": "oslogin",
+      "label": "OS Login PAM Module",
+      "product": "Linux PAM & Metadata",
+      "group": "g-vpc",
+      "plane": "control",
+      "x": 750,
+      "y": 260,
+      "detail": "Intercepts SSH authentication and queries instance metadata server for authorized public keys and POSIX UID/GID."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-auth",
+      "from": "admin",
+      "to": "iap-proxy",
+      "label": "1. TLS WebSocket (Port 443)",
+      "plane": "control"
+    },
+    {
+      "id": "e-audit",
+      "from": "iap-proxy",
+      "to": "audit",
+      "label": "2. Record Session Audit Log",
+      "plane": "control"
+    },
+    {
+      "id": "e-forward",
+      "from": "iap-proxy",
+      "to": "sshd",
+      "label": "3. Andromeda SDN Forward (TCP 22)",
+      "plane": "data"
+    },
+    {
+      "id": "e-pam",
+      "from": "sshd",
+      "to": "oslogin",
+      "label": "4. PAM Auth / libpam-oslogin",
+      "plane": "control"
+    },
+    {
+      "id": "e-shell",
+      "from": "oslogin",
+      "to": "sshd",
+      "label": "5. Authorize Shell & Bind PTY",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Client Connection & WebSocket Tunnel Setup",
+      "edges": [
+        "e-auth"
+      ],
+      "action": "Admin executes gcloud compute ssh --tunnel-through-iap; client opens outbound TLS 1.3 WebSocket connection to Google Cloud IAP edge on port 443.",
+      "why_traversal": "Standard SSH port 22 is blocked outbound by many corporate firewalls. Port 443 TLS WebSocket bypasses corporate egress filters and encrypts the tunnel payload.",
+      "protocol": "HTTPS / TLS 1.3 WebSocket (Port 443)",
+      "plane": "Control Plane",
+      "narration": "Step 1: Admin workstation establishes TLS 1.3 WebSocket connection to Google Cloud Identity-Aware Proxy on port 443.",
+      "check": {
+        "commands": "gcloud compute ssh --tunnel-through-iap --verbosity=debug",
+        "logs": "Creating tunnel to instance: ... on port: 22"
+      }
+    },
+    {
+      "n": 2,
+      "title": "IAM Policy & Context-Aware Access Evaluation",
+      "edges": [
+        "e-audit"
+      ],
+      "action": "Google IAP validates caller identity against IAM policy (roles/iap.tunnelResourceAccessor) and records tunnel session into Cloud Audit Logs.",
+      "why_traversal": "Zero-trust verification occurs at Google's global perimeter before any network traffic is permitted into the internal VPC network.",
+      "protocol": "Google Cloud IAM / OAuth 2.0",
+      "plane": "Control Plane",
+      "narration": "Step 2: Google Cloud IAP authorizes user identity against IAM rules and writes entry to immutable Cloud Audit Logs.",
+      "check": {
+        "commands": "gcloud logging read 'protoPayload.serviceName=iap.googleapis.com' --limit=5",
+        "logs": "protoPayload.methodName: iap.tunnelSession"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Andromeda SDN Encapsulation & Private Forwarding",
+      "edges": [
+        "e-forward"
+      ],
+      "action": "IAP forwards raw SSH byte stream across Andromeda SDN to the private VM's internal IP address, originating from netblock 35.235.240.0/20.",
+      "why_traversal": "The target Compute Engine VM has zero public IP addresses. Ingress traffic is strictly allowed from 35.235.240.0/20 via VPC firewall rules.",
+      "protocol": "TCP Port 22 / Andromeda SDN Encapsulation",
+      "plane": "Data Plane",
+      "narration": "Step 3: IAP proxies encrypted SSH stream through Google's Andromeda SDN directly to the private VM's port 22.",
+      "check": {
+        "commands": "gcloud compute firewall-rules list --filter='targetTags:iap-ssh'",
+        "metrics": "firewall/ingress_bytes_count"
+      }
+    },
+    {
+      "n": 4,
+      "title": "PAM Interception & Metadata Identity Resolution",
+      "edges": [
+        "e-pam"
+      ],
+      "action": "Linux sshd intercepts incoming connection and invokes /lib/security/pam_oslogin.so to verify credentials against instance metadata server.",
+      "why_traversal": "OS Login eliminates static SSH authorized_keys files on local disk; keys and POSIX user accounts are centrally governed in Cloud Identity.",
+      "protocol": "UNIX Socket / PAM Syscall Interface",
+      "plane": "Control Plane",
+      "narration": "Step 4: VM sshd hands off authentication to Linux PAM OS Login module to fetch centralized user keys from metadata server.",
+      "check": {
+        "commands": "curl -s -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/oslogin/users'",
+        "logs": "sshd[...]: pam_oslogin(sshd:auth): authorized user"
+      }
+    },
+    {
+      "n": 5,
+      "title": "POSIX Account Provisioning & Interactive Shell",
+      "edges": [
+        "e-shell"
+      ],
+      "action": "OS Login PAM creates ephemeral POSIX user, validates public key cryptographic signature, and sshd spawns interactive pseudo-terminal (PTY).",
+      "why_traversal": "Admin gains secure interactive shell with audited POSIX UID/GID without managing local passwords or static SSH keys.",
+      "protocol": "SSH-2.0 Protocol / PTY Allocation",
+      "plane": "Data Plane",
+      "narration": "Step 5: OS Login validates signature, maps POSIX user, and sshd allocates pseudo-terminal for the admin session.",
+      "check": {
+        "commands": "id && w",
+        "logs": "sshd[...]: Accepted publickey for user from 35.235.240.x"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "iap-firewall-missing",
+      "label": "VPC Firewall Missing for IAP Netblock (35.235.240.0/20)",
+      "changes": {
+        "failedNodes": [
+          "sshd"
+        ]
+      },
+      "narration": "VPC ingress firewall rule for 35.235.240.0/20 on port 22 is missing or deleted. IAP tunnel handshake succeeds, but connection to port 22 times out.",
+      "root_cause": "VPC network firewall rules default to deny ingress; explicit allow rule for 35.235.240.0/20 was omitted.",
+      "path_divergence": "IAP proxy fails to establish TCP handshake with internal VM; gcloud CLI returns ERROR: (gcloud.compute.ssh) Could not connect to instance.",
+      "blast_radius": "All administrative SSH access to VMs in the affected VPC subnet via IAP.",
+      "durable_prevention": "Deploy Terraform module with mandatory default firewall rule: allow-iap-ssh for source 35.235.240.0/20 targeting tag allow-iap.",
+      "check": {
+        "command": "gcloud compute firewall-rules list --filter='sourceRanges:35.235.240.0/20'",
+        "metric": "compute.googleapis.com/firewall/dropped_bytes_count"
+      }
+    },
+    {
+      "id": "oslogin-iam-revocation",
+      "label": "Cloud Identity OS Login IAM Permission Revoked",
+      "changes": {
+        "failedNodes": [
+          "oslogin"
+        ]
+      },
+      "narration": "User attempts SSH login after being removed from roles/compute.osLogin. PAM module rejects authentication with Permission Denied (publickey).",
+      "root_cause": "IAM role compute.osLogin or compute.osAdminLogin was revoked or expired via Cloud Identity / PIM.",
+      "path_divergence": "TCP connection succeeds across IAP, but Linux PAM OS Login module queries metadata server, receives 403 Forbidden, and denies shell allocation.",
+      "blast_radius": "Specific revoked user identity; other authorized engineers continue unaffected.",
+      "durable_prevention": "Bind OS Login roles to Cloud Identity Google Groups rather than individual users; implement automated PAM access reviews.",
+      "check": {
+        "command": "gcloud projects get-iam-policy $PROJECT_ID --filter='bindings.role:roles/compute.osLogin'",
+        "metric": "iam.googleapis.com/service/auth_error_count"
+      }
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "admin"
+        ],
+        "failedEdges": [
+          "e-auth"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes the zero-trust administrative access flow into private Compute Engine instances using Google Cloud IAP TCP Forwarding and OS Login PAM, eliminating public IP exposures."
+}

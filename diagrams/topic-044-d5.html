@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operations &amp; Process Improvement: Platform Engineering &amp; Reviews — D5</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-044.html">← Topic page</a><span>6.5 · TOPIC-044-D5</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-044-d5",
+  "title": "Operations & Process Improvement: Platform Engineering & Reviews \u2014 D5",
+  "topic_no": "044",
+  "roadmap_id": "6.5",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Platform engineering treats developer experience as a product; Golden Paths provide self-service templates that embed enterprise security, networking, and observability by default.",
+  "groups": [
+    {
+      "id": "g-dev-portal",
+      "label": "Developer Self-Service Portal (Backstage)",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-platform-orch",
+      "label": "Platform Orchestration & Cloud Workflows",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vended-env",
+      "label": "Vended Cloud Landing Zone (VPC & GKE)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "backstage-ui",
+      "label": "Backstage Service Catalog",
+      "product": "Golden Path Template Selector",
+      "group": "g-dev-portal",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Developer chooses 'Secure Event-Driven Go Microservice' from catalog."
+    },
+    {
+      "id": "params-form",
+      "label": "Service Sizing Form",
+      "product": "Input Parameters & Cost Center",
+      "group": "g-dev-portal",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Captures business unit, cost center, QPS expectations, and environment tier."
+    },
+    {
+      "id": "workflows-engine",
+      "label": "Cloud Workflows Orchestrator",
+      "product": "Platform Vending Pipeline",
+      "group": "g-platform-orch",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Coordinates GCP Project creation, IAM role bindings, and GitHub repository creation."
+    },
+    {
+      "id": "vended-project",
+      "label": "New GCP Project (Shared VPC)",
+      "product": "Automated Landing Zone",
+      "group": "g-vended-env",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Pre-configured with org policies, Shared VPC attachment, and CMEK encryption keys."
+    },
+    {
+      "id": "gke-namespace",
+      "label": "Isolated GKE Namespace",
+      "product": "NetworkPolicy + ResourceQuota",
+      "group": "g-vended-env",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Provisioned with pre-wired CI/CD deployment service account and Prometheus monitoring."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "backstage-ui",
+      "to": "params-form",
+      "label": "1. Select Golden Path Template",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "params-form",
+      "to": "workflows-engine",
+      "label": "2. Submit Sizing & Metadata",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "workflows-engine",
+      "to": "vended-project",
+      "label": "3. Provision Governed GCP Project",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "workflows-engine",
+      "to": "gke-namespace",
+      "label": "4. Configure GKE Namespace & CI/CD",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Self-Service Intake",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Developer submits template form; platform validates metadata and cost center.",
+      "why_traversal": "Eliminates ticket-based delays while maintaining financial accountability.",
+      "protocol": "Backstage REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Platform Vending",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Cloud Workflows provisions project, binds IAM roles, and attaches Shared VPC in under 3 minutes.",
+      "why_traversal": "Delivers secure-by-default infrastructure without developer cognitive burden.",
+      "protocol": "Cloud Resource Manager API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quota-exhaustion-block",
+      "label": "Project Quota Exhaustion Halts Vending",
+      "changes": {
+        "failedNodes": [
+          "workflows-engine"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Organization reached folder quota ceiling of 100 projects.",
+      "diverted_path": "Cloud Workflows catches error; dispatches automated quota increase request.",
+      "blast_radius": "Delayed onboarding for new service.",
+      "recovery": "Implement automated quota buffer monitoring alert at 80% project quota utilization."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "backstage-ui"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "backstage-ui"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

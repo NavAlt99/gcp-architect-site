@@ -1,0 +1,43 @@
+{
+  "topic_no": "046",
+  "roadmap_id": "7.4a",
+  "title": "Cloud City: Case Study: EHR Healthcare \u2014 HIPAA, Legacy DB & Cloud Migration",
+  "city_concept": "City Hospital Network & Secure Medical Archives",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Regional clinics were couriering paper patient charts in unlocked wagons, losing charts and violating patient privacy laws.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Chief Physician Paul built a pneumatic tube network (Apigee & Private VPC) connecting clinics to the Central Medical Vault.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a clinic sent an unsealed request, the pneumatic valve rejected the capsule and alerted the Medical Board.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Pneumatic tubes are limited by physical air pressure; cloud APIs securely transmit millions of encrypted health records globally.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

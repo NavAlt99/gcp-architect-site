@@ -1,0 +1,190 @@
+{
+  "id": "topic-033-d3",
+  "title": "Testing for Reliability: Load & Chaos \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "033",
+  "roadmap_id": "4.6",
+  "kind": "failure",
+  "purpose": "Simulates Chaos Blast-Radius Breach & Automated Emergency Kill-Switch: error budget burn threshold triggers immediate chaos termination.",
+  "routing_rationale": "Chaos experiments must incorporate hard automated kill switches to guarantee that synthetic testing never causes an uncontrolled real production outage.",
+  "groups": [
+    {
+      "id": "g-chaos-active",
+      "label": "Active Chaos Fault Injection",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-kill-switch-ctrl",
+      "label": "Automated Chaos Kill-Switch Controller",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "active-pod-killer",
+      "label": "Aggressive Pod Killer CRD",
+      "product": "Killing 50% of Pods Simultaneously",
+      "group": "g-chaos-active",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Experiment erroneously configured to terminate 50% of production checkout pods."
+    },
+    {
+      "id": "live-user-impact",
+      "label": "HTTP 503 Outage Spike",
+      "product": "Error Rate Surges to 8.5%",
+      "group": "g-chaos-active",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Checkout transactions failing for real paying customers."
+    },
+    {
+      "id": "budget-kill-trigger",
+      "label": "Error Budget Sentinel",
+      "product": "Burn Rate > 20x (Emergency)",
+      "group": "g-kill-switch-ctrl",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Detects 0.5% monthly error budget burned in 2 minutes; triggers kill switch."
+    },
+    {
+      "id": "emergency-terminator",
+      "label": "Emergency Chaos Kill-Switch",
+      "product": "kubectl delete chaos --all",
+      "group": "g-kill-switch-ctrl",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Immediately aborts all chaos experiments and restores normal pod routing within 4 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "active-pod-killer",
+      "to": "live-user-impact",
+      "label": "1. Unintended Production Blast",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "live-user-impact",
+      "to": "budget-kill-trigger",
+      "label": "2. Detect Error Budget Threshold Breach",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "budget-kill-trigger",
+      "to": "emergency-terminator",
+      "label": "3. Fire Emergency Abort Command",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Blast Radius Breach Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Watchdog detects error rate exceeding 1% threshold during chaos execution.",
+      "why_traversal": "Guarantees chaos testing never compromises business SLAs.",
+      "protocol": "Real-time Telemetry Breach",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Immediate Emergency Abort",
+      "edges": [
+        "e3"
+      ],
+      "action": "Kill-switch executes cluster API call deleting all active Chaos CRDs in < 4 seconds.",
+      "why_traversal": "Restores production stability before customers notice significant disruption.",
+      "protocol": "Kubernetes Admission Webhook Abort",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "stuck-kill-switch",
+      "label": "RBAC Denies Kill-Switch Execution",
+      "changes": {
+        "failedNodes": [
+          "emergency-terminator"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Kill-switch service account lacked cluster-admin permission to delete Chaos CRDs.",
+      "diverted_path": "Chaos continues running; checkout remains down for 35 minutes.",
+      "blast_radius": "Major high-severity production incident.",
+      "recovery": "Pre-verify kill-switch permissions with automated pre-flight testing before every experiment."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "active-pod-killer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "active-pod-killer"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Chaos Blast-Radius Breach & Automated Emergency Kill-Switch: error budget burn threshold triggers immediate chaos termination."
+}

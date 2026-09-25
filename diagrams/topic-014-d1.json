@@ -1,0 +1,233 @@
+{
+  "id": "topic-014-d1",
+  "title": "Google Kubernetes Engine (GKE): Autopilot & Enterprise Clusters \u2014 Scope & Architecture Map",
+  "topic_no": "014",
+  "roadmap_id": "2.2",
+  "kind": "map",
+  "purpose": "Maps Google Kubernetes Engine (GKE) architecture: establishes boundaries between Google-managed Control Plane, multi-zone Node Pools, Standalone NEGs, and Workload Identity.",
+  "routing_rationale": "GKE separates control plane orchestration from data-plane execution. In Autopilot clusters, Google manages worker node provisioning, OS security, and auto-upgrades.",
+  "groups": [
+    {
+      "id": "g-cp",
+      "label": "Google-Managed Control Plane (API Server & etcd)",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 260,
+      "height": 360
+    },
+    {
+      "id": "g-nodes",
+      "label": "Multi-Zone Node Pool Subnet (RFC 1918)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 310,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-ingress-neg",
+      "label": "Container-Native Ingress (Cloud Load Balancing)",
+      "type": "external",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "k8s-api",
+      "label": "K8s API Server",
+      "product": "kube-apiserver",
+      "group": "g-cp",
+      "plane": "control",
+      "x": 150,
+      "y": 140,
+      "detail": "Managed master endpoint validating declarative manifests and RBAC."
+    },
+    {
+      "id": "etcd",
+      "label": "etcd Consensus Store",
+      "product": "Distributed Key-Value",
+      "group": "g-cp",
+      "plane": "control",
+      "x": 150,
+      "y": 280,
+      "detail": "Replicated state store recording cluster specs, leases, and pod bindings."
+    },
+    {
+      "id": "kubelet-node",
+      "label": "GKE Worker Node",
+      "product": "Container-Optimized OS",
+      "group": "g-nodes",
+      "plane": "data",
+      "x": 450,
+      "y": 140,
+      "detail": "Host VM running containerd runtime and kubelet daemon."
+    },
+    {
+      "id": "pod-workload",
+      "label": "Application Pod",
+      "product": "10.4.2.15 (VPC Native)",
+      "group": "g-nodes",
+      "plane": "data",
+      "x": 450,
+      "y": 280,
+      "detail": "Container with direct IP routable across VPC via Alias IP / Andromeda."
+    },
+    {
+      "id": "standalone-neg",
+      "label": "Standalone NEG",
+      "product": "Network Endpoint Group",
+      "group": "g-ingress-neg",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Directly registers Pod IPs with Cloud Load Balancer, bypassing kube-proxy iptables."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "k8s-api",
+      "to": "etcd",
+      "label": "1. Commit Pod Manifest",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "k8s-api",
+      "to": "kubelet-node",
+      "label": "2. Schedule to Worker Node",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "kubelet-node",
+      "to": "pod-workload",
+      "label": "3. Spawn Container Pod",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "pod-workload",
+      "to": "standalone-neg",
+      "label": "4. Register Pod IP Directly",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Manifest Commit",
+      "edges": [
+        "e1"
+      ],
+      "action": "Deployment controller submits pod spec; API server writes state to etcd.",
+      "why_traversal": "Raft consensus guarantees cluster state durability across control plane replicas.",
+      "protocol": "etcd Raft RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Kubelet Scheduling",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "kube-scheduler binds pod to node; kubelet invokes containerd to launch container.",
+      "why_traversal": "VPC-native cluster assigns real RFC 1918 VPC IP directly to pod network namespace.",
+      "protocol": "Container Runtime Interface (CRI)",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "NEG Registration",
+      "edges": [
+        "e4"
+      ],
+      "action": "NEG controller attaches pod IP directly to Cloud Load Balancer backend service.",
+      "why_traversal": "Eliminates kube-proxy iptables overhead and double-hop routing latencies.",
+      "protocol": "Compute Engine NEG API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pod-ip-exhaustion",
+      "label": "Secondary Subnet CIDR Exhaustion",
+      "changes": {
+        "failedNodes": [
+          "pod-workload"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Node pool scaled beyond /20 pod CIDR range; no IP addresses left for new pods.",
+      "diverted_path": "Pods remain stuck in Pending state with FailedCreatePodSandBox error.",
+      "blast_radius": "New pod replicas cannot schedule; autoscaling blocked.",
+      "recovery": "Use GKE multi-pod CIDR feature to attach secondary subnet to node pool."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "k8s-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "k8s-api"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Maps Google Kubernetes Engine (GKE) architecture: establishes boundaries between Google-managed Control Plane, multi-zone Node Pools, Standalone NEGs, and Workload Identity."
+}

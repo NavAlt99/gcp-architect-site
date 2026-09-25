@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Kubernetes Engine (GKE): Autopilot &amp; Enterprise Clusters — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-014.html">← Topic page</a><span>2.2 · TOPIC-014-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-014-d3",
+  "title": "Google Kubernetes Engine (GKE): Autopilot & Enterprise Clusters \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "014",
+  "roadmap_id": "2.2",
+  "kind": "failure",
+  "purpose": "Simulates GKE worker node kernel panic: demonstrates node failure detection, Pod eviction, and automatic rescheduling onto healthy standby nodes.",
+  "routing_rationale": "Kubernetes control plane detects NodeNotReady status, marks pods for eviction, and schedules replacements onto healthy nodes with available resource allocations.",
+  "groups": [
+    {
+      "id": "g-failed-node",
+      "label": "Failed Worker Node (Kernel Panic)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-control-heal",
+      "label": "Control Plane Eviction & Standby Node",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "crashed-node",
+      "label": "Crashed Worker Node",
+      "product": "Kernel Panic / NodeNotReady",
+      "group": "g-failed-node",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Underlying Linux VM encounters kernel deadlock; kubelet heartbeat ceases."
+    },
+    {
+      "id": "evicted-pod",
+      "label": "Terminated Pod",
+      "product": "Status: Terminating",
+      "group": "g-failed-node",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Pod running on crashed node loses network connectivity."
+    },
+    {
+      "id": "node-controller",
+      "label": "Node Lifecycle Controller",
+      "product": "kube-controller-manager",
+      "group": "g-control-heal",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Detects 40s heartbeat timeout; evicts pods and triggers node auto-repair."
+    },
+    {
+      "id": "standby-node",
+      "label": "Healthy Standby Node",
+      "product": "Zone B Node Pool",
+      "group": "g-control-heal",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Kube-scheduler immediately schedules replacement pod; container pulls and runs in <15s."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "crashed-node",
+      "to": "node-controller",
+      "label": "1. Heartbeat Timeout (NodeNotReady)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "node-controller",
+      "to": "evicted-pod",
+      "label": "2. Evict Unresponsive Pods",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "node-controller",
+      "to": "standby-node",
+      "label": "3. Re-schedule Replacement Pod",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Node Failure Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Node controller detects missing kubelet lease update after 40 seconds.",
+      "why_traversal": "Automated node monitoring identifies frozen hardware without human alerts.",
+      "protocol": "Kubernetes Lease API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Pod Eviction",
+      "edges": [
+        "e2"
+      ],
+      "action": "Controller sets node taint node.kubernetes.io/unreachable and evicts pods.",
+      "why_traversal": "Ensures deployment replica count is restored on surviving cluster capacity.",
+      "protocol": "Kubernetes Taint Controller",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Rapid Standby Reschedule",
+      "edges": [
+        "e3"
+      ],
+      "action": "kube-scheduler places replacement pod onto healthy worker node in Zone B.",
+      "why_traversal": "GKE Autopilot node auto-provisioning ensures capacity is always available.",
+      "protocol": "kube-scheduler RPC",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pvc-attachment-lock",
+      "label": "ReadWriteOnce PersistentVolume Lock",
+      "changes": {
+        "failedNodes": [
+          "standby-node"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Failed node did not release persistent disk lock (Multi-Attach error).",
+      "diverted_path": "Replacement pod stuck in ContainerCreating waiting for volume detachment.",
+      "blast_radius": "Stateful workloads experience delayed recovery (6-8 minutes).",
+      "recovery": "Use Regional PD with volumeAttachment timeouts or transition to Cloud Spanner/Firestore."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "crashed-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "crashed-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates GKE worker node kernel panic: demonstrates node failure detection, Pod eviction, and automatic rescheduling onto healthy standby nodes."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

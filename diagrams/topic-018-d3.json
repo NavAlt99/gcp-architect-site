@@ -1,0 +1,213 @@
+{
+  "id": "topic-018-d3",
+  "title": "Hybrid and Multi-Cloud Connectivity: VPN & Interconnect \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "018",
+  "roadmap_id": "2.6",
+  "kind": "failure",
+  "purpose": "Simulates primary Interconnect fiber cut: demonstrates Cloud Router BGP keepalive timeout and automated sub-second failover to Cloud HA VPN.",
+  "routing_rationale": "BGP detects physical link failure within 3 seconds, withdrawing the primary route and shifting traffic to the standby HA VPN tunnel without dropped sessions.",
+  "groups": [
+    {
+      "id": "g-failed-fiber",
+      "label": "Primary Interconnect Cut",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-failover-vpn",
+      "label": "Automated BGP Failover to Cloud HA VPN",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "fiber-cut-event",
+      "label": "Fiber Cut (Optical Loss)",
+      "product": "Physical Link Failure",
+      "group": "g-failed-fiber",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Backhoe cuts fiber conduit outside colocation facility; link state goes down."
+    },
+    {
+      "id": "bgp-monitor",
+      "label": "BGP Keepalive Sentinel",
+      "product": "Hold Timer = 9s",
+      "group": "g-failed-fiber",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "3 missed keepalives (3s intervals); tears down primary BGP peering session."
+    },
+    {
+      "id": "cloud-router-fail",
+      "label": "Cloud Router Route Manager",
+      "product": "BGP Dynamic Routing",
+      "group": "g-failover-vpn",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Withdraws 100G route; recalculates next-hop to secondary Cloud HA VPN tunnel (MED 200)."
+    },
+    {
+      "id": "ha-vpn-active",
+      "label": "Cloud HA VPN Tunnel #1",
+      "product": "IPsec Active Route",
+      "group": "g-failover-vpn",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Absorbs enterprise traffic flow across encrypted internet path within 2.8 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "fiber-cut-event",
+      "to": "bgp-monitor",
+      "label": "1. Loss of Carrier (LoC)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "bgp-monitor",
+      "to": "cloud-router-fail",
+      "label": "2. BGP Session Down Event",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cloud-router-fail",
+      "to": "ha-vpn-active",
+      "label": "3. Promote Standby VPN Route",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "fiber-cut-event",
+      "to": "ha-vpn-active",
+      "label": "4. Divert Traffic to IPsec Tunnel",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Link Disruption",
+      "edges": [
+        "e1"
+      ],
+      "action": "Physical fiber break interrupts light signal; optical transceivers detect loss of carrier.",
+      "why_traversal": "Hardware sensors trigger immediate BGP protocol withdrawal.",
+      "protocol": "Optical Loss Alert",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "BGP Route Withdrawal",
+      "edges": [
+        "e2"
+      ],
+      "action": "BGP monitor declares peer dead; Cloud Router withdraws primary route from VPC table.",
+      "why_traversal": "Fast BGP timers prevent routing blackholes during unexpected network breaks.",
+      "protocol": "BGP UPDATE (Withdraw)",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated VPN Failover",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Traffic automatically diverts to established Cloud HA VPN tunnels without dropped TCP sessions.",
+      "why_traversal": "Continuous active BGP peering over VPN ensures sub-3-second failover convergence.",
+      "protocol": "IPsec Encapsulated TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "vpn-bandwidth-ceiling",
+      "label": "HA VPN Bandwidth Throttling",
+      "changes": {
+        "failedNodes": [
+          "ha-vpn-active"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "10Gbps enterprise workload exceeded single Cloud HA VPN tunnel limit (3Gbps per tunnel).",
+      "diverted_path": "Excess packets dropped; application throughput throttled.",
+      "blast_radius": "High-bandwidth data sync slows down; interactive apps unaffected.",
+      "recovery": "Deploy multiple Cloud HA VPN tunnels with ECMP (Equal-Cost Multi-Path) routing."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "fiber-cut-event"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "fiber-cut-event"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates primary Interconnect fiber cut: demonstrates Cloud Router BGP keepalive timeout and automated sub-second failover to Cloud HA VPN."
+}

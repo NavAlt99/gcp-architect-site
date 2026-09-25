@@ -1,0 +1,228 @@
+{
+  "id": "topic-005-d3",
+  "title": "Software Architecture & Delivery Basics \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "005",
+  "roadmap_id": "0.5",
+  "kind": "failure",
+  "purpose": "Simulates a broken production rollout: demonstrates automated canary analysis detecting HTTP 5xx spikes and triggering instant 1-click rollback to the prior stable release.",
+  "routing_rationale": "Cloud Deploy monitors real-time deployment health metrics. If canary targets breach error budget thresholds, traffic is instantly reverted without waiting for manual SRE intervention.",
+  "groups": [
+    {
+      "id": "g-canary",
+      "label": "Canary Verification Target (10% Traffic)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-stable",
+      "label": "Prior Stable Release (90% Traffic)",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "canary-pod",
+      "label": "Canary Pod (v2.1 Buggy)",
+      "product": "GKE Pod",
+      "group": "g-canary",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Throws uncaught null pointer exception on 15% of inbound requests."
+    },
+    {
+      "id": "slo-monitor",
+      "label": "Cloud Monitoring SLO Alert",
+      "product": "Cloud Monitoring",
+      "group": "g-canary",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects HTTP 500 error budget burn rate exceeding 14x threshold."
+    },
+    {
+      "id": "deploy-controller",
+      "label": "Cloud Deploy Controller",
+      "product": "Cloud Deploy",
+      "group": "g-failover",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Executes automated rollback hook; patches Kubernetes target back to v2.0."
+    },
+    {
+      "id": "stable-pod",
+      "label": "Stable Pod Fleet (v2.0)",
+      "product": "GKE Pod Fleet",
+      "group": "g-failover",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Healthy prior release absorbs 100% of production traffic safely."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "canary-pod",
+      "to": "slo-monitor",
+      "label": "1. Emit HTTP 500 Metrics",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "slo-monitor",
+      "to": "deploy-controller",
+      "label": "2. Trigger Rollback Hook",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "deploy-controller",
+      "to": "stable-pod",
+      "label": "3. Revert Traffic to v2.0",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "canary-pod",
+      "to": "stable-pod",
+      "label": "4. Terminate Buggy Pods",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Error Budget Burn Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "Canary pod emits 5xx errors; Cloud Monitoring detects severe error budget burn.",
+      "why_traversal": "Automated telemetry flags software defects before full production exposure.",
+      "protocol": "OpenTelemetry gRPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Rollback Signal",
+      "edges": [
+        "e2"
+      ],
+      "action": "Monitoring fires webhook to Cloud Deploy API requesting rollback.",
+      "why_traversal": "Eliminates human delay during high-severity production degradations.",
+      "protocol": "Pub/Sub / Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Traffic Reversion",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Deploy resets load balancer weights, routing 100% traffic back to v2.0.",
+      "why_traversal": "Instantly restores user experience while defect is investigated.",
+      "protocol": "Cloud Load Balancing API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Faulty Pod Eviction",
+      "edges": [
+        "e4"
+      ],
+      "action": "GKE sends SIGTERM to canary pods, terminating failed release cleanly.",
+      "why_traversal": "Reclaims cluster resources and locks pipeline until patch is committed.",
+      "protocol": "Kubernetes SIGTERM",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "bad-migration",
+      "label": "Database Schema Incompatibility",
+      "changes": {
+        "failedNodes": [
+          "canary-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "v2.1 application code expected columns not yet present in production database.",
+      "diverted_path": "All canary requests fail with SQL syntax exceptions; automated rollback triggers.",
+      "blast_radius": "Confined to 10% canary traffic for under 45 seconds.",
+      "recovery": "Deploy forward-compatible database migrations before releasing new application binaries."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "canary-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "canary-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates a broken production rollout: demonstrates automated canary analysis detecting HTTP 5xx spikes and triggering instant 1-click rollback to the prior stable release."
+}

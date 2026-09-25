@@ -1,0 +1,233 @@
+{
+  "id": "topic-019-d2",
+  "title": "Cloud Storage, Object Lifecycle, and Enterprise File Systems \u2014 Request & Control Flow",
+  "topic_no": "019",
+  "roadmap_id": "2.7",
+  "kind": "flow",
+  "purpose": "Traces object ingestion and lifecycle tiering: from client upload through Cloud Storage APIs to automated Autoclass transition into Archive cold storage.",
+  "routing_rationale": "Autoclass dynamically monitors object access frequency, moving inactive data to cheaper Coldline/Archive storage without modifying application code.",
+  "groups": [
+    {
+      "id": "g-upload",
+      "label": "Client Ingestion Channel",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-bucket-space",
+      "label": "Cloud Storage Bucket Lifecycle",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-archive-tier",
+      "label": "Archive Cold Storage Substrate",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client-uploader",
+      "label": "Client Application",
+      "product": "GCS Client SDK",
+      "group": "g-upload",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Uploads 100MB PDF document invoices into customer bucket."
+    },
+    {
+      "id": "gcs-frontend",
+      "label": "GCS Regional API",
+      "product": "storage.googleapis.com",
+      "group": "g-upload",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Validates IAM roles/storage.objectCreator and generates unique object generation ID."
+    },
+    {
+      "id": "std-storage",
+      "label": "Day 0-30: Standard Tier",
+      "product": "Frequent Access",
+      "group": "g-bucket-space",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Active customer invoice queried frequently during first month ($0.020/GB)."
+    },
+    {
+      "id": "coldline-storage",
+      "label": "Day 90: Coldline Tier",
+      "product": "Infrequent Access",
+      "group": "g-bucket-space",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Autoclass transitions object to Coldline ($0.007/GB) after 90 days idle."
+    },
+    {
+      "id": "archive-storage",
+      "label": "Day 365: Archive Tier",
+      "product": "Cold Archive Storage",
+      "group": "g-archive-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Long-term regulatory archival ($0.0012/GB); sub-second read latency retained."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "client-uploader",
+      "to": "gcs-frontend",
+      "label": "1. PutObject Request",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "gcs-frontend",
+      "to": "std-storage",
+      "label": "2. Store in Standard Class",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "std-storage",
+      "to": "coldline-storage",
+      "label": "3. 90-Day Idle Transition",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "coldline-storage",
+      "to": "archive-storage",
+      "label": "4. 365-Day Archive Transition",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Initial Hot Storage",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Invoice is uploaded to Standard tier; immediately readable by billing web apps.",
+      "why_traversal": "Standard class optimizes frequent read throughput without retrieval fees.",
+      "protocol": "HTTPS REST",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Coldline Tiering",
+      "edges": [
+        "e3"
+      ],
+      "action": "Autoclass observes 90 days without access; moves object storage class to Coldline.",
+      "why_traversal": "Saves 65% on storage costs while keeping same bucket and object name.",
+      "protocol": "Autoclass Background Job",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Archive Compliance",
+      "edges": [
+        "e4"
+      ],
+      "action": "After 1 year, object transitions to Archive class for 7-year regulatory retention.",
+      "why_traversal": "Achieves lowest possible storage cost ($1.20/TB/month) with sub-second retrieval.",
+      "protocol": "GCS Lifecycle Engine",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "early-deletion-fee",
+      "label": "Coldline Early Deletion Penalty",
+      "changes": {
+        "failedNodes": [
+          "coldline-storage"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Application deleted Coldline object 15 days after transition (min duration is 90 days).",
+      "diverted_path": "Deletion succeeds, but Google Cloud bills remaining 75 days as early deletion fee.",
+      "blast_radius": "Unplanned operational billing charges.",
+      "recovery": "Use Autoclass instead of manual lifecycle rules to automatically manage deletion windows."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "client-uploader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "client-uploader"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces object ingestion and lifecycle tiering: from client upload through Cloud Storage APIs to automated Autoclass transition into Archive cold storage."
+}

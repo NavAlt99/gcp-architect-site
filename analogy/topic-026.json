@@ -1,0 +1,43 @@
+{
+  "topic_no": "026",
+  "roadmap_id": "3.4b",
+  "title": "Cloud City: Decision-Making Frameworks: ADRs & Trade-Off Matrices",
+  "city_concept": "City Council Charters & Municipal Archives",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "New city council members kept overturning decisions made two years earlier, wasting millions tearing down newly built tram lines.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "City Archivist Arthur established the Municipal Charter Log (ADRs). Every major bridge or rail decision was recorded with reasons, cost projections, and alternatives.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a contractor asked why the city chose stone over steel for the seawall, Arthur pulled ADR #14 showing steel rusted in the saltwater bay.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Municipal paper records can be lost in fires; digital Git-versioned ADRs provide permanent, searchable institutional memory.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

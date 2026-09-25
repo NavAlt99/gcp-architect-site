@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Analysis Method &amp; Discovery — Scope &amp; Architecture Map</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-045.html">← Topic page</a><span>7.1 · TOPIC-045-D1</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-045-d1",
+  "title": "Case Analysis Method & Discovery \u2014 Scope & Architecture Map",
+  "topic_no": "045",
+  "roadmap_id": "7.1",
+  "kind": "map",
+  "purpose": "Visualizes the Systematic Case Study Discovery Framework: extracting business drivers, non-functional requirements, technical constraints, and mapping them directly to Google Cloud target architectures.",
+  "routing_rationale": "PCA case study analysis requires decoupling subjective narrative from objective architectural constraints: identify compliance, latency, cost, and availability requirements first before selecting GCP services.",
+  "groups": [
+    {
+      "id": "g-case-narrative",
+      "label": "Enterprise Narrative & Business Goals",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-matrix-analysis",
+      "label": "Architectural Synthesis & Sizing Matrix",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-target-blueprint",
+      "label": "Google Cloud Target Reference Blueprint",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "biz-driver",
+      "label": "Business Driver: Global Expansion",
+      "product": "Sub-100ms Worldwide Latency",
+      "group": "g-case-narrative",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Company expanding from US to Europe and Asia; demands 99.99% availability."
+    },
+    {
+      "id": "compliance-req",
+      "label": "Regulatory Constraint: HIPAA/GDPR",
+      "product": "Strict Data Residency & CMEK",
+      "group": "g-case-narrative",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Patient and customer data must remain encrypted at rest and in transit with audit logs."
+    },
+    {
+      "id": "sizing-synthesizer",
+      "label": "Constraint Matrix Evaluator",
+      "product": "Maps SLAs to Cloud Services",
+      "group": "g-matrix-analysis",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Evaluates candidate architectures; rejects single-region solutions due to global latency."
+    },
+    {
+      "id": "cloud-target-arch",
+      "label": "Target Cloud Architecture",
+      "product": "GKE + Multi-Region Spanner",
+      "group": "g-target-blueprint",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Global Anycast External ALB + Regional GKE + Cloud Spanner Multi-Region."
+    },
+    {
+      "id": "finops-validation",
+      "label": "FinOps Cost Model Sign-off",
+      "product": "TCO Analysis & CUD Alignment",
+      "group": "g-target-blueprint",
+      "plane": "control",
+      "x": 780,
+      "y": 280,
+      "detail": "Confirms solution meets budget ceiling using 3-year Flexible Spend CUDs."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "biz-driver",
+      "to": "sizing-synthesizer",
+      "label": "1. Extract Latency & SLA Goals",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "compliance-req",
+      "to": "sizing-synthesizer",
+      "label": "2. Extract Security & Sovereignty Rules",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "sizing-synthesizer",
+      "to": "cloud-target-arch",
+      "label": "3. Synthesize Target Architecture",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "cloud-target-arch",
+      "to": "finops-validation",
+      "label": "4. Verify Financial Viability",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Constraint Extraction",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Architect deconstructs case study text into numeric SLAs, latency targets, and compliance rules.",
+      "why_traversal": "Prevents subjective architectural bias by anchoring on quantitative requirements.",
+      "protocol": "Architecture Discovery Matrix",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Architecture Blueprint Synthesis",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Matches requirements to GCP multi-region topology and confirms financial sustainability.",
+      "why_traversal": "Produces exam-winning designs that satisfy both technical and commercial criteria.",
+      "protocol": "Solution Blueprinting",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "over-engineering-penalty",
+      "label": "Over-Engineering Distractor Trap",
+      "changes": {
+        "failedNodes": [
+          "cloud-target-arch"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Architect proposed complex real-time Apache Beam pipeline when requirements only asked for daily batch reports.",
+      "diverted_path": "Operational overhead and cost exceed project scope by 400%.",
+      "blast_radius": "Architecture fails exam review scoring.",
+      "recovery": "Adhere strictly to minimal operational complexity: use BigQuery scheduled queries for batch reporting."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "biz-driver"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "biz-driver"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes the Systematic Case Study Discovery Framework: extracting business drivers, non-functional requirements, technical constraints, and mapping them directly to Google Cloud target architectures."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

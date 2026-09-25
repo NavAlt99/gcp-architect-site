@@ -1,0 +1,43 @@
+{
+  "topic_no": "016",
+  "roadmap_id": "2.4",
+  "title": "Cloud City: Virtual Private Cloud (VPC) Networking & Security",
+  "city_concept": "City Roadway Network, Expressways, and Gated Districts",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Every bakery kitchen was built directly on the public sidewalk with no fence. Thieves walked in, and delivery trucks collided at unpainted intersections.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Rae the Dispatcher designed private gated industrial parks (VPC Networks) with designated avenue addresses (Subnets) and security checkpoints (Firewalls).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Two districts accidentally named their streets 'Main Street 100'. Delivery trucks refused to cross the bridge due to address collisions.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical cities, bridges can cross over each other; in VPC Network Peering, overlapping subnets fail with mathematical finality.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

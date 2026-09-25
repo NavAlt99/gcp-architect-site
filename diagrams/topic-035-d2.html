@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Network Security: VPC-SC &amp; Cloud Armor — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-035.html">← Topic page</a><span>5.2 · TOPIC-035-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-035-d2",
+  "title": "Network Security: VPC-SC & Cloud Armor \u2014 Request & Control Flow",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "flow",
+  "purpose": "Traces Multi-Perimeter Ingress/Egress Communication: how GKE in Project A securely accesses BigQuery in Project B using explicit VPC Service Controls Ingress & Egress rules.",
+  "routing_rationale": "VPC Service Controls allows granular perimeter bridging using cryptographically validated identity and network constraints without merging entire projects into a single flat network.",
+  "groups": [
+    {
+      "id": "g-perim-a",
+      "label": "Perimeter Alpha: App Services (Project A)",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-egress-rule",
+      "label": "Access Context Manager Ingress/Egress Rules",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-perim-b",
+      "label": "Perimeter Beta: Data Lakehouse (Project B)",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-sa-caller",
+      "label": "App Service Account",
+      "product": "app-runner@proj-a.iam.gserviceaccount.com",
+      "group": "g-perim-a",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "GKE pod executing transactional analytics query across project boundaries."
+    },
+    {
+      "id": "egress-policy",
+      "label": "Perimeter A Egress Rule",
+      "product": "Allows egress to Proj B for BigQuery",
+      "group": "g-egress-rule",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Specifies from identity: app-runner, to service: bigquery.googleapis.com."
+    },
+    {
+      "id": "ingress-policy",
+      "label": "Perimeter B Ingress Rule",
+      "product": "Allows ingress from Perimeter A",
+      "group": "g-egress-rule",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Validates caller identity and source project before admitting request."
+    },
+    {
+      "id": "bq-lakehouse",
+      "label": "Project B BigQuery Dataset",
+      "product": "orders_fact Table",
+      "group": "g-perim-b",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Executes query and streams partitioned results back to Project A."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-sa-caller",
+      "to": "egress-policy",
+      "label": "1. Initiate Cross-Project Call",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "egress-policy",
+      "to": "ingress-policy",
+      "label": "2. Match Egress Rule & Bridge",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "ingress-policy",
+      "to": "bq-lakehouse",
+      "label": "3. Match Ingress Rule & Execute",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Egress Policy Validation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Perimeter A checks egress policy: caller is authorized to contact BigQuery in Project B.",
+      "why_traversal": "Prevents unauthorized outbound calls while allowing approved workflows.",
+      "protocol": "VPC-SC Egress Rule",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Ingress Admittance",
+      "edges": [
+        "e3"
+      ],
+      "action": "Perimeter B confirms caller identity matches ingress whitelist and executes query.",
+      "why_traversal": "Secures data perimeter from arbitrary external callers.",
+      "protocol": "VPC-SC Ingress Rule",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unauthorized-method-block",
+      "label": "Unauthorized Storage API Method Blocked",
+      "changes": {
+        "failedNodes": [
+          "ingress-policy"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Caller attempted to call storage.buckets.delete instead of permitted bigquery.tables.getData.",
+      "diverted_path": "VPC-SC evaluates method constraint and rejects deletion attempt.",
+      "blast_radius": "Zero data loss.",
+      "recovery": "Restrict caller permissions strictly to read-only analytical operations."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "app-sa-caller"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "app-sa-caller"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Multi-Perimeter Ingress/Egress Communication: how GKE in Project A securely accesses BigQuery in Project B using explicit VPC Service Controls Ingress & Egress rules."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

@@ -1,0 +1,43 @@
+{
+  "topic_no": "009",
+  "roadmap_id": "1.3",
+  "title": "Cloud City: Identity Basics: IAM, Principals, and Service Accounts",
+  "city_concept": "City Identity Badges & Security Checkpoints",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Anyone could walk into Brightloaf's recipe vault by claiming they worked there. Contractors made physical duplicate master keys that were lost in coffee shops.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Ines the Inspector deployed biometric municipal badges (Cloud Identity & IAM). Keys are retired in favor of time-expiring wristbands (Impersonation).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A disgruntled employee tried using an expired delivery pass to enter the treasury. The electronic gate instantly revoked the badge.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical gates, guards might get tired; in Cloud IAM, every single packet and API call evaluates cryptographic proofs in sub-milliseconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

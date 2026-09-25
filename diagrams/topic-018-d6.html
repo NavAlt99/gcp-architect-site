@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hybrid and Multi-Cloud Connectivity: VPN &amp; Interconnect — D6</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-018.html">← Topic page</a><span>2.6 · TOPIC-018-D6</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-018-d6",
+  "title": "Hybrid and Multi-Cloud Connectivity: VPN & Interconnect \u2014 D6",
+  "topic_no": "018",
+  "roadmap_id": "2.6",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Enterprise hybrid networks combine high-bandwidth Dedicated Interconnect with encrypted Cloud HA VPN backup tunnels, synchronized via dynamic BGP.",
+  "groups": [
+    {
+      "id": "g-onprem-dc",
+      "label": "Enterprise On-Premises Datacenter",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-hybrid-mesh",
+      "label": "Hybrid Edge (Interconnect & HA VPN)",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gcp-vpc",
+      "label": "Google Cloud VPC (production-vpc)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "corp-router",
+      "label": "On-Prem Core Router",
+      "product": "Cisco / Juniper (ASN 65001)",
+      "group": "g-onprem-dc",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Enterprise border router with dual redundant physical cross-connects."
+    },
+    {
+      "id": "corp-lan",
+      "label": "Corporate Subnet",
+      "product": "192.168.10.0/24",
+      "group": "g-onprem-dc",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Internal corporate workstations and legacy databases."
+    },
+    {
+      "id": "dedicated-ic",
+      "label": "Dedicated Interconnect",
+      "product": "100 Gbps Physical Link",
+      "group": "g-hybrid-mesh",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Direct fiber cross-connect into Google colocation facility (99.99% SLA)."
+    },
+    {
+      "id": "ha-vpn",
+      "label": "Cloud HA VPN (Dual Tunnels)",
+      "product": "IPsec Encrypted (99.99%)",
+      "group": "g-hybrid-mesh",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Encrypted backup tunnel running across public internet with dual active interfaces."
+    },
+    {
+      "id": "cloud-router-bgp",
+      "label": "Cloud Router (BGP)",
+      "product": "ASN 64513 Dynamic BGP",
+      "group": "g-gcp-vpc",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Exchanges BGP routes with on-prem; sets MED=100 for Interconnect, MED=200 for VPN."
+    },
+    {
+      "id": "gcp-db",
+      "label": "Private Cloud Workload",
+      "product": "Compute / Spanner (10.0.1.0/24)",
+      "group": "g-gcp-vpc",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Google Cloud resources receiving low-latency hybrid packets."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "corp-lan",
+      "to": "corp-router",
+      "label": "1. Corporate Outbound Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "corp-router",
+      "to": "dedicated-ic",
+      "label": "2. Primary 100G Path (MED 100)",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "corp-router",
+      "to": "ha-vpn",
+      "label": "2b. Standby IPsec Path (MED 200)",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "dedicated-ic",
+      "to": "cloud-router-bgp",
+      "label": "3. BGP Route Propagation",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "dedicated-ic",
+      "to": "gcp-db",
+      "label": "4. Private Low-Latency Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "BGP Route Exchange",
+      "edges": [
+        "e4"
+      ],
+      "action": "Cloud Router and corporate router exchange routes dynamically via eBGP.",
+      "why_traversal": "Dynamic BGP eliminates manual static route updates and supports instant failover.",
+      "protocol": "BGP TCP 179",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Primary Interconnect Ingress",
+      "edges": [
+        "e1",
+        "e2",
+        "e5"
+      ],
+      "action": "Packet traverses Dedicated Interconnect with 100Gbps line rate and <3ms latency.",
+      "why_traversal": "BGP MED (Multi-Exit Discriminator) prioritizes lowest-cost Interconnect link over VPN.",
+      "protocol": "802.1Q VLAN / IP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Standby Readiness",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud HA VPN keeps BGP session active in standby mode, ready for instant switchover.",
+      "why_traversal": "Guarantees 99.99% enterprise network SLA across physical disaster scenarios.",
+      "protocol": "IPsec IKEv2",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "fiber-cut-primary",
+      "label": "Primary Interconnect Physical Fiber Cut",
+      "changes": {
+        "failedNodes": [
+          "dedicated-ic"
+        ],
+        "failedEdges": [
+          "e2",
+          "e5"
+        ]
+      },
+      "root_cause": "Metropolitan construction severs physical fiber cross-connect into Google colocation facility.",
+      "diverted_path": "BGP keepalive timeout (3s) withdraws Interconnect route; traffic instantly diverts to Cloud HA VPN.",
+      "blast_radius": "Sub-second session failover; bandwidth drops from 100Gbps to 3Gbps IPsec ceiling.",
+      "recovery": "Enterprise traffic continues uninterrupted; fiber technicians repair cross-connect."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "corp-router"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "corp-router"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

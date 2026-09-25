@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Study: Helicopter Racing League — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-049.html">← Topic page</a><span>7.4d · TOPIC-049-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-049-d2",
+  "title": "Case Study: Helicopter Racing League \u2014 Request & Control Flow",
+  "topic_no": "049",
+  "roadmap_id": "7.4d",
+  "kind": "flow",
+  "purpose": "Traces Real-Time Predictive AI Graphics Injection Flow: telemetry ingestion -> aerodynamic ML inference -> graphic overlay composition -> Cloud CDN broadcast distribution.",
+  "routing_rationale": "Synchronizing sensor event timestamps with video presentation timestamps (PTS) ensures augmented reality telemetry overlays align perfectly with live helicopter footage.",
+  "groups": [
+    {
+      "id": "g-raw-sensor",
+      "label": "In-Flight Sensor Telemetry",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-ar-composer",
+      "label": "AI Prediction & Video Compositor",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-fan-endpoints",
+      "label": "Global Fan Mobile & TV Broadcast",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rotor-data",
+      "label": "Rotor Pitch & Bank Angle",
+      "product": "Event Timestamp: 14:02:11.450",
+      "group": "g-raw-sensor",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Helicopter #7 banks hard into turn 4 at 160 knots."
+    },
+    {
+      "id": "ai-pass-model",
+      "label": "Vertex AI Prediction Endpoint",
+      "product": "Inference Latency: 12ms",
+      "group": "g-ar-composer",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Predicts 87% probability of overtaking Helicopter #2 in turn 4."
+    },
+    {
+      "id": "transcoder-api",
+      "label": "Live Stream Video Transcoder",
+      "product": "Transcoder API (CMAF)",
+      "group": "g-ar-composer",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Composites dynamic '87% OVERTAKE' graphic onto 4K video frame."
+    },
+    {
+      "id": "fan-screen",
+      "label": "Fan Living Room TV (4K 60FPS)",
+      "product": "Cloud CDN Glass-to-Glass: 850ms",
+      "group": "g-fan-endpoints",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Displays synchronized graphic overlay matching live helicopter banking on screen."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "rotor-data",
+      "to": "ai-pass-model",
+      "label": "1. Send Flight Dynamics to Model",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ai-pass-model",
+      "to": "transcoder-api",
+      "label": "2. Inject Prediction Metadata",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "transcoder-api",
+      "to": "fan-screen",
+      "label": "3. Broadcast Enhanced Stream",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Sub-Second AI Inference",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Vertex AI computes overtake odds in 12ms; passes metadata to Live Stream Transcoder.",
+      "why_traversal": "Enables predictive graphics before the physical maneuver even concludes.",
+      "protocol": "gRPC Inference",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Ultra-Low-Latency CDN Delivery",
+      "edges": [
+        "e3"
+      ],
+      "action": "Transcoder emits CMAF chunks cached at Google edge PoPs; viewers watch with sub-second delay.",
+      "why_traversal": "Creates an immersive real-time viewing experience on par with on-track spectators.",
+      "protocol": "HTTP/3 CMAF over Cloud CDN",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "pts-desync-lag",
+      "label": "Video-Telemetry Clock Desynchronization",
+      "changes": {
+        "failedNodes": [
+          "transcoder-api"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Telemetry NTP clock differed from video camera Genlock clock by 400ms.",
+      "diverted_path": "Graphic overlay appeared 400ms after the overtake was already completed on screen.",
+      "blast_radius": "Awkward viewer experience.",
+      "recovery": "Lock telemetry sensor timestamps directly to camera video timecode (SMPTE) at edge."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "rotor-data"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "rotor-data"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Real-Time Predictive AI Graphics Injection Flow: telemetry ingestion -> aerodynamic ML inference -> graphic overlay composition -> Cloud CDN broadcast distribution."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

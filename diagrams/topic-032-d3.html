@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Observability: Cloud Monitoring, Logging, Trace &amp; Profiler — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-032.html">← Topic page</a><span>4.5 · TOPIC-032-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-032-d3",
+  "title": "Observability: Cloud Monitoring, Logging, Trace & Profiler \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "032",
+  "roadmap_id": "4.5",
+  "kind": "failure",
+  "purpose": "Simulates latency anomaly breach: demonstrates Cloud Monitoring alerting on p99 SLO burn rate and automated incident escalation to PagerDuty.",
+  "routing_rationale": "Multi-window multi-burn-rate alerts detect both sudden severe degradations (14x burn in 1 hour) and slow chronic leaks (2x burn in 6 hours) without alert fatigue.",
+  "groups": [
+    {
+      "id": "g-burn-source",
+      "label": "Production Microservice Degradation",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-slo-escalate",
+      "label": "Cloud Monitoring MQL & SRE Escalation",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "degraded-pod",
+      "label": "Degraded Payment Pod",
+      "product": "p99 Latency = 3,500ms",
+      "group": "g-burn-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Payment microservice exceeds 500ms SLO latency target for 15% of requests."
+    },
+    {
+      "id": "mql-evaluator",
+      "label": "MQL Burn Rate Evaluator",
+      "product": "Multi-Window Alert (14x)",
+      "group": "g-burn-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Calculates 2% of 30-day error budget consumed in past 60 minutes."
+    },
+    {
+      "id": "incident-manager",
+      "label": "Cloud Monitoring Incident",
+      "product": "Incident #89201 Active",
+      "group": "g-slo-escalate",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Opens high-severity operational incident; bundles latency graphs and trace IDs."
+    },
+    {
+      "id": "pagerduty-oncall",
+      "label": "SRE PagerDuty On-Call",
+      "product": "Mobile Push & Voice Call",
+      "group": "g-slo-escalate",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Pages primary SRE engineer within 60 seconds of confirmed threshold breach."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "degraded-pod",
+      "to": "mql-evaluator",
+      "label": "1. Ingest Latency Metric Stream",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "mql-evaluator",
+      "to": "incident-manager",
+      "label": "2. Trigger High Burn Rate Incident",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "incident-manager",
+      "to": "pagerduty-oncall",
+      "label": "3. Page On-Call SRE Engineer",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Error Budget Burn Calculation",
+      "edges": [
+        "e1"
+      ],
+      "action": "MQL query computes short-window (1h) and long-window (6h) burn rates simultaneously.",
+      "why_traversal": "Dual-window evaluation prevents false alarms from short transient spikes.",
+      "protocol": "Monitoring Query Language",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Incident Opening",
+      "edges": [
+        "e2"
+      ],
+      "action": "14x burn rate confirmed; Cloud Monitoring opens Incident #89201.",
+      "why_traversal": "Creates centralized operational timeline for incident retrospective.",
+      "protocol": "Cloud Monitoring Alerting",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Targeted On-Call Paging",
+      "edges": [
+        "e3"
+      ],
+      "action": "Notification channel pages on-call engineer with direct link to Cloud Trace flame chart.",
+      "why_traversal": "Reduces MTTR (Mean Time to Resolution) from 45 minutes to 8 minutes.",
+      "protocol": "Webhook / PagerDuty API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "alert-fatigue",
+      "label": "Alert Fatigue / Flapping Notification Storm",
+      "changes": {
+        "failedNodes": [
+          "incident-manager"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Alert configured with simple static CPU threshold (CPU > 80% for 1 minute).",
+      "diverted_path": "50 alerts fired in 1 hour during normal batch job processing; on-call muted alerts.",
+      "blast_radius": "Real production customer degradation missed during noise storm.",
+      "recovery": "Transition all alerting to SLO error budget burn rate policies using MQL."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "degraded-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "degraded-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates latency anomaly breach: demonstrates Cloud Monitoring alerting on p99 SLO burn rate and automated incident escalation to PagerDuty."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

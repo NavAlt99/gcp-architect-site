@@ -1,0 +1,219 @@
+{
+  "id": "topic-058-d2",
+  "title": "Hybrid Connectivity Decision Cheat Sheet \u2014 Request & Control Flow",
+  "topic_no": "058",
+  "roadmap_id": "cheat-4",
+  "kind": "flow",
+  "purpose": "Traces 99.99% High Availability Interconnect Topology Flow: 2 metropolitan colocation facilities, 4 physical cross-connects, dual Cloud Routers, and dynamic BGP route propagation.",
+  "routing_rationale": "Achieving Google's 99.99% Interconnect SLA requires total physical diversity: two distinct colocation sites with redundant connections to two Cloud Routers.",
+  "groups": [
+    {
+      "id": "g-onprem-dc1",
+      "label": "Customer On-Prem DC / Colocation A",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-google-colo",
+      "label": "Google Edge: Dual Metro Colocations",
+      "type": "external",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-cloud-routers",
+      "label": "GCP Production VPC (Dual Cloud Routers)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "onprem-router1",
+      "label": "On-Premises Edge Router 1",
+      "product": "BGP ASN: 65001 (Metro 1)",
+      "group": "g-onprem-dc1",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Connects to Google Colocation Facility 1 (e.g. Equinix Ashburn)."
+    },
+    {
+      "id": "onprem-router2",
+      "label": "On-Premises Edge Router 2",
+      "product": "BGP ASN: 65001 (Metro 2)",
+      "group": "g-onprem-dc1",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Connects to Google Colocation Facility 2 (e.g. CoreSite Reston)."
+    },
+    {
+      "id": "google-colo1",
+      "label": "Google Metro Facility 1",
+      "product": "Dual 10G Dedicated Circuits",
+      "group": "g-google-colo",
+      "plane": "data",
+      "x": 440,
+      "y": 140,
+      "detail": "Carries Primary VLAN attachments to Cloud Router A."
+    },
+    {
+      "id": "google-colo2",
+      "label": "Google Metro Facility 2",
+      "product": "Dual 10G Dedicated Circuits",
+      "group": "g-google-colo",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Carries Secondary VLAN attachments to Cloud Router B."
+    },
+    {
+      "id": "cloud-router-ha",
+      "label": "Dual Regional Cloud Routers",
+      "product": "Dynamic BGP (99.99% SLA)",
+      "group": "g-vpc-cloud-routers",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Propagates VPC subnets to on-premise network and dynamically fails over in < 3 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "onprem-router1",
+      "to": "google-colo1",
+      "label": "1. 10G Cross-Connect Metro 1",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "onprem-router2",
+      "to": "google-colo2",
+      "label": "2. 10G Cross-Connect Metro 2",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "google-colo1",
+      "to": "cloud-router-ha",
+      "label": "3. Primary BGP Peering Session",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "google-colo2",
+      "to": "cloud-router-ha",
+      "label": "4. Secondary BGP Peering Session",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Dual-Metro Physical Cross-Connects",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Provisions redundant physical circuits across two distinct metropolitan areas.",
+      "why_traversal": "Protects against localized fiber cuts or datacenter power outages.",
+      "protocol": "10GBASE-LR Optical Fiber",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Dynamic BGP Route Exchange",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Cloud Routers exchange routes via eBGP; if Metro 1 fails, Metro 2 takes 100% traffic.",
+      "why_traversal": "Satisfies Google's 99.99% SLA contractual requirements.",
+      "protocol": "eBGP Dynamic Routing",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "single-colo-9999-trap",
+      "label": "Single Colocation Facility Violates 99.99% SLA",
+      "changes": {
+        "failedNodes": [
+          "google-colo2"
+        ],
+        "failedEdges": [
+          "e2",
+          "e4"
+        ]
+      },
+      "root_cause": "Customer deployed 4 cross-connects inside a single colocation facility to save cost.",
+      "diverted_path": "Google denies 99.99% SLA claim when facility power glitch caused outage.",
+      "blast_radius": "Only 99.9% SLA applies.",
+      "recovery": "Mandate dual distinct metropolitan colocation facilities for all 99.99% SLA architectures."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "onprem-router1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "onprem-router1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces 99.99% High Availability Interconnect Topology Flow: 2 metropolitan colocation facilities, 4 physical cross-connects, dual Cloud Routers, and dynamic BGP route propagation."
+}

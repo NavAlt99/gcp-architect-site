@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migration Strategies &amp; The 6 Rs — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-025.html">← Topic page</a><span>3.4 · TOPIC-025-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-025-d3",
+  "title": "Migration Strategies & The 6 Rs \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "025",
+  "roadmap_id": "3.4",
+  "kind": "failure",
+  "purpose": "Simulates migration rollback scenario: undetected application defect forces emergency reversal of cutover without data loss.",
+  "routing_rationale": "Reverse replication pipelines established during cutover guarantee a safe fallback path if critical production bugs appear in the cloud environment.",
+  "groups": [
+    {
+      "id": "g-cloud-rollback",
+      "label": "Google Cloud Target (Post-Cutover)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-onprem-fallback",
+      "label": "On-Prem Fallback Environment",
+      "type": "onprem",
+      "scope": "onprem",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cloud-failing-app",
+      "label": "Cloud Run App (Defective v2)",
+      "product": "HTTP 500 Spike (Memory Leak)",
+      "group": "g-cloud-rollback",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "New cloud microservice triggers memory leak under production concurrency."
+    },
+    {
+      "id": "cloud-primary-db",
+      "label": "Cloud SQL Primary",
+      "product": "Writing Live Customer Data",
+      "group": "g-cloud-rollback",
+      "plane": "data",
+      "x": 220,
+      "y": 280,
+      "detail": "Holds 45 minutes of new orders generated post-cutover."
+    },
+    {
+      "id": "reverse-cdc",
+      "label": "Reverse CDC Replication Pipeline",
+      "product": "Streaming Changes Backwards",
+      "group": "g-onprem-fallback",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Streams new orders from Cloud SQL back to on-premise MySQL database."
+    },
+    {
+      "id": "onprem-restored-db",
+      "label": "On-Prem MySQL Primary",
+      "product": "Restored Source Primary",
+      "group": "g-onprem-fallback",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Ready to resume live traffic without losing the 45 minutes of new orders."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cloud-failing-app",
+      "to": "cloud-primary-db",
+      "label": "1. Write Cloud Orders",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "cloud-primary-db",
+      "to": "reverse-cdc",
+      "label": "2. Stream Reverse CDC Log",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "reverse-cdc",
+      "to": "onprem-restored-db",
+      "label": "3. Synchronize On-Premise DB",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Reverse Synchronization Active",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Reverse replication channel continuously syncs new cloud transactions back to on-prem.",
+      "why_traversal": "Establishes a zero-data-loss safety net during the vulnerable post-cutover window.",
+      "protocol": "Reverse CDC Stream",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Controlled Emergency Rollback",
+      "edges": [],
+      "action": "Cloud traffic halted; DNS reverted to on-prem; on-prem app resumes with complete data.",
+      "why_traversal": "Restores production reliability in minutes without data corruption or loss.",
+      "protocol": "DNS Failback",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "no-reverse-replication",
+      "label": "Missing Reverse Replication Trap",
+      "changes": {
+        "failedNodes": [
+          "reverse-cdc"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Team omitted reverse CDC pipeline to save setup time.",
+      "diverted_path": "Rollback requires discarding 45 minutes of customer transactions or manual SQL patching.",
+      "blast_radius": "Severe business disruption and manual reconciliation.",
+      "recovery": "Mandate reverse replication pipelines as an architectural prerequisite for cutover approval."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cloud-failing-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cloud-failing-app"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates migration rollback scenario: undetected application defect forces emergency reversal of cutover without data loss."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

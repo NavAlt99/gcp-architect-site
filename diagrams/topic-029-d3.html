@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SRE Concepts: SLIs, SLOs &amp; Error Budgets — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-029.html">← Topic page</a><span>4.2 · TOPIC-029-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-029-d3",
+  "title": "SRE Concepts: SLIs, SLOs & Error Budgets \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "029",
+  "roadmap_id": "4.2",
+  "kind": "failure",
+  "purpose": "Simulates Error Budget Depletion leading to Automated Production Deployment Freeze: illustrates system protection during release instability.",
+  "routing_rationale": "Automating the enforcement of deployment freezes removes political friction between engineering leads and ensures system stability takes precedence.",
+  "groups": [
+    {
+      "id": "g-burn-source",
+      "label": "Production Microservice Degradation",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-freeze-enforce",
+      "label": "Automated Deployment Freeze Enforcer",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "buggy-v3-release",
+      "label": "Unstable v3 Payment Release",
+      "product": "NullPointer Bug Under Load",
+      "group": "g-burn-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "New microservice release burns 85% of monthly error budget in 12 hours."
+    },
+    {
+      "id": "budget-monitor",
+      "label": "Error Budget Sentinel",
+      "product": "Budget Remaining: 0.0%",
+      "group": "g-burn-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects budget exhaustion; marks project as 'STABILITY_FREEZE_ACTIVE'."
+    },
+    {
+      "id": "cloud-deploy-pipe",
+      "label": "Cloud Deploy Release Pipeline",
+      "product": "Release Target: Production",
+      "group": "g-freeze-enforce",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Attempts to promote v3.1 marketing feature to production."
+    },
+    {
+      "id": "freeze-lockout",
+      "label": "Automated Freeze Webhook",
+      "product": "HTTP 423 Locked (Freeze Active)",
+      "group": "g-freeze-enforce",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Rejects deployment automatically; permits only emergency rollback or reliability patches."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "buggy-v3-release",
+      "to": "budget-monitor",
+      "label": "1. Rapid Budget Consumption",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "budget-monitor",
+      "to": "freeze-lockout",
+      "label": "2. Signal Budget Depleted",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "cloud-deploy-pipe",
+      "to": "freeze-lockout",
+      "label": "3. Attempt Feature Promotion",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Budget Depletion Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Sentinel detects error budget has dropped to 0% and arms the deployment freeze webhook.",
+      "why_traversal": "Enforces SRE agreement without requiring manual leadership intervention.",
+      "protocol": "Eventarc Notification",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Deployment Block",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Deploy pipeline queries webhook, receives HTTP 423 Locked, and halts release.",
+      "why_traversal": "Protects production users from further instability until reliability is restored.",
+      "protocol": "Admission Control Webhook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "freeze-bypass-attempt",
+      "label": "Unauthorized Bypass Attempt",
+      "changes": {
+        "failedNodes": [
+          "freeze-lockout"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Developer attempted to push code using personal service account with owner role.",
+      "diverted_path": "Cloud Audit Logs flags IAM privilege misuse; SecOps notified.",
+      "blast_radius": "Bypass blocked by immutable pipeline guardrail.",
+      "recovery": "Remove broad IAM roles and enforce all production deployments through Cloud Deploy service account."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "buggy-v3-release"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "buggy-v3-release"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Error Budget Depletion leading to Automated Production Deployment Freeze: illustrates system protection during release instability."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

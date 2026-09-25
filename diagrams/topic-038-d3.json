@@ -1,0 +1,190 @@
+{
+  "id": "topic-038-d3",
+  "title": "Security Operations & Threat Detection \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "038",
+  "roadmap_id": "5.5",
+  "kind": "failure",
+  "purpose": "Simulates Credential Theft & Lateral Movement Detection: illustrates anomalous IAM Service Account token generation from unauthorized IP and automated credential revocation.",
+  "routing_rationale": "Anomalous API call correlation flags stolen credentials being used outside corporate IP boundaries, instantly revoking active sessions.",
+  "groups": [
+    {
+      "id": "g-attacker-origin",
+      "label": "Adversary External Infrastructure",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-iam-defense",
+      "label": "Cloud IAM Threat Defense & Revocation",
+      "type": "organization",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "stolen-token-call",
+      "label": "Stolen OAuth2 Access Token",
+      "product": "IP: 198.51.100.44 (Tor Exit)",
+      "group": "g-attacker-origin",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Attacker uses exfiltrated access token from unauthorized geographic location."
+    },
+    {
+      "id": "unusual-api-burst",
+      "label": "compute.instances.list Burst",
+      "product": "Reconnaissance API Scan",
+      "group": "g-attacker-origin",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Attacker scripts massive inventory scan across 50 production projects."
+    },
+    {
+      "id": "anomaly-engine",
+      "label": "Cloud Audit Anomaly Detector",
+      "product": "Finding: ANOMALOUS_IAM_GRANT",
+      "group": "g-iam-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Detects impossible travel velocity and Tor exit node source IP."
+    },
+    {
+      "id": "session-revoker",
+      "label": "Revoke All Active IAM Sessions",
+      "product": "gcloud iam service-accounts disable",
+      "group": "g-iam-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Disables service account and revokes all active OAuth2 bearer tokens in 2.1 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "stolen-token-call",
+      "to": "unusual-api-burst",
+      "label": "1. Replay Stolen Token for Recon",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "unusual-api-burst",
+      "to": "anomaly-engine",
+      "label": "2. Flag Tor IP & Anomalous Volume",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "anomaly-engine",
+      "to": "session-revoker",
+      "label": "3. Revoke Identity & Kill Sessions",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Impossible Travel Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Anomaly detector correlates API call origin; token issued in New York used from Tor node 2 minutes later.",
+      "why_traversal": "Detects token theft even when the token itself is technically valid.",
+      "protocol": "Cloud Audit Log Analysis",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Immediate Credential Revocation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Automated workflow disables compromised service account and forces session termination.",
+      "why_traversal": "Stops reconnaissance in its tracks before data exfiltration can commence.",
+      "protocol": "IAM Admin API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "broad-revocation-blast",
+      "label": "Service Account Disabling Shuts Down Core Services",
+      "changes": {
+        "failedNodes": [
+          "session-revoker"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "The compromised credential was a shared core production service account.",
+      "diverted_path": "Revoking account crashed 40 healthy production backend instances.",
+      "blast_radius": "Production service downtime.",
+      "recovery": "Enforce per-workload service accounts so revocation of one credential never impacts unrelated systems."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "stolen-token-call"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "stolen-token-call"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Credential Theft & Lateral Movement Detection: illustrates anomalous IAM Service Account token generation from unauthorized IP and automated credential revocation."
+}

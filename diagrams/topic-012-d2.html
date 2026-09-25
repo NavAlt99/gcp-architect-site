@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support, Governance Basics, and Asset Inventory — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-012.html">← Topic page</a><span>1.6 · TOPIC-012-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-012-d2",
+  "title": "Support, Governance Basics, and Asset Inventory \u2014 Request & Control Flow",
+  "topic_no": "012",
+  "roadmap_id": "1.6",
+  "kind": "flow",
+  "purpose": "Traces real-time asset change notifications: from resource creation in Compute Engine across Asset Inventory to Cloud Pub/Sub and security event sinks.",
+  "routing_rationale": "Cloud Asset Inventory listens directly to the Google Cloud control plane, emitting resource creation and metadata change events within seconds.",
+  "groups": [
+    {
+      "id": "g-compute",
+      "label": "Compute Resource Creation",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-cai-bus",
+      "label": "Asset Event Pipeline",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-sec-sink",
+      "label": "Security Automation Sink",
+      "type": "project",
+      "scope": "project",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "vm-create",
+      "label": "New VM Provisioned",
+      "product": "Compute Engine",
+      "group": "g-compute",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Developer spins up new virtual machine instance with custom disk."
+    },
+    {
+      "id": "cai-ingest",
+      "label": "CAI Control Plane Listener",
+      "product": "Cloud Asset Inventory",
+      "group": "g-cai-bus",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Captures raw resource metadata event directly from Resource Manager API."
+    },
+    {
+      "id": "pubsub-feed",
+      "label": "asset-changes-topic",
+      "product": "Cloud Pub/Sub",
+      "group": "g-cai-bus",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Distributes change notification to registered downstream subscribers."
+    },
+    {
+      "id": "sec-scanner",
+      "label": "Compliance Auto-Linter",
+      "product": "Cloud Functions",
+      "group": "g-sec-sink",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Inspects new VM metadata to verify mandatory cost-center and owner tags exist."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "vm-create",
+      "to": "cai-ingest",
+      "label": "1. Resource Metadata Event",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cai-ingest",
+      "to": "pubsub-feed",
+      "label": "2. Publish Delta Notification",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "pubsub-feed",
+      "to": "sec-scanner",
+      "label": "3. Trigger Automated Policy Linting",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Resource Event Capture",
+      "edges": [
+        "e1"
+      ],
+      "action": "Compute Engine notifies Asset Inventory of new instance creation.",
+      "why_traversal": "Control plane integration guarantees zero lag in infrastructure asset cataloging.",
+      "protocol": "Internal Control RPC",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Feed Streaming",
+      "edges": [
+        "e2"
+      ],
+      "action": "Asset Inventory generates JSON event detailing resource name, zone, and labels.",
+      "why_traversal": "Pub/Sub decouples resource tracking from specialized compliance processing.",
+      "protocol": "Cloud Pub/Sub API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Tag Linting",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Function parses labels; confirms required cost-center:ecommerce tag is present.",
+      "why_traversal": "Automated guardrails enforce organizational metadata governance in real time.",
+      "protocol": "Eventarc / Cloud Functions",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "missing-tags",
+      "label": "Untagged VM Quarantined",
+      "changes": {
+        "failedNodes": [
+          "sec-scanner"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "VM launched without required environment and owner resource tags.",
+      "diverted_path": "Compliance function shuts down untagged VM after 15 minutes of non-compliance.",
+      "blast_radius": "Only untagged instance stopped; compliant instances unaffected.",
+      "recovery": "Add required labels in instance template or Terraform manifest."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "vm-create"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "vm-create"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces real-time asset change notifications: from resource creation in Compute Engine across Asset Inventory to Cloud Pub/Sub and security event sinks."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

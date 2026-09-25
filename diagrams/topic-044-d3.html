@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Platform Engineering &amp; Golden Paths — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-044.html">← Topic page</a><span>6.5 · TOPIC-044-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-044-d3",
+  "title": "Platform Engineering & Golden Paths \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "044",
+  "roadmap_id": "6.5",
+  "kind": "failure",
+  "purpose": "Simulates Platform Multi-Tenancy Noisy Neighbor Containment: GKE ResourceQuotas and NetworkPolicies prevent rogue tenant from starving cluster resources.",
+  "routing_rationale": "Platform engineering multi-tenancy requires strict isolation boundaries: ResourceQuotas prevent CPU/memory starvation, and NetworkPolicies enforce zero-trust pod isolation.",
+  "groups": [
+    {
+      "id": "g-rogue-tenant",
+      "label": "Noisy Neighbor Tenant (Namespace A)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-governed-cluster",
+      "label": "Governed Multi-Tenant Platform Cluster",
+      "type": "project",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "memory-leak-pod",
+      "label": "Rogue Memory Leak Pod",
+      "product": "Consuming 64GB RAM (Runaway)",
+      "group": "g-rogue-tenant",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Unchecked memory leak attempts to consume entire node cluster RAM."
+    },
+    {
+      "id": "port-scan-attempt",
+      "label": "Cross-Tenant Port Scan",
+      "product": "Probing Namespace B (Illegal)",
+      "group": "g-rogue-tenant",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Rogue tenant pod attempts to probe internal ports of payment service in Namespace B."
+    },
+    {
+      "id": "quota-enforcer",
+      "label": "GKE ResourceQuota Enforcer",
+      "product": "Hard Limit: 16GB RAM / Namespace",
+      "group": "g-governed-cluster",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "OOM-kills runaway pod; preserves 100% of RAM for other tenants."
+    },
+    {
+      "id": "netpol-shield",
+      "label": "Calico / Cilium NetworkPolicy",
+      "product": "Default Deny All Cross-Namespace",
+      "group": "g-governed-cluster",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Drops cross-tenant packets; logs security violation to Security Command Center."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "memory-leak-pod",
+      "to": "quota-enforcer",
+      "label": "1. Exceed Namespace Memory Quota",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "port-scan-attempt",
+      "to": "netpol-shield",
+      "label": "2. Block Cross-Namespace Traffic",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Resource Quota Enforcement",
+      "edges": [
+        "e1"
+      ],
+      "action": "Kubernetes kubelet evicts leaking pod when namespace quota ceiling is reached.",
+      "why_traversal": "Protects neighbor tenants from noisy-neighbor starvation.",
+      "protocol": "ResourceQuota OOMKill",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Zero-Trust Network Isolation",
+      "edges": [
+        "e2"
+      ],
+      "action": "NetworkPolicy drops unauthorized cross-namespace packets at the Linux eBPF layer.",
+      "why_traversal": "Enforces strict network isolation between enterprise business units on shared clusters.",
+      "protocol": "eBPF Packet Drop",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "missing-netpol-leak",
+      "label": "Default Allow Cross-Namespace Data Leak",
+      "changes": {
+        "failedNodes": [
+          "netpol-shield"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Platform team omitted default-deny NetworkPolicy in newly vended namespace.",
+      "diverted_path": "Rogue pod successfully read internal metrics from payment namespace.",
+      "blast_radius": "Internal security breach.",
+      "recovery": "Enforce baseline NetworkPolicy injection via Policy Controller admission mutating webhook."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "memory-leak-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "memory-leak-pod"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Platform Multi-Tenancy Noisy Neighbor Containment: GKE ResourceQuotas and NetworkPolicies prevent rogue tenant from starving cluster resources."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

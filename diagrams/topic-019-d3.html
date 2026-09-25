@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloud Storage, Object Lifecycle, and Enterprise File Systems — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-019.html">← Topic page</a><span>2.7 · TOPIC-019-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-019-d3",
+  "title": "Cloud Storage, Object Lifecycle, and Enterprise File Systems \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "019",
+  "roadmap_id": "2.7",
+  "kind": "failure",
+  "purpose": "Simulates accidental bucket deletion and ransomware attempt: demonstrates Bucket Lock and Object Versioning preventing unauthorized data destruction.",
+  "routing_rationale": "Object Retention Lock enforces immutable WORM (Write Once, Read Many) compliance, ensuring objects cannot be deleted or overwritten even by project owners.",
+  "groups": [
+    {
+      "id": "g-attack-vector",
+      "label": "Malicious / Accidental Deletion Attempt",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-immutability",
+      "label": "Object Versioning & Retention Lock Shield",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "compromised-admin",
+      "label": "Compromised Admin Key",
+      "product": "Ransomware / Rogue Script",
+      "group": "g-attack-vector",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Executes gsutil rm -r -f gs://brightloaf-ledger to destroy corporate books."
+    },
+    {
+      "id": "audit-alert-sec",
+      "label": "Cloud Audit Security Alert",
+      "product": "Audit Activity Event",
+      "group": "g-attack-vector",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Logs attempted deletion with principal identity and source IP address."
+    },
+    {
+      "id": "retention-lock-shield",
+      "label": "Bucket Lock (WORM Shield)",
+      "product": "Locked Retention Policy",
+      "group": "g-immutability",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Strictly rejects object deletion attempts until expiration timestamp."
+    },
+    {
+      "id": "versioned-history",
+      "label": "Object Versioning Vault",
+      "product": "Non-current Generations",
+      "group": "g-immutability",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Preserves immutable historical generations even if live object is overwritten."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "compromised-admin",
+      "to": "retention-lock-shield",
+      "label": "1. Attempt Delete Locked Bucket",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "retention-lock-shield",
+      "to": "audit-alert-sec",
+      "label": "2. Emit Security Alert & Block",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "retention-lock-shield",
+      "to": "versioned-history",
+      "label": "3. Retain Prior Generations",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Destruction Attempt",
+      "edges": [
+        "e1"
+      ],
+      "action": "Compromised admin attempts to delete accounting records.",
+      "why_traversal": "Security controls must withstand compromised credentials.",
+      "protocol": "GCS Delete API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "WORM Enforcement",
+      "edges": [
+        "e2"
+      ],
+      "action": "Bucket Lock intercepts command; responds HTTP 403 Retention policy prevents deletion.",
+      "why_traversal": "Cryptographic WORM policy cannot be bypassed by project owners or Google support.",
+      "protocol": "HTTP 403 Forbidden",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Version Preservation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Object versioning keeps non-current generation intact; data recovery takes seconds.",
+      "why_traversal": "Zero data loss achieved even under full root account takeover.",
+      "protocol": "GCS Versioning Restore",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "lifecycle-delete-conflict",
+      "label": "Lifecycle Rule Overriding Versioning",
+      "changes": {
+        "failedNodes": [
+          "versioned-history"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Misconfigured lifecycle rule set DeleteNoncurrentVersion after 1 day.",
+      "diverted_path": "Non-current generations purged automatically by lifecycle manager.",
+      "blast_radius": "Historical versions lost before human recovery could occur.",
+      "recovery": "Increase noncurrentDaysRetention to minimum 30 days on compliance buckets."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "compromised-admin"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "compromised-admin"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates accidental bucket deletion and ransomware attempt: demonstrates Bucket Lock and Object Versioning preventing unauthorized data destruction."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

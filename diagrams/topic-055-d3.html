@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compute Decision Cheat Sheet — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-055.html">← Topic page</a><span>cheat-1 · TOPIC-055-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-055-d3",
+  "title": "Compute Decision Cheat Sheet \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "055",
+  "roadmap_id": "cheat-1",
+  "kind": "failure",
+  "purpose": "Simulates Compute Migration: migrating legacy monolithic Compute Engine VM into Cloud Run container, eliminating OS patching overhead and reducing idle cloud spend.",
+  "routing_rationale": "Refactoring stateless legacy VMs to Cloud Run eliminates administrative operating system patching while enabling automated scale-to-zero.",
+  "groups": [
+    {
+      "id": "g-legacy-vm-tier",
+      "label": "Legacy Monolithic Compute Engine VM",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-modern-run-tier",
+      "label": "Modernized Serverless Cloud Run",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "unpatched-gce-vm",
+      "label": "Legacy e2-standard-4 VM",
+      "product": "Status: 18 Kernel CVEs Pending",
+      "group": "g-legacy-vm-tier",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Requires manual weekly OS patching, firewall rule maintenance, and disk resizing."
+    },
+    {
+      "id": "idle-vm-burn",
+      "label": "24/7 Compute Billing Burn",
+      "product": "Cost: $118/Month (Even at 0 QPS)",
+      "group": "g-legacy-vm-tier",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Runs 24/7 despite receiving zero traffic between 6 PM and 8 AM."
+    },
+    {
+      "id": "containerized-run",
+      "label": "Cloud Run Microservice",
+      "product": "Zero OS Management / Zero CVEs",
+      "group": "g-modern-run-tier",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Runs application container on Google-managed hardened gVisor sandbox."
+    },
+    {
+      "id": "scale-to-zero-savings",
+      "label": "Scale-to-Zero Cost Model",
+      "product": "Cost: $4.20/Month (96% Savings)",
+      "group": "g-modern-run-tier",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Scales to zero instances during idle night hours; wakes up in 150ms on incoming request."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "unpatched-gce-vm",
+      "to": "containerized-run",
+      "label": "1. Containerize App via Buildpacks",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "idle-vm-burn",
+      "to": "scale-to-zero-savings",
+      "label": "2. Flip Traffic to Scale-to-Zero",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Modernization & Containerization",
+      "edges": [
+        "e1"
+      ],
+      "action": "Cloud Buildpacks packages application into container without requiring Dockerfile.",
+      "why_traversal": "Eliminates operating system patching responsibility permanently.",
+      "protocol": "Cloud Buildpacks",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Financial Optimization",
+      "edges": [
+        "e2"
+      ],
+      "action": "Cloud Run scales to zero during off-hours, slashing monthly infrastructure bill by 96%.",
+      "why_traversal": "Frees up engineering time from server maintenance to feature development.",
+      "protocol": "Cloud Run Admin API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cold-start-latency-spike",
+      "label": "Cold Start Latency Impacts Morning Users",
+      "changes": {
+        "failedNodes": [
+          "scale-to-zero-savings"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Heavy Java Spring Boot container took 12 seconds to initialize from 0 instances at 8 AM.",
+      "diverted_path": "First morning customer requests timed out.",
+      "blast_radius": "Morning user frustration.",
+      "recovery": "Set min-instances=1 on Cloud Run to maintain a pre-warmed instance during business hours."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "unpatched-gce-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "unpatched-gce-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Compute Migration: migrating legacy monolithic Compute Engine VM into Cloud Run container, eliminating OS patching overhead and reducing idle cloud spend."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagramming &amp; Docs: C4 Model — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-027.html">← Topic page</a><span>3.5 · TOPIC-027-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-027-d3",
+  "title": "Diagramming & Docs: C4 Model \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "027",
+  "roadmap_id": "3.5",
+  "kind": "failure",
+  "purpose": "Simulates Documentation vs Production Reality Drift: automated Drift Detector flags newly provisioned BigQuery dataset missing from C4 Level 2 Container diagram.",
+  "routing_rationale": "Cloud Asset Inventory diffing automatically flags unmapped production infrastructure, triggering an automated GitHub Issue to keep diagrams accurate.",
+  "groups": [
+    {
+      "id": "g-prod-state",
+      "label": "Live Production Cloud Infrastructure",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-doc-validator",
+      "label": "Architecture Doc Drift Detector",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "unmapped-bq",
+      "label": "Unmapped BigQuery Dataset",
+      "product": "Live GCP Dataset: 'analytics_raw'",
+      "group": "g-prod-state",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Data science team spun up production BigQuery dataset without updating architecture docs."
+    },
+    {
+      "id": "cai-scanner",
+      "label": "Cloud Asset Inventory Feed",
+      "product": "Real-Time Resource Export",
+      "group": "g-prod-state",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Exports snapshot of all active GCP resources in the project."
+    },
+    {
+      "id": "drift-comparator",
+      "label": "C4 vs Live State Comparator",
+      "product": "Cloud Function Analyzer",
+      "group": "g-doc-validator",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Compares active resources in Cloud Asset Inventory against nodes in architecture.c4."
+    },
+    {
+      "id": "github-issue",
+      "label": "Automated GitHub Drift Issue",
+      "product": "Issue: 'Undocumented BigQuery Node'",
+      "group": "g-doc-validator",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Opens issue with git diff snippet showing proposed addition to C4 container diagram."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "unmapped-bq",
+      "to": "cai-scanner",
+      "label": "1. Ingest Resource Creation Event",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "cai-scanner",
+      "to": "drift-comparator",
+      "label": "2. Feed Live Asset State",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "drift-comparator",
+      "to": "github-issue",
+      "label": "3. File Documentation Drift Issue",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Live Asset Discovery",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Asset Inventory detects new BigQuery resource and passes state to analyzer.",
+      "why_traversal": "Maintains continuous visibility over actual cloud inventory.",
+      "protocol": "Cloud Asset API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Drift Alerting",
+      "edges": [
+        "e3"
+      ],
+      "action": "Analyzer detects discrepancy and files GitHub Issue with automated fix snippet.",
+      "why_traversal": "Eliminates documentation obsolescence with zero manual tracking burden.",
+      "protocol": "GitHub REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "false-positive-storm",
+      "label": "Transient Ephemeral Node Noise",
+      "changes": {
+        "failedNodes": [
+          "drift-comparator"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Analyzer treated short-lived GKE batch pods as missing C4 architectural containers.",
+      "diverted_path": "500 spam GitHub issues filed in 2 hours.",
+      "blast_radius": "Engineering team mutes documentation alerts.",
+      "recovery": "Add resource exclusion filter ignoring ephemeral pods and temporary staging buckets."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "unmapped-bq"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "unmapped-bq"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Documentation vs Production Reality Drift: automated Drift Detector flags newly provisioned BigQuery dataset missing from C4 Level 2 Container diagram."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

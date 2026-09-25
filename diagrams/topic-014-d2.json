@@ -1,0 +1,233 @@
+{
+  "id": "topic-014-d2",
+  "title": "Google Kubernetes Engine (GKE): Autopilot & Enterprise Clusters \u2014 Request & Control Flow",
+  "topic_no": "014",
+  "roadmap_id": "2.2",
+  "kind": "flow",
+  "purpose": "Traces container-native load balancing: shows client traffic routing from Google Cloud Load Balancer directly to Pod IPs via Standalone Network Endpoint Groups (NEGs).",
+  "routing_rationale": "Container-native load balancing bypasses kube-proxy and iptables node hops, routing traffic directly from the load balancer to the pod IP for minimal latency.",
+  "groups": [
+    {
+      "id": "g-client-edge",
+      "label": "Client Ingress & Edge Proxy",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-neg-mesh",
+      "label": "Cloud Load Balancing (NEG Routing)",
+      "type": "project",
+      "scope": "global",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-gke-pods",
+      "label": "VPC-Native Pod Fleet (Zone A & B)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user-client",
+      "label": "Internet Client",
+      "product": "User Browser",
+      "group": "g-client-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Submits shopping cart transaction over HTTPS."
+    },
+    {
+      "id": "gfe-edge",
+      "label": "Anycast Edge GFE",
+      "product": "Google Front End",
+      "group": "g-client-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Terminates TLS 1.3 at closest PoP and evaluates Cloud Armor policies."
+    },
+    {
+      "id": "backend-neg",
+      "label": "Backend Service (NEG)",
+      "product": "Cloud Load Balancing",
+      "group": "g-neg-mesh",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Maintains live table of healthy Pod IPs and port numbers across all cluster nodes."
+    },
+    {
+      "id": "pod-1",
+      "label": "Pod 1 (10.4.1.8)",
+      "product": "Cart Service (Zone A)",
+      "group": "g-gke-pods",
+      "plane": "data",
+      "x": 780,
+      "y": 140,
+      "detail": "Container receiving request directly; zero NodePort or kube-proxy hops."
+    },
+    {
+      "id": "pod-2",
+      "label": "Pod 2 (10.4.2.14)",
+      "product": "Cart Service (Zone B)",
+      "group": "g-gke-pods",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Container replica in second zone receiving balanced traffic flow."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user-client",
+      "to": "gfe-edge",
+      "label": "1. HTTPS POST /checkout",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "gfe-edge",
+      "to": "backend-neg",
+      "label": "2. Route to Backend NEG",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "backend-neg",
+      "to": "pod-1",
+      "label": "3a. Direct Pod IP Delivery",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "backend-neg",
+      "to": "pod-2",
+      "label": "3b. Direct Pod IP Delivery",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Client Ingress",
+      "edges": [
+        "e1"
+      ],
+      "action": "User submits transaction; Google Front End terminates connection at edge.",
+      "why_traversal": "Pulls packet into Google fiber within milliseconds.",
+      "protocol": "HTTPS TLS 1.3",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "NEG Health Filtering",
+      "edges": [
+        "e2"
+      ],
+      "action": "Load balancer consults NEG endpoint table; balances traffic across healthy pods.",
+      "why_traversal": "Container-native health checks verify pod readiness directly, not just node health.",
+      "protocol": "Internal Andromeda Routing",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Direct Pod Delivery",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "Andromeda delivers packet directly to container vETH interface (10.4.1.8).",
+      "why_traversal": "Bypasses kube-proxy iptables DNAT; preserves real client IP address without X-Forwarded-For loss.",
+      "protocol": "HTTP/1.1 TCP",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "readiness-gate-fail",
+      "label": "Pod Readiness Gate Failure",
+      "changes": {
+        "failedNodes": [
+          "pod-1"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Container started but warm-up cache initialization took 30 seconds; readiness probe returned 503.",
+      "diverted_path": "NEG controller delays adding pod to load balancer until readiness gate passes.",
+      "blast_radius": "Zero customer traffic routed to cold container; existing pods serve traffic.",
+      "recovery": "Configure readinessGates in pod spec to prevent premature traffic dispatch."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "user-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "user-client"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces container-native load balancing: shows client traffic routing from Google Cloud Load Balancer directly to Pod IPs via Standalone Network Endpoint Groups (NEGs)."
+}

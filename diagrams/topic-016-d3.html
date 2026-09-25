@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Virtual Private Cloud (VPC) Networking &amp; Security — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-016.html">← Topic page</a><span>2.4 · TOPIC-016-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-016-d3",
+  "title": "Virtual Private Cloud (VPC) Networking & Security \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "016",
+  "roadmap_id": "2.4",
+  "kind": "failure",
+  "purpose": "Simulates Cloud NAT port exhaustion outage: demonstrates high-concurrency connections dropping SYN packets and automated dynamic port allocation recovery.",
+  "routing_rationale": "Enabling Dynamic Port Allocation allows Cloud NAT to automatically assign additional IP ports to saturated VMs, preventing connection dropouts.",
+  "groups": [
+    {
+      "id": "g-sat-vm",
+      "label": "Port-Saturated Private VM",
+      "type": "subnet",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-dynamic-nat",
+      "label": "Cloud NAT Dynamic Port Allocation Recovery",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "saturated-vm",
+      "label": "Private VM (Port Saturated)",
+      "product": "10.1.0.5 (64/64 Ports Used)",
+      "group": "g-sat-vm",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Batch scraper attempts 500 simultaneous outbound API connections."
+    },
+    {
+      "id": "drop-counter",
+      "label": "Andromeda Drop Counter",
+      "product": "VPC Flow Logs",
+      "group": "g-sat-vm",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Detects dropped SYN packets: router.googleapis.com/nat/dropped_sent_packets_count."
+    },
+    {
+      "id": "dynamic-allocator",
+      "label": "Cloud NAT Dynamic Allocator",
+      "product": "Dynamic Port Allocation",
+      "group": "g-dynamic-nat",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Expands allocated port block from 64 to 512 ports dynamically per VM."
+    },
+    {
+      "id": "secondary-nat-ip",
+      "label": "Secondary NAT IP Address",
+      "product": "34.120.90.12 (Pool Expansion)",
+      "group": "g-dynamic-nat",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Adds 64,512 additional outbound ephemeral ports to the regional pool."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "saturated-vm",
+      "to": "drop-counter",
+      "label": "1. SYN Drop (Port Starvation)",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "drop-counter",
+      "to": "dynamic-allocator",
+      "label": "2. Trigger Port Expansion",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "dynamic-allocator",
+      "to": "secondary-nat-ip",
+      "label": "3. Provision Additional NAT IP",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "saturated-vm",
+      "to": "secondary-nat-ip",
+      "label": "4. Outbound Connections Restored",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Port Starvation Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "VM exhausts minimum 64 allocated ports; subsequent SYN attempts drop.",
+      "why_traversal": "Static allocation restricts each VM to a fixed slice of the 64k port range.",
+      "protocol": "TCP SYN",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Dynamic Port Allocation",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Dynamic Port Allocation automatically scales VM allocation up to max 1,024 ports.",
+      "why_traversal": "Adapts port assignments to real-time workload demand without VM restart.",
+      "protocol": "Internal NAT Control",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Connection Flow Recovery",
+      "edges": [
+        "e4"
+      ],
+      "action": "VM uses new port block to complete TCP handshakes with zero packet drop.",
+      "why_traversal": "Secondary NAT IP doubles total pool capacity, eliminating drops under surge.",
+      "protocol": "TCP Established",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "max-ports-breached",
+      "label": "Cloud NAT Max Ports Per VM Limit Hit",
+      "changes": {
+        "failedNodes": [
+          "saturated-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Workload exceeded max_ports_per_vm = 1024 setting due to connection pooling bug.",
+      "diverted_path": "Additional connections dropped until idle sockets time out.",
+      "blast_radius": "Confined to rogue VM initiating unbounded connection loops.",
+      "recovery": "Implement HTTP connection keep-alive in application code; raise max_ports_per_vm."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "saturated-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "saturated-vm"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Cloud NAT port exhaustion outage: demonstrates high-concurrency connections dropping SYN packets and automated dynamic port allocation recovery."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

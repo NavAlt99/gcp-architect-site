@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloud Digital Leader &amp; Business Foundations — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-006.html">← Topic page</a><span>0.6 · TOPIC-006-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-006-d3",
+  "title": "Cloud Digital Leader & Business Foundations \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "006",
+  "roadmap_id": "0.6",
+  "kind": "failure",
+  "purpose": "Simulates cloud migration budget overrun and timeline slippage: demonstrates automated FinOps anomaly detection and stakeholder governance escalation.",
+  "routing_rationale": "Automated cost anomaly detection flags unplanned egress or oversized VMs within 24 hours, triggering architecture reviews before monthly invoices finalize.",
+  "groups": [
+    {
+      "id": "g-fin",
+      "label": "FinOps Anomaly Detection",
+      "type": "project",
+      "scope": "project",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-action",
+      "label": "Automated Remediations & Rightsizing",
+      "type": "project",
+      "scope": "project",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cost-anomaly",
+      "label": "Cost Anomaly Detector",
+      "product": "Cloud Billing API",
+      "group": "g-fin",
+      "plane": "control",
+      "x": 220,
+      "y": 140,
+      "detail": "Monitors hourly spend slope; alerts when egress exceeds $500/day forecast."
+    },
+    {
+      "id": "pubsub-alert",
+      "label": "FinOps Pub/Sub Topic",
+      "product": "Cloud Pub/Sub",
+      "group": "g-fin",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Dispatches high-priority spend alert to FinOps team and Slack."
+    },
+    {
+      "id": "recommender",
+      "label": "Active Assist Recommender",
+      "product": "Google Cloud Recommender",
+      "group": "g-action",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Identifies oversized VMs and unattached persistent disks."
+    },
+    {
+      "id": "auto-remediate",
+      "label": "Automated Policy Enforcer",
+      "product": "Cloud Functions",
+      "group": "g-action",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Automatically scales down idle dev environments outside business hours."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cost-anomaly",
+      "to": "pubsub-alert",
+      "label": "1. Publish Budget Breach",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "pubsub-alert",
+      "to": "recommender",
+      "label": "2. Trigger Rightsizing Analysis",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "recommender",
+      "to": "auto-remediate",
+      "label": "3. Execute Rightsizing Script",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "cost-anomaly",
+      "to": "auto-remediate",
+      "label": "4. Verify Spend Stabilization",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Anomaly Identification",
+      "edges": [
+        "e1"
+      ],
+      "action": "Cloud Billing detects unexpected cross-region egress spend spike.",
+      "why_traversal": "Early detection prevents multi-thousand-dollar end-of-month surprises.",
+      "protocol": "Billing Alert Hook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Governance Notification",
+      "edges": [
+        "e2"
+      ],
+      "action": "Alert dispatches to FinOps engineers; Recommender API evaluates root cause.",
+      "why_traversal": "Pinpoints exact VM or bucket causing anomalous cloud expenditures.",
+      "protocol": "Cloud Pub/Sub",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated Rightsizing",
+      "edges": [
+        "e3"
+      ],
+      "action": "Policy automation powers off non-production VMs and removes unattached disks.",
+      "why_traversal": "Immediate programmatic remediation stops financial bleeding.",
+      "protocol": "Cloud Functions / gcloud",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 4,
+      "title": "Budget Recovery",
+      "edges": [
+        "e4"
+      ],
+      "action": "Daily run-rate returns below threshold; architecture review scheduled.",
+      "why_traversal": "Ensures sustainable cloud operating model aligned with executive financial targets.",
+      "protocol": "BigQuery Billing Analysis",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "egress-leak",
+      "label": "Cross-Region Egress Leak",
+      "changes": {
+        "failedNodes": [
+          "cost-anomaly"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "VM in us-central1 was querying Cloud Storage multi-region bucket in europe-west.",
+      "diverted_path": "Transatlantic egress charges accumulated rapidly.",
+      "blast_radius": "Monthly network budget exceeded in 72 hours.",
+      "recovery": "Reconfigure storage bucket to regional us-central1; enable VPC peering."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "cost-anomaly"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "cost-anomaly"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates cloud migration budget overrun and timeline slippage: demonstrates automated FinOps anomaly detection and stakeholder governance escalation."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

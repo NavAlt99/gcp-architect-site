@@ -1,0 +1,204 @@
+{
+  "id": "topic-023-d3",
+  "title": "Google Cloud Architecture Framework \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "023",
+  "roadmap_id": "3.2",
+  "kind": "failure",
+  "purpose": "Simulates architectural drift: unauthorized infrastructure change detected by Security Command Center and auto-remediated via Cloud Functions.",
+  "routing_rationale": "Real-time posture management detects misconfigurations that diverge from approved architectural baselines and triggers instant policy enforcement.",
+  "groups": [
+    {
+      "id": "g-drift-source",
+      "label": "Unauthorized Configuration Drift",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-auto-remediation",
+      "label": "Automated Security Remediation Pipeline",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rogue-firewall",
+      "label": "Rogue Firewall Rule",
+      "product": "Allow 0.0.0.0/0 on Port 22",
+      "group": "g-drift-source",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Developer manually opened public SSH port to debug a production issue."
+    },
+    {
+      "id": "scc-detector",
+      "label": "Security Command Center",
+      "product": "Finding: OPEN_SSH_PORT",
+      "group": "g-drift-source",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "SCC Real-time posture engine flags high-severity vulnerability within 15 seconds."
+    },
+    {
+      "id": "pubsub-alert",
+      "label": "Security Finding Event",
+      "product": "Pub/Sub Notification Topic",
+      "group": "g-auto-remediation",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "SCC streams JSON finding event to pubsub topic 'security-auto-heal'."
+    },
+    {
+      "id": "remediate-fn",
+      "label": "Auto-Remediation Function",
+      "product": "Cloud Run Event Receiver",
+      "group": "g-auto-remediation",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Invokes Compute Engine API to immediately delete rogue firewall rule."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "rogue-firewall",
+      "to": "scc-detector",
+      "label": "1. Detect Security Policy Drift",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "scc-detector",
+      "to": "pubsub-alert",
+      "label": "2. Publish Violation Finding",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "pubsub-alert",
+      "to": "remediate-fn",
+      "label": "3. Trigger Remediation Function",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Continuous Posture Detection",
+      "edges": [
+        "e1"
+      ],
+      "action": "SCC scans resource changes and identifies open SSH port violating org policy.",
+      "why_traversal": "Eliminates reliance on periodic manual audits; catches exposures immediately.",
+      "protocol": "Cloud Asset Inventory Notification",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Event-Driven Orchestration",
+      "edges": [
+        "e2",
+        "e3"
+      ],
+      "action": "Alert streams through Pub/Sub to trigger serverless remediation handler.",
+      "why_traversal": "Decouples detection from automated action, enabling auditable remediation.",
+      "protocol": "Cloud Pub/Sub",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Automated Policy Restoration",
+      "edges": [],
+      "action": "Cloud Run function deletes rogue rule and alerts SecOps in Slack.",
+      "why_traversal": "Reduces mean time to remediate (MTTR) from hours to 8 seconds.",
+      "protocol": "Compute Engine REST API",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "remediation-loop",
+      "label": "IAM Permission Deprivation on Remediation SA",
+      "changes": {
+        "failedNodes": [
+          "remediate-fn"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Remediation Service Account lacked compute.securityPolicies.delete permission.",
+      "diverted_path": "Remediation function throws HTTP 403 Forbidden; rogue rule remains open.",
+      "blast_radius": "Compute instance exposed to internet scanning for 4 hours.",
+      "recovery": "Grant custom role with exact required permissions and set up failure alert on remediation function errors."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "rogue-firewall"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "rogue-firewall"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates architectural drift: unauthorized infrastructure change detected by Security Command Center and auto-remediated via Cloud Functions."
+}

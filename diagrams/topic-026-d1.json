@@ -1,0 +1,218 @@
+{
+  "id": "topic-026-d1",
+  "title": "Decision Frameworks: ADRs & Trade-offs \u2014 Scope & Architecture Map",
+  "topic_no": "026",
+  "roadmap_id": "3.4b",
+  "kind": "map",
+  "purpose": "Visualizes Architecture Decision Frameworks: systematic weighted scoring matrices, trade-off analysis (Cost vs Latency vs Operational Overhead), and formal Architecture Decision Records (ADRs).",
+  "routing_rationale": "Architectural choices must never rely on intuition; multi-criteria decision analysis (MCDA) transparently weights trade-offs and binds engineering teams to documented rationales.",
+  "groups": [
+    {
+      "id": "g-input-matrix",
+      "label": "Decision Criteria & Weightings",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-candidate-tech",
+      "label": "Candidate Architecture Evaluation",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-adr-output",
+      "label": "Architecture Decision Record (ADR)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "criteria-weights",
+      "label": "Weighted Evaluation Model",
+      "product": "Cost 30% / SLA 40% / Ops 30%",
+      "group": "g-input-matrix",
+      "plane": "control",
+      "x": 140,
+      "y": 200,
+      "detail": "Defines quantitative scoring rubric across total cost of ownership, SLA, and developer velocity."
+    },
+    {
+      "id": "opt-gce",
+      "label": "Option A: Compute Engine MIGs",
+      "product": "High Ops / Low Unit Cost",
+      "group": "g-candidate-tech",
+      "plane": "control",
+      "x": 440,
+      "y": 100,
+      "detail": "Score: 7.2/10. Requires manual OS patching, golden images, and custom auto-healing scripts."
+    },
+    {
+      "id": "opt-gke",
+      "label": "Option B: GKE Autopilot",
+      "product": "Balanced Ops / High Scaling",
+      "group": "g-candidate-tech",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Score: 8.9/10. Managed Kubernetes control plane, per-pod billing, native horizontal pod autoscaling."
+    },
+    {
+      "id": "opt-run",
+      "label": "Option C: Cloud Run",
+      "product": "Zero Ops / Scale-to-Zero",
+      "group": "g-candidate-tech",
+      "plane": "control",
+      "x": 440,
+      "y": 300,
+      "detail": "Score: 9.4/10. Best fit for stateless HTTP APIs; fastest development velocity, zero idle server cost."
+    },
+    {
+      "id": "adr-record",
+      "label": "ADR-019: Cloud Run Selection",
+      "product": "Signed Markdown in Git",
+      "group": "g-adr-output",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Documents Context, Decision, Consequences, and rejected alternatives for enterprise audit."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "criteria-weights",
+      "to": "opt-gce",
+      "label": "1. Score Compute Engine",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "criteria-weights",
+      "to": "opt-gke",
+      "label": "2. Score GKE Autopilot",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "criteria-weights",
+      "to": "opt-run",
+      "label": "3. Score Cloud Run",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "opt-run",
+      "to": "adr-record",
+      "label": "4. Crown Winner & Publish ADR",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Scoring Matrix Evaluation",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Candidates scored against standardized criteria (pricing, SLA, operational burden).",
+      "why_traversal": "Grounds technology selection in objective data rather than vendor hype or developer bias.",
+      "protocol": "Decision Matrix Algorithm",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "ADR Publication",
+      "edges": [
+        "e4"
+      ],
+      "action": "Winner recorded in Git repository under docs/adr/0019-compute-selection.md.",
+      "why_traversal": "Creates permanent context for future engineers, preventing re-debating settled choices.",
+      "protocol": "Git Version Control",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "criteria-bias",
+      "label": "Hidden Operational Complexity Trap",
+      "changes": {
+        "failedNodes": [
+          "opt-gce"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "Team selected Compute Engine purely on low raw VM pricing, ignoring $15k/mo engineer maintenance overhead.",
+      "diverted_path": "Operations team overwhelmed by kernel CVE patching and manual failovers.",
+      "blast_radius": "Engineering roadmaps delayed by 3 months.",
+      "recovery": "Incorporate total operational burden and fully burdened engineering hours into scoring rubric."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "criteria-weights"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "criteria-weights"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes Architecture Decision Frameworks: systematic weighted scoring matrices, trade-off analysis (Cost vs Latency vs Operational Overhead), and formal Architecture Decision Records (ADRs)."
+}

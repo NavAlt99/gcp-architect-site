@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CI/CD &amp; Release Engineering: Cloud Deploy — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-043.html">← Topic page</a><span>6.4 · TOPIC-043-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-043-d2",
+  "title": "CI/CD & Release Engineering: Cloud Deploy \u2014 Request & Control Flow",
+  "topic_no": "043",
+  "roadmap_id": "6.4",
+  "kind": "flow",
+  "purpose": "Traces Canary Progressive Promotion Flow: Phase 1 (10% traffic for 15 min) -> Phase 2 (50% traffic for 30 min) -> Phase 3 (100% full promotion).",
+  "routing_rationale": "Progressive phase advancements require automated metric verification across each stage, guaranteeing system stability before traffic ramps up.",
+  "groups": [
+    {
+      "id": "g-phase-init",
+      "label": "Phase 1: Canary Initiation (10%)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-phase-ramp",
+      "label": "Phase 2: Traffic Ramp (50%)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-phase-full",
+      "label": "Phase 3: Complete Rollout (100%)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "canary-p1",
+      "label": "Canary Stage 1 (10%)",
+      "product": "Duration: 15 Minutes",
+      "group": "g-phase-init",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "Monitors error rate and p99 latency against baseline."
+    },
+    {
+      "id": "slo-verify-p1",
+      "label": "Automated Metric Gate",
+      "product": "Error Rate < 0.05%",
+      "group": "g-phase-ramp",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Cloud Monitoring MQL confirms zero SLO regression during Phase 1."
+    },
+    {
+      "id": "canary-p2",
+      "label": "Canary Stage 2 (50%)",
+      "product": "Duration: 30 Minutes",
+      "group": "g-phase-ramp",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Increases traffic to 50% to test database connection pool under higher concurrency."
+    },
+    {
+      "id": "full-rollout-p3",
+      "label": "Full Promotion (100%)",
+      "product": "v1.1 Promoted to Primary",
+      "group": "g-phase-full",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Retires v1.0 baseline pods; v1.1 handles 100% of production traffic."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "canary-p1",
+      "to": "slo-verify-p1",
+      "label": "1. Evaluate 15-Minute Metrics",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "slo-verify-p1",
+      "to": "canary-p2",
+      "label": "2. Metrics Clean -> Ramp to 50%",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "canary-p2",
+      "to": "full-rollout-p3",
+      "label": "3. Concurrency Stable -> 100%",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Stage 1 Metric Verification",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Cloud Deploy checks Cloud Monitoring metrics; automatically promotes to 50% traffic.",
+      "why_traversal": "Automates release verification without requiring engineers to stare at dashboards.",
+      "protocol": "Cloud Monitoring MQL Gate",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Full Production Cutover",
+      "edges": [
+        "e3"
+      ],
+      "action": "After 30 minutes at 50% load, full rollout executes; old pods drained cleanly.",
+      "why_traversal": "Completes zero-downtime progressive deployment with complete confidence.",
+      "protocol": "Kubernetes Rolling Update",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "connection-pool-exhaustion",
+      "label": "Phase 2 Concurrency Exhausts DB Connections",
+      "changes": {
+        "failedNodes": [
+          "canary-p2"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "At 50% traffic, database connection pool hit hard limit of 200 connections.",
+      "diverted_path": "Latency spiked; Cloud Deploy halted Phase 2 and initiated automatic rollback.",
+      "blast_radius": "Full production outage prevented.",
+      "recovery": "Deploy PgBouncer / Cloud SQL Proxy connection pooling before re-attempting rollout."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "canary-p1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "canary-p1"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Canary Progressive Promotion Flow: Phase 1 (10% traffic for 15 min) -> Phase 2 (50% traffic for 30 min) -> Phase 3 (100% full promotion)."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

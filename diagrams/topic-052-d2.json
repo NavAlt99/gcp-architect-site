@@ -1,0 +1,200 @@
+{
+  "id": "topic-052-d2",
+  "title": "Data Processing: Dataflow & Dataproc \u2014 Request & Control Flow",
+  "topic_no": "052",
+  "roadmap_id": "D.2",
+  "kind": "flow",
+  "purpose": "Traces Dataflow Streaming Engine Watermark Traversal: event-time windowing, handling late-arriving data, and emitting aggregated metrics to BigQuery.",
+  "routing_rationale": "Event-time watermarking ensures calculations remain accurate even when mobile or IoT devices experience intermittent connectivity and submit delayed timestamps.",
+  "groups": [
+    {
+      "id": "g-event-time-src",
+      "label": "Unbounded Event Stream (Out of Order)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-beam-windowing",
+      "label": "Apache Beam Windowing & Watermark Engine",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-window-output",
+      "label": "Aggregated Analytical Metrics",
+      "type": "project",
+      "scope": "global",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "delayed-event",
+      "label": "Event: 10:02 (Arrived at 10:08)",
+      "product": "Delayed Mobile Telemetry",
+      "group": "g-event-time-src",
+      "plane": "data",
+      "x": 140,
+      "y": 200,
+      "detail": "User clicked purchase in subway; event delayed by 6 minutes until cell signal returned."
+    },
+    {
+      "id": "fixed-window",
+      "label": "5-Minute Fixed Windows",
+      "product": "Window [10:00 - 10:05)",
+      "group": "g-beam-windowing",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Groups events based on actual event timestamp rather than ingestion arrival time."
+    },
+    {
+      "id": "watermark-eval",
+      "label": "Watermark & Allowed Lateness",
+      "product": "Allowed Lateness: 10 Minutes",
+      "group": "g-beam-windowing",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Tracks clock progress; accepts delayed 10:02 event and triggers window accumulation."
+    },
+    {
+      "id": "bigquery-metric-row",
+      "label": "BigQuery Sales Summary Row",
+      "product": "Window [10:00 - 10:05] Revenue = $42,100",
+      "group": "g-window-output",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Updates window total with late event with exactly-once guarantee."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "delayed-event",
+      "to": "fixed-window",
+      "label": "1. Ingest Delayed Event",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "fixed-window",
+      "to": "watermark-eval",
+      "label": "2. Check Watermark & Lateness",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "watermark-eval",
+      "to": "bigquery-metric-row",
+      "label": "3. Emit Corrected Window Metric",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Event-Time Processing",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "Dataflow assigns event to [10:00-10:05) window based on click time, not arrival time.",
+      "why_traversal": "Preserves analytical integrity regardless of network transmission latency.",
+      "protocol": "Apache Beam Model",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Late Data Accumulation",
+      "edges": [
+        "e3"
+      ],
+      "action": "Watermark acknowledges event falls within allowed lateness; updates BigQuery aggregate.",
+      "why_traversal": "Eliminates inaccurate business metrics caused by delayed client submissions.",
+      "protocol": "BigQuery Storage Write API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "excessive-lateness-drop",
+      "label": "Data Arrives Beyond Allowed Lateness",
+      "changes": {
+        "failedNodes": [
+          "watermark-eval"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Event arrived 2 hours late; allowed lateness was configured for 10 minutes.",
+      "diverted_path": "Event discarded; dropped counter incremented.",
+      "blast_radius": "Slight metric undercounting.",
+      "recovery": "Tune allowed lateness to balance memory state retention cost against data completeness."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "delayed-event"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "delayed-event"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces Dataflow Streaming Engine Watermark Traversal: event-time windowing, handling late-arriving data, and emitting aggregated metrics to BigQuery."
+}

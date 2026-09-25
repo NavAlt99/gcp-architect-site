@@ -1,0 +1,43 @@
+{
+  "topic_no": "057",
+  "roadmap_id": "cheat-3",
+  "title": "Cloud City: Cheat Sheet: Cloud Load Balancing Selection Matrix",
+  "city_concept": "City Canal Locks & Harbor Piloting Stations",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Boats of all sizes were crowding into narrow canals simultaneously, causing collisions between rowboats and cargo barges.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Harbor Master Hugh built piloting stations: Outer Gates for ocean ships (Global ALB) and Canal Sluices for internal barges (Internal LB).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Pilots inspected cargo manifests (Layer 7 inspection), directing grain ships to northern docks and passenger boats to downtown piers.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Canal locks operate with physical water valves; cloud load balancers balance gigabits of network traffic via Maglev software SDN.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

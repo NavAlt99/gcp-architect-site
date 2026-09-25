@@ -1,0 +1,43 @@
+{
+  "topic_no": "028",
+  "roadmap_id": "4.1",
+  "title": "Cloud City: Reliability Fundamentals: Availability Math & Failure Domains",
+  "city_concept": "City Flood Gates & Dual Redundant Aqueducts",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "When a single water pipe burst in the north district, the entire city ran dry because every neighborhood was connected in a single serial pipeline.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Hydraulic Engineer Hugh installed dual parallel aqueducts with automated bulkhead valves isolating neighborhoods.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a flash flood, northern flood gates slammed shut, preventing contamination from reaching the southern drinking reservoir.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical water pipes take days to reroute; digital network traffic reroutes across zones in milliseconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

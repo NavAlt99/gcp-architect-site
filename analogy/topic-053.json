@@ -1,0 +1,43 @@
+{
+  "topic_no": "053",
+  "roadmap_id": "D.3",
+  "title": "Cloud City: Data Lake, Lakehouse & BigLake: Open Table Formats & Governance",
+  "city_concept": "City Granary Silos & Public Assay Scales",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Farmers dumped wheat, rye, and gravel into the same open city barn, making it impossible to separate feed grain from fine bakery flour.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Granary Master Graham built three separated storage zones: Raw Wagons, Cleaned Silos, and Bakeshop Distribution.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Graham installed assay scales (Dataplex) that checked grain moisture and marked each barrel with quality seals.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical granary silos require manual conveyor belts; cloud lakehouses organize exabytes of data via metadata tagging.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

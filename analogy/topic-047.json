@@ -1,0 +1,43 @@
+{
+  "topic_no": "047",
+  "roadmap_id": "7.4b",
+  "title": "Cloud City: Case Study: Mountkirk Games \u2014 Global Multiplayer & Spanner",
+  "city_concept": "City Grand Colosseum & Worldwide Broadcasts",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "The City Colosseum was hosting games, but spectators from across the globe had to send carrier pigeons to place bets, resulting in delayed wagers and lost tickets.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Arena Master Marcus built telegraph scoreboards (Global Load Balancer) and connected regional betting kiosks directly to the Central Vault (Cloud Spanner).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When 100,000 extra spectators arrived, Marcus opened additional arena turnstiles (GKE Autopilot) within minutes.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "Physical colosseums have fixed stone seating; cloud gaming backends auto-scale elastically to absorb millions of concurrent players.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

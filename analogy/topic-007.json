@@ -1,0 +1,43 @@
+{
+  "topic_no": "007",
+  "roadmap_id": "1.1",
+  "title": "Cloud City: Account, Tools and Access: Cloud Shell & gcloud",
+  "city_concept": "City Hall Permits & Surveyor Field Tools",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Bea the Baker wanted to build a storefront, but City Hall guards turned her away because she had no surveyor permit or registration badge.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Mayor Meridian handed Bea an official field toolkit (Cloud Shell) and verified her permit registry (gcloud auth & API Enablement).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "Bea attempted to open a heavy industrial flour mill without an industrial zoning permit. The request was halted until the zone license was granted.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In City Hall, permits take 6 weeks of bureaucracy; in Google Cloud, enabling an API takes 8 seconds with gcloud services enable.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

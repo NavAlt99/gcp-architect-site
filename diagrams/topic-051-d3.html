@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Warehousing: BigQuery &amp; Looker — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-051.html">← Topic page</a><span>D.1 · TOPIC-051-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-051-d3",
+  "title": "Data Warehousing: BigQuery & Looker \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "051",
+  "roadmap_id": "D.1",
+  "kind": "failure",
+  "purpose": "Simulates Slot Saturation & Dynamic Reservation Autoscaling: unexpected concurrent ETL burst saturates 2,000 baseline slots; BigQuery Edition autoscaling allocates burst capacity.",
+  "routing_rationale": "BigQuery Editions (Standard, Enterprise, Enterprise Plus) support dynamic slot autoscaling, seamlessly absorbing analytical query spikes without queueing delays.",
+  "groups": [
+    {
+      "id": "g-etl-storm",
+      "label": "Concurrent Analytical Burst (50 Queries)",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-slot-autoscale",
+      "label": "BigQuery Enterprise Edition Slot Pool",
+      "type": "project",
+      "scope": "global",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "concurrent-queries",
+      "label": "50 Heavy Concurrent SQL Queries",
+      "product": "Demanding 4,000 Slots Simultaneously",
+      "group": "g-etl-storm",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "End-of-month financial reconciliation queries run concurrently with marketing ETL."
+    },
+    {
+      "id": "slot-monitor-alert",
+      "label": "Slot Utilization Sentinel",
+      "product": "Baseline 2,000 Slots @ 100% Saturation",
+      "group": "g-etl-storm",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Queries begin queuing; execution wait times climb from 2s to 45s."
+    },
+    {
+      "id": "slot-autoscaler",
+      "label": "Enterprise Slot Autoscaler",
+      "product": "Scales +1,500 Dynamic Slots",
+      "group": "g-slot-autoscale",
+      "plane": "control",
+      "x": 700,
+      "y": 140,
+      "detail": "Automatically expands reservation pool from 2,000 to 3,500 slots in 10 seconds."
+    },
+    {
+      "id": "unblocked-pipeline",
+      "label": "Queued Queries Complete",
+      "product": "Queue Cleared / P95 Latency Restored",
+      "group": "g-slot-autoscale",
+      "plane": "data",
+      "x": 700,
+      "y": 280,
+      "detail": "All 50 queries execute in parallel; slots scale back down to 2,000 when workload clears."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "concurrent-queries",
+      "to": "slot-monitor-alert",
+      "label": "1. Saturate Baseline Slot Pool",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "slot-monitor-alert",
+      "to": "slot-autoscaler",
+      "label": "2. Trigger Slot Autoscaling Expansion",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "slot-autoscaler",
+      "to": "unblocked-pipeline",
+      "label": "3. Allocate Burst Slots & Clear Queue",
+      "plane": "data"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Saturation Detection",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "BigQuery detects query queue depth increasing and requests additional slots.",
+      "why_traversal": "Prevents business-critical reporting deadlines from being missed.",
+      "protocol": "Borg Slot Allocator",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Elastic Slot Scaling",
+      "edges": [
+        "e3"
+      ],
+      "action": "Pool expands to 3,500 slots; queries finish in parallel; costs scale down automatically.",
+      "why_traversal": "Balances high performance during peaks with cost predictability during idle periods.",
+      "protocol": "BigQuery Reservation API",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "slot-cap-starvation",
+      "label": "Hard Max Slots Cap Causes Indefinite Queueing",
+      "changes": {
+        "failedNodes": [
+          "slot-autoscaler"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "Administrator set max_slots cap to 2,000, preventing autoscaler from expanding.",
+      "diverted_path": "Executive dashboard queries queued for 45 minutes during board meeting.",
+      "blast_radius": "Delayed business decision-making.",
+      "recovery": "Increase max_slots limit on Enterprise reservation or create dedicated high-priority reservation pool for Looker."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "concurrent-queries"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "concurrent-queries"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates Slot Saturation & Dynamic Reservation Autoscaling: unexpected concurrent ETL burst saturates 2,000 baseline slots; BigQuery Edition autoscaling allocates burst capacity."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

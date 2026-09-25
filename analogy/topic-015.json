@@ -1,0 +1,43 @@
+{
+  "topic_no": "015",
+  "roadmap_id": "2.3",
+  "title": "Cloud City: Serverless Compute: Cloud Run, Functions, and Workflows",
+  "city_concept": "On-Demand City Kiosks & Event-Driven Delivery Crews",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Brightloaf Bakery was paying 24/7 for 10 servers to handle order cancellations, even though cancellations only occurred twice an hour.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Tomas the Treasurer deployed on-demand popup kiosks (Cloud Run). When an order cancellation arrives, the kiosk springs open, handles the order, and vanishes.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "During a sudden flash mob, 500 customers rushed the kiosk. Cloud Run automatically duplicated into 20 kiosks instantaneously without dropping an order.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical construction, popups require permits and setup crews; in Cloud Run, container instances scale to zero when idle with zero idle billing.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

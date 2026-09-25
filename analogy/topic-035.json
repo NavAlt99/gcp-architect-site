@@ -1,0 +1,43 @@
+{
+  "topic_no": "035",
+  "roadmap_id": "5.2",
+  "title": "Cloud City: Network Security: VPC Service Controls, Cloud Armor & Firewalls",
+  "city_concept": "City Perimeter Fortifications & Inspection Gates",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Smugglers were sneaking contraband through unregulated river docks and loading municipal wagons to ship city secrets outside the gates.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Warden Ward erected fortified perimeter walls (VPC Service Controls) and customs inspection checkpoints (Cloud Armor).",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "When a rogue merchant attempted to take municipal gold bars through the east gate, automated weight sensors locked the turnstile.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "City stone gates take days to rebuild; cloud perimeter policies update globally across Google's edge network in seconds.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reliability Fundamentals: Availability Math &amp; Failure Domains — Failure Injection &amp; Auto-Healing</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-028.html">← Topic page</a><span>4.1 · TOPIC-028-D3</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-028-d3",
+  "title": "Reliability Fundamentals: Availability Math & Failure Domains \u2014 Failure Injection & Auto-Healing",
+  "topic_no": "028",
+  "roadmap_id": "4.1",
+  "kind": "failure",
+  "purpose": "Simulates cascading failover overload: demonstrates N+1 capacity provisioning preventing standby zone CPU saturation during disaster cutover.",
+  "routing_rationale": "Without N+1 capacity provisioning, diverting 100% traffic to a single standby zone saturates CPU, causing secondary cascading failure across the entire application.",
+  "groups": [
+    {
+      "id": "g-overloaded-src",
+      "label": "Zone A Outage & Traffic Redirection",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 30,
+      "y": 30,
+      "width": 420,
+      "height": 360
+    },
+    {
+      "id": "g-standby-absorb",
+      "label": "Standby Zone B with N+1 Capacity Headroom",
+      "type": "vpc",
+      "scope": "zonal",
+      "x": 480,
+      "y": 30,
+      "width": 440,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "failed-zone-node",
+      "label": "Failed Zone A Nodes",
+      "product": "Total Host Outage",
+      "group": "g-overloaded-src",
+      "plane": "data",
+      "x": 220,
+      "y": 140,
+      "detail": "Entire zone experiences catastrophic network cut."
+    },
+    {
+      "id": "lb-redirect",
+      "label": "Traffic Redirector",
+      "product": "Cloud Load Balancing",
+      "group": "g-overloaded-src",
+      "plane": "control",
+      "x": 220,
+      "y": 280,
+      "detail": "Shifts 100% of customer traffic to surviving Zone B backends."
+    },
+    {
+      "id": "zone-b-capacity",
+      "label": "Zone B (Pre-Scaled N+1)",
+      "product": "Compute MIG (100% Headroom)",
+      "group": "g-standby-absorb",
+      "plane": "data",
+      "x": 700,
+      "y": 140,
+      "detail": "Provisioned with N+1 headroom; absorbs diverted load without exceeding 70% CPU."
+    },
+    {
+      "id": "circuit-breaker",
+      "label": "Adaptive Circuit Breaker",
+      "product": "Envoy / Cloud Armor",
+      "group": "g-standby-absorb",
+      "plane": "control",
+      "x": 700,
+      "y": 280,
+      "detail": "Sheds non-essential background tasks if CPU breaches 80%, protecting core transactions."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "failed-zone-node",
+      "to": "lb-redirect",
+      "label": "1. Zone Failure Detected",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "lb-redirect",
+      "to": "zone-b-capacity",
+      "label": "2. Divert 100% Load to Zone B",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "zone-b-capacity",
+      "to": "circuit-breaker",
+      "label": "3. Monitor CPU Saturation",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Catastrophic Zonal Outage",
+      "edges": [
+        "e1"
+      ],
+      "action": "Zone A goes dark; load balancer immediately withdraws Zone A endpoints.",
+      "why_traversal": "Proactive route withdrawal prevents connection blackholing.",
+      "protocol": "Health Check Signal",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "100% Load Absorption",
+      "edges": [
+        "e2"
+      ],
+      "action": "Zone B receives full customer traffic; N+1 headroom keeps CPU at 68%.",
+      "why_traversal": "Pre-provisioned headroom prevents cascading failover collapse.",
+      "protocol": "HTTP/2 Multiplexing",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Circuit Breaker Protection",
+      "edges": [
+        "e3"
+      ],
+      "action": "Circuit breaker verifies stability; core checkout flows complete cleanly.",
+      "why_traversal": "Graceful degradation ensures high-value transactions survive disasters.",
+      "protocol": "Envoy Outlier Detection",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "cascading-crash",
+      "label": "Cascading Failover Meltdown",
+      "changes": {
+        "failedNodes": [
+          "zone-b-capacity"
+        ],
+        "failedEdges": [
+          "e2"
+        ]
+      },
+      "root_cause": "Standby zone lacked N+1 headroom; sudden 2x traffic surge drove CPU to 100%.",
+      "diverted_path": "Zone B instances crash due to OOM; entire cloud system suffers total outage.",
+      "blast_radius": "100% global customer downtime.",
+      "recovery": "Enforce minimum N+1 capacity sizing rules across all availability zones."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "failed-zone-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "failed-zone-node"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Simulates cascading failover overload: demonstrates N+1 capacity provisioning preventing standby zone CPU saturation during disaster cutover."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

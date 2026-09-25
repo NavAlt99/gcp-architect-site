@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Cloud Architecture Framework — Request &amp; Control Flow</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-023.html">← Topic page</a><span>3.2 · TOPIC-023-D2</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-023-d2",
+  "title": "Google Cloud Architecture Framework \u2014 Request & Control Flow",
+  "topic_no": "023",
+  "roadmap_id": "3.2",
+  "kind": "flow",
+  "purpose": "Traces the Architecture Review Lifecycle: from business requirements submission through 5-pillar scorecard evaluation to final deployment approval.",
+  "routing_rationale": "Structured architecture reviews evaluate risks against formal checklists across each pillar, producing actionable Architecture Decision Records (ADRs).",
+  "groups": [
+    {
+      "id": "g-submission",
+      "label": "Project Intake & Architecture Proposal",
+      "type": "organization",
+      "scope": "organization",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-review-board",
+      "label": "Architecture Review Board (ARB) Evaluation",
+      "type": "project",
+      "scope": "project",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-prod-landing",
+      "label": "Approved Infrastructure Deployment",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "arch-proposal",
+      "label": "RFC Architecture Proposal",
+      "product": "Design Document v1",
+      "group": "g-submission",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Engineers submit RFC detailing new event processing service on Google Cloud."
+    },
+    {
+      "id": "scorecard-sec",
+      "label": "Security Scorecard Check",
+      "product": "VPC-SC / KMS Review",
+      "group": "g-review-board",
+      "plane": "control",
+      "x": 440,
+      "y": 100,
+      "detail": "Reviews customer data classification, encryption key rotation, and perimeter ingress."
+    },
+    {
+      "id": "scorecard-rel",
+      "label": "Reliability & SLO Audit",
+      "product": "Target: 99.95% SLO",
+      "group": "g-review-board",
+      "plane": "control",
+      "x": 440,
+      "y": 200,
+      "detail": "Validates regional redundancy, circuit breakers, and RTO/RPO disaster recovery procedures."
+    },
+    {
+      "id": "scorecard-cost",
+      "label": "FinOps Sizing Model",
+      "product": "Monthly TCO Forecast",
+      "group": "g-review-board",
+      "plane": "control",
+      "x": 440,
+      "y": 300,
+      "detail": "Reviews projected spend against cost center allocation and commits."
+    },
+    {
+      "id": "arb-approval",
+      "label": "Signed Architecture Record",
+      "product": "ADR-042 Approved",
+      "group": "g-prod-landing",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Architecture Decision Record recorded in Git; triggers Terraform release pipeline."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "arch-proposal",
+      "to": "scorecard-sec",
+      "label": "1. Submit for Security Review",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "arch-proposal",
+      "to": "scorecard-rel",
+      "label": "2. Verify Resilience Architecture",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "arch-proposal",
+      "to": "scorecard-cost",
+      "label": "3. Analyze FinOps Sizing",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "scorecard-sec",
+      "to": "arb-approval",
+      "label": "4. Security Sign-off",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "scorecard-rel",
+      "to": "arb-approval",
+      "label": "5. SRE Sign-off",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "scorecard-cost",
+      "to": "arb-approval",
+      "label": "6. FinOps Sign-off",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Multi-Pillar Scorecard Review",
+      "edges": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "action": "Proposal evaluated in parallel across Security, Reliability, and Cost pillars.",
+      "why_traversal": "Parallel reviews identify trade-offs before code and infrastructure are committed.",
+      "protocol": "Review Checklist",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Consensus & Formal Approval",
+      "edges": [
+        "e4",
+        "e5",
+        "e6"
+      ],
+      "action": "All three leads endorse design; ADR is signed and checked into Git repository.",
+      "why_traversal": "Maintains immutable architectural governance trail for auditability.",
+      "protocol": "ADR Signing",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "sec-rejection",
+      "label": "Security Gate Blocks Unencrypted Public Storage",
+      "changes": {
+        "failedNodes": [
+          "scorecard-sec"
+        ],
+        "failedEdges": [
+          "e4"
+        ]
+      },
+      "root_cause": "Proposal attempted to use public GCS bucket for staging client uploads.",
+      "diverted_path": "Automated security linter flags violation; ARB rejects design.",
+      "blast_radius": "Deployment blocked until design updated.",
+      "recovery": "Revise proposal to use Private Service Connect with signed upload URLs."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "arch-proposal"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "arch-proposal"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Traces the Architecture Review Lifecycle: from business requirements submission through 5-pillar scorecard evaluation to final deployment approval."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

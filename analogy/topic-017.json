@@ -1,0 +1,43 @@
+{
+  "topic_no": "017",
+  "roadmap_id": "2.5",
+  "title": "Cloud City: Cloud Load Balancing, Cloud CDN, and Cloud Armor",
+  "city_concept": "City Grand Arrival Gates, Customs Quarantine, and Express Parcel Depot",
+  "beats": [
+    {
+      "step": 1,
+      "name": "The City Problem",
+      "story": "Customers swarmed Brightloaf's tiny storefront entrance. Bad actors pushed in fake coupons, while shoppers in London had to send letters across the Atlantic for a menu.",
+      "analogy_elements": [
+        "Unregulated Chaos",
+        "Disorganized Dispatch"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "The City Solution",
+      "story": "Rae the Dispatcher constructed Global Edge Gates (Load Balancers & Anycast). Customs officers (Cloud Armor) filter bad actors, while regional kiosks (CDN) hand out menus instantly.",
+      "analogy_elements": [
+        "Municipal Charter",
+        "Civic Dispatcher"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "City Under Stress",
+      "story": "A botnet flooded the gates with bogus catalog requests. Cloud Armor slammed the iron portcullis on the botnet while legitimate pastry shoppers walked in freely.",
+      "analogy_elements": [
+        "Traffic Gridlock",
+        "Automated Relief Gates"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Where Metaphor Breaks",
+      "story": "In physical gates, crowds cause street riots; Google Cloud Load Balancers handle millions of QPS without warm-up time.",
+      "analogy_elements": [
+        "Physical City vs Software SDN"
+      ]
+    }
+  ]
+}

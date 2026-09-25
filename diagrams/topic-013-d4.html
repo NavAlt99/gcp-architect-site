@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compute Engine: VMs, Disks, and Managed Instance Groups — D4</title><link rel="stylesheet" href="../assets/site.css?v=20260924-4"><link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-4"></head>
+<body><main class="main-content"><nav class="standalone-nav"><a class="btn-de" href="../pages/topic-013.html">← Topic page</a><span>2.1 · TOPIC-013-D4</span></nav><div id="standalone-diagram"></div></main>
+<script src="../assets/diagram-engine.js?v=20260924-4"></script><script src="../assets/site-interactions.js?v=20260924-4"></script><script>const spec={
+  "id": "topic-013-d4",
+  "title": "Compute Engine: VMs, Disks, and Managed Instance Groups \u2014 D4",
+  "topic_no": "013",
+  "roadmap_id": "2.1",
+  "kind": "security",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "routing_rationale": "Compute Engine isolates virtual machines across availability zones. Regional MIGs balance VM counts across zones, while Regional Persistent Disks synchronously replicate data.",
+  "groups": [
+    {
+      "id": "g-ext-lb",
+      "label": "Edge Anycast Ingress (Cloud Load Balancing)",
+      "type": "external",
+      "scope": "external",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-mig-core",
+      "label": "Regional MIG Boundary (us-central1)",
+      "type": "region",
+      "scope": "regional",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-storage-tier",
+      "label": "High-Durability Regional Disk Fabric",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "alb",
+      "label": "Global External ALB",
+      "product": "Cloud Load Balancing",
+      "group": "g-ext-lb",
+      "plane": "data",
+      "x": 140,
+      "y": 140,
+      "detail": "Distributes HTTP traffic across healthy backend VM instances in all zones."
+    },
+    {
+      "id": "hc-probe",
+      "label": "Regional Health Check",
+      "product": "Compute Health Check",
+      "group": "g-ext-lb",
+      "plane": "control",
+      "x": 140,
+      "y": 280,
+      "detail": "Probes port 8080 /healthz; informs MIG manager of dead instances."
+    },
+    {
+      "id": "mig-mgr",
+      "label": "Regional Instance Group Mgr",
+      "product": "Compute MIG Controller",
+      "group": "g-mig-core",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Maintains target capacity; automatically recreates failed instances from template."
+    },
+    {
+      "id": "vm-zone-a",
+      "label": "VM Instance (Zone A)",
+      "product": "n2-standard-4 (us-central1-a)",
+      "group": "g-mig-core",
+      "plane": "data",
+      "x": 440,
+      "y": 280,
+      "detail": "Primary serving instance processing application workloads."
+    },
+    {
+      "id": "reg-pd",
+      "label": "Regional Persistent Disk",
+      "product": "pd-ssd (Synchronous 2-Zone)",
+      "group": "g-storage-tier",
+      "plane": "data",
+      "x": 780,
+      "y": 200,
+      "detail": "Synchronously replicates block storage writes across Zone A and Zone B."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "alb",
+      "to": "vm-zone-a",
+      "label": "1. Forward HTTP Traffic",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "hc-probe",
+      "to": "vm-zone-a",
+      "label": "2. Health Probe (5s)",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "vm-zone-a",
+      "to": "reg-pd",
+      "label": "3. Synchronous Block Write",
+      "plane": "data"
+    },
+    {
+      "id": "e4",
+      "from": "hc-probe",
+      "to": "mig-mgr",
+      "label": "4. Health Status Signal",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Load Balancer Dispatch",
+      "edges": [
+        "e1"
+      ],
+      "action": "Load balancer forwards user transaction to healthy VM instance in Zone A.",
+      "why_traversal": "Anycast distributes traffic to optimal zonal endpoints.",
+      "protocol": "HTTP/1.1 TCP 8080",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Synchronous Disk Write",
+      "edges": [
+        "e3"
+      ],
+      "action": "VM commits data block; Regional PD replicates to Zone B before acknowledging write.",
+      "why_traversal": "Regional PD achieves RPO=0 across zonal datacenter outages.",
+      "protocol": "SCSI / NVMe over Fabric",
+      "plane": "Data Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Continuous Health Probing",
+      "edges": [
+        "e2",
+        "e4"
+      ],
+      "action": "Health prober validates response; reports healthy status to MIG controller.",
+      "why_traversal": "Enables proactive eviction if backend becomes unresponsive.",
+      "protocol": "HTTP GET /healthz",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "zone-a-failure",
+      "label": "Zonal Datacenter Hardware Failure",
+      "changes": {
+        "failedNodes": [
+          "vm-zone-a"
+        ],
+        "failedEdges": [
+          "e1",
+          "e3"
+        ]
+      },
+      "root_cause": "Hypervisor host hardware crash terminates VM in Zone A.",
+      "diverted_path": "Health check flags timeout; MIG auto-heals by provisioning replacement VM in Zone B.",
+      "blast_radius": "In-flight request retried by ALB; Regional PD reattaches with zero data loss.",
+      "recovery": "Instance template boots in Zone B and mounts existing Regional PD."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "alb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "alb"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+};document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

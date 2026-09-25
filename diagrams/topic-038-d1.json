@@ -1,0 +1,218 @@
+{
+  "id": "topic-038-d1",
+  "title": "Security Operations & Threat Detection \u2014 Scope & Architecture Map",
+  "topic_no": "038",
+  "roadmap_id": "5.5",
+  "kind": "map",
+  "purpose": "Visualizes Cloud Security Operations (SecOps): Security Command Center (SCC) Premium, Event Threat Detection, Chronicle SIEM, and automated SOAR incident response playbooks.",
+  "routing_rationale": "Modern cloud security operations must replace manual triage with real-time streaming threat detection and automated SOAR orchestration to neutralize adversaries within seconds.",
+  "groups": [
+    {
+      "id": "g-telemetry-sink",
+      "label": "Cloud Telemetry & Audit Logs",
+      "type": "project",
+      "scope": "global",
+      "x": 30,
+      "y": 30,
+      "width": 240,
+      "height": 360
+    },
+    {
+      "id": "g-scc-chronicle",
+      "label": "SCC & Chronicle SIEM Detection Engine",
+      "type": "organization",
+      "scope": "organization",
+      "x": 300,
+      "y": 30,
+      "width": 310,
+      "height": 360
+    },
+    {
+      "id": "g-soar-auto",
+      "label": "Chronicle SOAR & Automated Containment",
+      "type": "vpc",
+      "scope": "regional",
+      "x": 640,
+      "y": 30,
+      "width": 290,
+      "height": 360
+    }
+  ],
+  "nodes": [
+    {
+      "id": "audit-stream",
+      "label": "Cloud Audit Logs Stream",
+      "product": "Admin Activity & Data Access Logs",
+      "group": "g-telemetry-sink",
+      "plane": "control",
+      "x": 140,
+      "y": 140,
+      "detail": "Captures all API calls across Google Cloud projects in real time."
+    },
+    {
+      "id": "vpc-flow",
+      "label": "VPC Flow Logs & DNS Logs",
+      "product": "Network Packet Metadata",
+      "group": "g-telemetry-sink",
+      "plane": "data",
+      "x": 140,
+      "y": 280,
+      "detail": "Streams netflow records to detect anomalous outbound connections."
+    },
+    {
+      "id": "scc-etd",
+      "label": "SCC Event Threat Detection",
+      "product": "Cryptomining & Brute-Force Detection",
+      "group": "g-scc-chronicle",
+      "plane": "control",
+      "x": 440,
+      "y": 140,
+      "detail": "Uses Google threat intelligence to detect malware, coin miners, and privilege escalations."
+    },
+    {
+      "id": "chronicle-rules",
+      "label": "Chronicle YARA-L Rules",
+      "product": "Petabyte-Scale SIEM Analytics",
+      "group": "g-scc-chronicle",
+      "plane": "control",
+      "x": 440,
+      "y": 280,
+      "detail": "Correlates multi-stage attack patterns across cloud and on-premise infrastructure."
+    },
+    {
+      "id": "soar-playbook",
+      "label": "SOAR Quarantine Playbook",
+      "product": "Automated Network Isolation",
+      "group": "g-soar-auto",
+      "plane": "control",
+      "x": 780,
+      "y": 200,
+      "detail": "Applies quarantine network tag to compromised VM, severing internet access in 4 seconds."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "audit-stream",
+      "to": "scc-etd",
+      "label": "1. Stream Cloud Audit Telemetry",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "vpc-flow",
+      "to": "chronicle-rules",
+      "label": "2. Stream VPC Netflow Logs",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "scc-etd",
+      "to": "soar-playbook",
+      "label": "3. Alert: High Severity Finding",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "chronicle-rules",
+      "to": "soar-playbook",
+      "label": "4. Trigger Threat Containment",
+      "plane": "control"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Continuous Telemetry Analysis",
+      "edges": [
+        "e1",
+        "e2"
+      ],
+      "action": "SCC and Chronicle ingest audit and flow logs, matching indicators of compromise (IoCs).",
+      "why_traversal": "Provides unified visibility across identity and network attack vectors.",
+      "protocol": "Streaming Log Ingestion",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Automated Incident Containment",
+      "edges": [
+        "e3",
+        "e4"
+      ],
+      "action": "SOAR playbook executes instantly, isolating the infected instance and preserving memory dumps.",
+      "why_traversal": "Neutralizes active breaches before attackers can move laterally.",
+      "protocol": "SOAR Automation Playbook",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "request_count and error_count",
+        "logs": "severity>=ERROR",
+        "commands": "gcloud services list --enabled"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "quarantine-bypass-failure",
+      "label": "Quarantine Tag Missing Firewall Rule",
+      "changes": {
+        "failedNodes": [
+          "soar-playbook"
+        ],
+        "failedEdges": [
+          "e3"
+        ]
+      },
+      "root_cause": "VPC lacked firewall deny rule targeted to the 'quarantine' network tag.",
+      "diverted_path": "VM was tagged, but traffic continued egressing to command-and-control server.",
+      "blast_radius": "Data exfiltration continued for 30 minutes.",
+      "recovery": "Pre-provision high-priority (priority 1) deny-all ingress/egress firewall rules for quarantine tags."
+    },
+    {
+      "id": "quota-exhausted",
+      "label": "Quota exhausted",
+      "changes": {
+        "failedNodes": [
+          "audit-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A project or regional quota reaches its allocation limit.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    },
+    {
+      "id": "dependency-unavailable",
+      "label": "Dependency unavailable",
+      "changes": {
+        "failedNodes": [
+          "audit-stream"
+        ],
+        "failedEdges": [
+          "e1"
+        ]
+      },
+      "root_cause": "A required API or downstream dependency is unavailable.",
+      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
+      "blast_radius": "Consumers of the affected resource or dependency.",
+      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "check": {
+        "metric": "error_count > 0",
+        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+      }
+    }
+  ],
+  "summary": "Visualizes Cloud Security Operations (SecOps): Security Command Center (SCC) Premium, Event Threat Detection, Chronicle SIEM, and automated SOAR incident response playbooks."
+}
