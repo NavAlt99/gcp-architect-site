@@ -8,89 +8,219 @@
   "topic_no": "061",
   "roadmap_id": "7.2",
   "kind": "security",
-  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
-  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "purpose": "Security and ownership for Case reading technique: numbers, hidden adjectives, stated versus implied needs, and out-of-scope boundaries.",
+  "routing_rationale": "Use the D4 lens to keep numbers, hidden adjectives, stated versus implied needs, and out-of-scope boundaries connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Extract measurable requirements and watchpoints from a cloud architecture case before choosing services.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Case reading technique",
+      "id": "brief",
+      "label": "Exam Case Brief",
+      "product": "Case study source",
+      "group": "root",
+      "plane": "control",
+      "x": 120,
+      "y": 220,
+      "detail": "The narrative containing business goals, constraints, and signals."
+    },
+    {
+      "id": "numbers",
+      "label": "Measured Facts",
+      "product": "Users, RPS, TB, latency, RTO/RPO, budget",
+      "group": "root",
+      "plane": "control",
+      "x": 330,
+      "y": 120,
+      "detail": "Numbers that turn a vague case into testable requirements."
+    },
+    {
+      "id": "requirements",
+      "label": "Requirement Ledger",
+      "product": "Functional and non-functional needs",
+      "group": "root",
+      "plane": "control",
+      "x": 520,
+      "y": 220,
+      "detail": "A separated list of stated needs and inferred needs."
+    },
+    {
+      "id": "watchpoints",
+      "label": "Watchpoint Register",
+      "product": "Conflicts, compliance, skills",
+      "group": "root",
+      "plane": "control",
+      "x": 710,
+      "y": 120,
+      "detail": "Risks hidden behind words such as global, regulated, spiky, or legacy."
+    },
+    {
+      "id": "capabilities",
+      "label": "GCP Capability Map",
+      "product": "Services and architecture patterns",
       "group": "root",
       "plane": "data",
-      "x": 480,
-      "y": 220,
-      "detail": "The workload under review."
+      "x": 710,
+      "y": 320,
+      "detail": "A traceable mapping from each requirement to a cloud capability."
+    },
+    {
+      "id": "scope",
+      "label": "Explicit Out-of-Scope",
+      "product": "Excluded requirements",
+      "group": "root",
+      "plane": "control",
+      "x": 520,
+      "y": 360,
+      "detail": "Constraints that must not accidentally enter the design."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "brief",
+      "to": "numbers",
+      "label": "extract facts",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "numbers",
+      "to": "requirements",
+      "label": "quantify",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "requirements",
+      "to": "watchpoints",
+      "label": "challenge assumptions",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "requirements",
+      "to": "capabilities",
+      "label": "map to GCP",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "brief",
+      "to": "scope",
+      "label": "mark exclusions",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Security and ownership: Exam Case Brief \u2192 Measured Facts",
+      "edges": [
+        "e1"
+      ],
+      "action": "Exam Case Brief extract facts to Measured Facts; record evidence for numbers, hidden adjectives, stated versus implied needs, and out-of-scope boundaries.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Case reading technique by making Measured Facts an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "7.2:d4:step_1:evidence_present",
+        "logs": "topic=7.2 lens=d4 edge=e1",
+        "commands": "record and verify e1 for Case reading technique"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Security and ownership: Requirement Ledger \u2192 Watchpoint Register",
+      "edges": [
+        "e3"
+      ],
+      "action": "Requirement Ledger challenge assumptions to Watchpoint Register; record evidence for numbers, hidden adjectives, stated versus implied needs, and out-of-scope boundaries.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Case reading technique by making Watchpoint Register an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.2:d4:step_2:evidence_present",
+        "logs": "topic=7.2 lens=d4 edge=e3",
+        "commands": "record and verify e3 for Case reading technique"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Security and ownership: Exam Case Brief \u2192 Explicit Out-of-Scope",
+      "edges": [
+        "e5"
+      ],
+      "action": "Exam Case Brief mark exclusions to Explicit Out-of-Scope; record evidence for numbers, hidden adjectives, stated versus implied needs, and out-of-scope boundaries.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Case reading technique by making Explicit Out-of-Scope an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.2:d4:step_3:evidence_present",
+        "logs": "topic=7.2 lens=d4 edge=e5",
+        "commands": "record and verify e5 for Case reading technique"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "missed-number",
+      "label": "A number is missed",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "numbers"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A scale, latency, budget, or recovery figure is not captured.",
+      "diverted_path": "The Case reading technique path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Measured Facts and any downstream decision depending on it.",
+      "recovery": "Re-read the case and add the value to the requirement ledger.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.2:d4:missed-number:resolved",
+        "command": "review d4 evidence for Measured Facts"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "hidden-constraint",
+      "label": "A hidden constraint is ignored",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "watchpoints"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "An adjective conceals regulatory, geographic, or operational risk.",
+      "diverted_path": "The Case reading technique path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Watchpoint Register and any downstream decision depending on it.",
+      "recovery": "Turn the adjective into an explicit question and review it.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.2:d4:hidden-constraint:resolved",
+        "command": "review d4 evidence for Watchpoint Register"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "untraceable-choice",
+      "label": "A service choice has no requirement",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "capabilities"
+        ],
+        "failedEdges": [
+          "e4"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The proposed capability cannot be traced back to a case requirement.",
+      "diverted_path": "The Case reading technique path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of GCP Capability Map and any downstream decision depending on it.",
+      "recovery": "Reject the orphan choice or document the missing requirement.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.2:d4:untraceable-choice:resolved",
+        "command": "review d4 evidence for GCP Capability Map"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 };document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

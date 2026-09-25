@@ -23,7 +23,7 @@ def main() -> int:
         parser.error(f"roadmap source does not exist: {roadmap}")
     print(f"Using roadmap source: {roadmap}")
     commands = [
-        [sys.executable, str(SITE / "scripts" / "repair_site.py")],
+        [sys.executable, str(SITE / "scripts" / "repair_site.py"), "--roadmap", str(roadmap)],
         [sys.executable, str(SITE / "scripts" / "build_roadmap_content.py"), "--roadmap", str(roadmap)],
         [sys.executable, str(SITE / "scripts" / "validate_content.py")],
         [sys.executable, str(SITE / "scripts" / "test_diagrams.py")],

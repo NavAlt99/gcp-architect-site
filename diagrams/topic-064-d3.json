@@ -3,90 +3,261 @@
   "title": "Messaging selection \u2014 D3",
   "topic_no": "064",
   "roadmap_id": "cheat-6",
-  "kind": "map",
-  "purpose": "Architecture view for Messaging selection.",
-  "summary": "Accessible summary for Messaging selection.",
+  "kind": "failure",
+  "purpose": "Failure analysis for Messaging selection: fan-out, rate control, event triggers, orchestration, ordering, replay, and dead-letter handling.",
+  "routing_rationale": "Use the D3 lens to keep fan-out, rate control, event triggers, orchestration, ordering, replay, and dead-letter handling connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Select Pub/Sub, Cloud Tasks, Eventarc, or Workflows from delivery, ordering, rate-control, and orchestration requirements.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Messaging selection",
+      "id": "producer",
+      "label": "Order / Event Producer",
+      "product": "Application or Google service",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 90,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "The system that emits work or an event."
+    },
+    {
+      "id": "decision",
+      "label": "Messaging Decision",
+      "product": "Delivery and control requirements",
+      "group": "root",
+      "plane": "control",
+      "x": 280,
+      "y": 220,
+      "detail": "The choice point for delivery, fan-out, rate, and orchestration."
+    },
+    {
+      "id": "pubsub",
+      "label": "Pub/Sub Topic",
+      "product": "Fan-out and durable messaging",
+      "group": "root",
+      "plane": "data",
+      "x": 500,
+      "y": 90,
+      "detail": "Decoupled asynchronous delivery with subscriptions, replay, and dead lettering."
+    },
+    {
+      "id": "tasks",
+      "label": "Cloud Tasks Queue",
+      "product": "Rate-controlled task delivery",
+      "group": "root",
+      "plane": "data",
+      "x": 500,
+      "y": 220,
+      "detail": "Targeted delivery with retries and per-queue rate control."
+    },
+    {
+      "id": "eventarc",
+      "label": "Eventarc Trigger",
+      "product": "Event-driven routing",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
+      "y": 350,
+      "detail": "Routes supported provider or custom events to a target."
+    },
+    {
+      "id": "workflow",
+      "label": "Workflows",
+      "product": "Multi-step orchestration",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 220,
+      "detail": "Coordinates steps, retries, and service calls."
+    },
+    {
+      "id": "consumer",
+      "label": "Consumer Service",
+      "product": "Cloud Run / GKE / function",
+      "group": "root",
+      "plane": "data",
+      "x": 880,
+      "y": 220,
+      "detail": "Processes the message or event and reports outcome."
+    },
+    {
+      "id": "recovery",
+      "label": "DLQ / Replay / Retry",
+      "product": "Failure handling",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 380,
+      "detail": "Prevents poison messages from silently disappearing."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "producer",
+      "to": "decision",
+      "label": "publish work",
+      "plane": "data"
+    },
+    {
+      "id": "e2",
+      "from": "decision",
+      "to": "pubsub",
+      "label": "fan-out / replay",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "decision",
+      "to": "tasks",
+      "label": "rate-control",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "decision",
+      "to": "eventarc",
+      "label": "react to event",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "decision",
+      "to": "workflow",
+      "label": "orchestrate steps",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "pubsub",
+      "to": "consumer",
+      "label": "deliver message",
+      "plane": "data"
+    },
+    {
+      "id": "e7",
+      "from": "tasks",
+      "to": "consumer",
+      "label": "deliver task",
+      "plane": "data"
+    },
+    {
+      "id": "e8",
+      "from": "consumer",
+      "to": "recovery",
+      "label": "retry / dead letter",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Failure analysis: Messaging Decision \u2192 Cloud Tasks Queue",
+      "edges": [
+        "e3"
+      ],
+      "action": "Messaging Decision rate-control to Cloud Tasks Queue; record evidence for fan-out, rate control, event triggers, orchestration, ordering, replay, and dead-letter handling.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Messaging selection by making Cloud Tasks Queue an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "cheat-6:d3:step_1:evidence_present",
+        "logs": "topic=cheat-6 lens=d3 edge=e3",
+        "commands": "record and verify e3 for Messaging selection"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Failure analysis: Messaging Decision \u2192 Eventarc Trigger",
+      "edges": [
+        "e4"
+      ],
+      "action": "Messaging Decision react to event to Eventarc Trigger; record evidence for fan-out, rate control, event triggers, orchestration, ordering, replay, and dead-letter handling.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Messaging selection by making Eventarc Trigger an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "cheat-6:d3:step_2:evidence_present",
+        "logs": "topic=cheat-6 lens=d3 edge=e4",
+        "commands": "record and verify e4 for Messaging selection"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Failure analysis: Messaging Decision \u2192 Workflows",
+      "edges": [
+        "e5"
+      ],
+      "action": "Messaging Decision orchestrate steps to Workflows; record evidence for fan-out, rate control, event triggers, orchestration, ordering, replay, and dead-letter handling.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Messaging selection by making Workflows an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "cheat-6:d3:step_3:evidence_present",
+        "logs": "topic=cheat-6 lens=d3 edge=e5",
+        "commands": "record and verify e5 for Messaging selection"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "wrong-delivery-model",
+      "label": "The selected service cannot meet delivery semantics",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "decision"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Fan-out, rate control, event routing, or orchestration needs are mismatched.",
+      "diverted_path": "The Messaging selection path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Messaging Decision and any downstream decision depending on it.",
+      "recovery": "Re-evaluate the requirement matrix before implementation.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "cheat-6:d3:wrong-delivery-model:resolved",
+        "command": "review d3 evidence for Messaging Decision"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "poison-message",
+      "label": "A consumer repeatedly fails",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "consumer"
+        ],
+        "failedEdges": [
+          "e6"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Retries amplify load or a message blocks useful work.",
+      "diverted_path": "The Messaging selection path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Consumer Service and any downstream decision depending on it.",
+      "recovery": "Use bounded retries, dead lettering, and an operator replay path.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "cheat-6:d3:poison-message:resolved",
+        "command": "review d3 evidence for Consumer Service"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "unbounded-workflow",
+      "label": "Orchestration grows without a boundary",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "workflow"
+        ],
+        "failedEdges": [
+          "e5"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A multi-step process has no timeout, idempotency, or compensation plan.",
+      "diverted_path": "The Messaging selection path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Workflows and any downstream decision depending on it.",
+      "recovery": "Set explicit timeouts and record compensating actions.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "cheat-6:d3:unbounded-workflow:resolved",
+        "command": "review d3 evidence for Workflows"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

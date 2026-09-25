@@ -8,89 +8,250 @@
   "topic_no": "070",
   "roadmap_id": "notes",
   "kind": "map",
-  "purpose": "Architecture view for Practical notes and operating rules.",
-  "summary": "Accessible summary for Practical notes and operating rules.",
+  "purpose": "Architecture map for Practical notes and operating rules: authoritative documentation, assumptions, project safety, budgets, least privilege, cleanup, and verification dates.",
+  "routing_rationale": "Use the D1 lens to keep authoritative documentation, assumptions, project safety, budgets, least privilege, cleanup, and verification dates connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Keep architecture work safe and current with authoritative sources, explicit assumptions, project guardrails, and cleanup rules.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Practical notes and operating rules",
+      "id": "question",
+      "label": "Architecture Question",
+      "product": "Decision or operational rule",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 220,
+      "detail": "The claim or action that needs a defensible answer."
+    },
+    {
+      "id": "docs",
+      "label": "Authoritative Documentation",
+      "product": "Product docs and release notes",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 100,
+      "detail": "The source used to verify time-sensitive behavior."
+    },
+    {
+      "id": "assumptions",
+      "label": "Assumptions and Limits",
+      "product": "Scope, quota, cost, behavior",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 340,
+      "detail": "What is believed, what is unknown, and what may change."
+    },
+    {
+      "id": "guardrails",
+      "label": "Project Guardrails",
+      "product": "IAM, APIs, region, budget",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
+      "y": 220,
+      "detail": "The safe boundary before any cloud action."
+    },
+    {
+      "id": "runbook",
+      "label": "Runbook and Cleanup",
+      "product": "Observe, recover, destroy",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 700,
+      "y": 100,
+      "detail": "The reversible operational path and deletion verification."
+    },
+    {
+      "id": "verify",
+      "label": "Verification Date",
+      "product": "Review trigger",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 340,
+      "detail": "When the claim must be checked again."
+    },
+    {
+      "id": "decision",
+      "label": "Approved Decision",
+      "product": "Evidence-backed architecture",
+      "group": "root",
+      "plane": "control",
+      "x": 900,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "The result that can be handed to a reviewer or operator."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "question",
+      "to": "docs",
+      "label": "find source",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "question",
+      "to": "assumptions",
+      "label": "bound uncertainty",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "docs",
+      "to": "guardrails",
+      "label": "apply safely",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "assumptions",
+      "to": "guardrails",
+      "label": "test constraints",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "guardrails",
+      "to": "runbook",
+      "label": "operate and clean up",
+      "plane": "data"
+    },
+    {
+      "id": "e6",
+      "from": "docs",
+      "to": "verify",
+      "label": "schedule review",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "runbook",
+      "to": "decision",
+      "label": "approve with recovery",
+      "plane": "control"
+    },
+    {
+      "id": "e8",
+      "from": "verify",
+      "to": "decision",
+      "label": "keep current",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Architecture map: Architecture Question \u2192 Authoritative Documentation",
+      "edges": [
+        "e1"
+      ],
+      "action": "Architecture Question find source to Authoritative Documentation; record evidence for authoritative documentation, assumptions, project safety, budgets, least privilege, cleanup, and verification dates.",
+      "why_traversal": "Trace the primary decision path for Practical notes and operating rules by making Authoritative Documentation an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "notes:d1:step_1:evidence_present",
+        "logs": "topic=notes lens=d1 edge=e1",
+        "commands": "record and verify e1 for Practical notes and operating rules"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Architecture map: Architecture Question \u2192 Assumptions and Limits",
+      "edges": [
+        "e2"
+      ],
+      "action": "Architecture Question bound uncertainty to Assumptions and Limits; record evidence for authoritative documentation, assumptions, project safety, budgets, least privilege, cleanup, and verification dates.",
+      "why_traversal": "Trace the primary decision path for Practical notes and operating rules by making Assumptions and Limits an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "notes:d1:step_2:evidence_present",
+        "logs": "topic=notes lens=d1 edge=e2",
+        "commands": "record and verify e2 for Practical notes and operating rules"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Architecture map: Authoritative Documentation \u2192 Project Guardrails",
+      "edges": [
+        "e3"
+      ],
+      "action": "Authoritative Documentation apply safely to Project Guardrails; record evidence for authoritative documentation, assumptions, project safety, budgets, least privilege, cleanup, and verification dates.",
+      "why_traversal": "Trace the primary decision path for Practical notes and operating rules by making Project Guardrails an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "notes:d1:step_3:evidence_present",
+        "logs": "topic=notes lens=d1 edge=e3",
+        "commands": "record and verify e3 for Practical notes and operating rules"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "stale-fact",
+      "label": "A time-sensitive claim is outdated",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "docs"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The design relies on a product limit, price, or behavior without a current source.",
+      "diverted_path": "The Practical notes and operating rules path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Authoritative Documentation and any downstream decision depending on it.",
+      "recovery": "Add an authoritative link and verification date.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "notes:d1:stale-fact:resolved",
+        "command": "review d1 evidence for Authoritative Documentation"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "unsafe-action",
+      "label": "A cloud action bypasses guardrails",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "guardrails"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The wrong project, identity, region, or budget is used.",
+      "diverted_path": "The Practical notes and operating rules path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Project Guardrails and any downstream decision depending on it.",
+      "recovery": "Require explicit project confirmation, least privilege, and plan review.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "notes:d1:unsafe-action:resolved",
+        "command": "review d1 evidence for Project Guardrails"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "orphaned-resource",
+      "label": "Cleanup is assumed rather than verified",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "runbook"
+        ],
+        "failedEdges": [
+          "e5"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Resources or billing remain after the exercise or migration.",
+      "diverted_path": "The Practical notes and operating rules path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Runbook and Cleanup and any downstream decision depending on it.",
+      "recovery": "Destroy named resources and verify deletion asynchronously.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "notes:d1:orphaned-resource:resolved",
+        "command": "review d1 evidence for Runbook and Cleanup"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 };document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>

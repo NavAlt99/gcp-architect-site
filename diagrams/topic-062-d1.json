@@ -4,89 +4,236 @@
   "topic_no": "062",
   "roadmap_id": "7.3",
   "kind": "map",
-  "purpose": "Architecture view for Discovery question bank.",
-  "summary": "Accessible summary for Discovery question bank.",
+  "purpose": "Architecture map for Discovery question bank: business driver, availability and recovery targets, load shape, data location, constraints, and success measures.",
+  "routing_rationale": "Use the D1 lens to keep business driver, availability and recovery targets, load shape, data location, constraints, and success measures connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Move from a client business driver to measurable availability, load, data, risk, and success criteria.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Discovery question bank",
+      "id": "sponsor",
+      "label": "Client Sponsor",
+      "product": "Business owner",
+      "group": "root",
+      "plane": "control",
+      "x": 100,
+      "y": 220,
+      "detail": "The stakeholder who explains why the project exists."
+    },
+    {
+      "id": "driver",
+      "label": "Business Driver",
+      "product": "Revenue, time-to-market, risk",
+      "group": "root",
+      "plane": "control",
+      "x": 270,
+      "y": 120,
+      "detail": "The outcome that should anchor all technical questions."
+    },
+    {
+      "id": "slo",
+      "label": "Availability / RTO / RPO",
+      "product": "SLO and recovery targets",
+      "group": "root",
+      "plane": "control",
+      "x": 470,
+      "y": 220,
+      "detail": "The measurable service and recovery objectives."
+    },
+    {
+      "id": "load",
+      "label": "Peak and Average Load",
+      "product": "Throughput and latency profile",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 650,
+      "y": 120,
+      "detail": "The traffic shape, not just a single peak number."
+    },
+    {
+      "id": "residency",
+      "label": "Data and Regulation",
+      "product": "Geography and compliance",
+      "group": "root",
+      "plane": "control",
+      "x": 650,
+      "y": 320,
+      "detail": "Where users and data may legally or operationally reside."
+    },
+    {
+      "id": "estate",
+      "label": "Existing Systems and Skills",
+      "product": "Integrations and team capability",
+      "group": "root",
+      "plane": "control",
+      "x": 470,
+      "y": 380,
+      "detail": "Constraints that shape migration, operations, and supportability."
+    },
+    {
+      "id": "success",
+      "label": "Success Measures",
+      "product": "Business and technical KPIs",
+      "group": "root",
+      "plane": "control",
+      "x": 850,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "How the customer will decide the architecture worked."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sponsor",
+      "to": "driver",
+      "label": "why now?",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "driver",
+      "to": "slo",
+      "label": "what must hold?",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "slo",
+      "to": "load",
+      "label": "size the service",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "slo",
+      "to": "residency",
+      "label": "bound the design",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "residency",
+      "to": "estate",
+      "label": "check constraints",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "load",
+      "to": "success",
+      "label": "measure outcome",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Architecture map: Client Sponsor \u2192 Business Driver",
+      "edges": [
+        "e1"
+      ],
+      "action": "Client Sponsor why now? to Business Driver; record evidence for business driver, availability and recovery targets, load shape, data location, constraints, and success measures.",
+      "why_traversal": "Trace the primary decision path for Discovery question bank by making Business Driver an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "7.3:d1:step_1:evidence_present",
+        "logs": "topic=7.3 lens=d1 edge=e1",
+        "commands": "record and verify e1 for Discovery question bank"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Architecture map: Business Driver \u2192 Availability / RTO / RPO",
+      "edges": [
+        "e2"
+      ],
+      "action": "Business Driver what must hold? to Availability / RTO / RPO; record evidence for business driver, availability and recovery targets, load shape, data location, constraints, and success measures.",
+      "why_traversal": "Trace the primary decision path for Discovery question bank by making Availability / RTO / RPO an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.3:d1:step_2:evidence_present",
+        "logs": "topic=7.3 lens=d1 edge=e2",
+        "commands": "record and verify e2 for Discovery question bank"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Architecture map: Availability / RTO / RPO \u2192 Peak and Average Load",
+      "edges": [
+        "e3"
+      ],
+      "action": "Availability / RTO / RPO size the service to Peak and Average Load; record evidence for business driver, availability and recovery targets, load shape, data location, constraints, and success measures.",
+      "why_traversal": "Trace the primary decision path for Discovery question bank by making Peak and Average Load an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.3:d1:step_3:evidence_present",
+        "logs": "topic=7.3 lens=d1 edge=e3",
+        "commands": "record and verify e3 for Discovery question bank"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "wrong-driver",
+      "label": "The solution answers the wrong driver",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "driver"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Technical activity is mistaken for the business outcome.",
+      "diverted_path": "The Discovery question bank path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Business Driver and any downstream decision depending on it.",
+      "recovery": "Restate the driver and obtain sponsor confirmation.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.3:d1:wrong-driver:resolved",
+        "command": "review d1 evidence for Business Driver"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "unmeasured-target",
+      "label": "Targets remain qualitative",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "slo"
+        ],
+        "failedEdges": [
+          "e2"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "No availability, recovery, latency, or cost threshold can be tested.",
+      "diverted_path": "The Discovery question bank path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Availability / RTO / RPO and any downstream decision depending on it.",
+      "recovery": "Write measurable targets and the evidence source for each.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.3:d1:unmeasured-target:resolved",
+        "command": "review d1 evidence for Availability / RTO / RPO"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "missing-constraint",
+      "label": "A residency or skill constraint arrives late",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "residency"
+        ],
+        "failedEdges": [
+          "e4"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The chosen architecture cannot satisfy geography, regulation, or team capability.",
+      "diverted_path": "The Discovery question bank path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Data and Regulation and any downstream decision depending on it.",
+      "recovery": "Add the constraint to the decision record before service selection.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.3:d1:missing-constraint:resolved",
+        "command": "review d1 evidence for Data and Regulation"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

@@ -4,89 +4,277 @@
   "topic_no": "071",
   "roadmap_id": "domains",
   "kind": "map",
-  "purpose": "Architecture view for How the phases map to the exam domains.",
-  "summary": "Accessible summary for How the phases map to the exam domains.",
+  "purpose": "Architecture map for How the phases map to the exam domains: Design and Plan, Manage Infrastructure, Security and Compliance, Process Optimization, and Reliability.",
+  "routing_rationale": "Use the D1 lens to keep Design and Plan, Manage Infrastructure, Security and Compliance, Process Optimization, and Reliability connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Trace roadmap phases to the five exam-domain capabilities: design, infrastructure management, security, process optimisation, and reliability.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "How the phases map to the exam domains",
+      "id": "phase-design",
+      "label": "Phases 3, 6, 7",
+      "product": "Architecture, optimisation, case analysis",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 100,
+      "detail": "Where design and planning judgment is built."
+    },
+    {
+      "id": "phase-infra",
+      "label": "Phases 1, 2, 4",
+      "product": "Foundations, core services, HA",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 340,
+      "detail": "Where infrastructure management is practiced."
+    },
+    {
+      "id": "phase-security",
+      "label": "Phase 5",
+      "product": "Security and compliance",
+      "group": "root",
+      "plane": "control",
+      "x": 300,
+      "y": 460,
+      "detail": "Where identity, network, data, and governance controls are built."
+    },
+    {
+      "id": "domain-design",
+      "label": "Design and Plan",
+      "product": "Exam domain capability",
+      "group": "root",
+      "plane": "control",
+      "x": 400,
+      "y": 100,
+      "detail": "Plan a cloud architecture from requirements and constraints."
+    },
+    {
+      "id": "domain-infra",
+      "label": "Manage Infrastructure",
+      "product": "Exam domain capability",
+      "group": "root",
+      "plane": "control",
+      "x": 400,
+      "y": 340,
+      "detail": "Operate and evolve cloud infrastructure."
+    },
+    {
+      "id": "domain-security",
+      "label": "Security and Compliance",
+      "product": "Exam domain capability",
+      "group": "root",
+      "plane": "control",
+      "x": 650,
+      "y": 460,
+      "detail": "Protect systems, data, identities, and compliance boundaries."
+    },
+    {
+      "id": "domain-process",
+      "label": "Process Optimization",
+      "product": "Exam domain capability",
+      "group": "root",
+      "plane": "control",
+      "x": 650,
+      "y": 100,
+      "detail": "Improve delivery and operations with measurable feedback."
+    },
+    {
+      "id": "domain-reliability",
+      "label": "Reliability",
+      "product": "Exam domain capability",
+      "group": "root",
+      "plane": "control",
+      "x": 650,
+      "y": 280,
+      "detail": "Design for failure, recovery, and service objectives."
+    },
+    {
+      "id": "evidence",
+      "label": "Case / Design Evidence",
+      "product": "Diagrams, ADRs, labs, checkpoints",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 900,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "Artifacts that demonstrate the capability rather than just naming it."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "phase-design",
+      "to": "domain-design",
+      "label": "build judgment",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "phase-design",
+      "to": "domain-process",
+      "label": "optimise choices",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "phase-design",
+      "to": "domain-reliability",
+      "label": "test trade-offs",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "phase-infra",
+      "to": "domain-infra",
+      "label": "operate services",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "phase-infra",
+      "to": "domain-reliability",
+      "label": "practice HA",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "phase-security",
+      "to": "domain-security",
+      "label": "apply controls",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "domain-design",
+      "to": "evidence",
+      "label": "produce artifacts",
+      "plane": "data"
+    },
+    {
+      "id": "e8",
+      "from": "domain-security",
+      "to": "evidence",
+      "label": "show controls",
+      "plane": "data"
+    },
+    {
+      "id": "e9",
+      "from": "domain-reliability",
+      "to": "evidence",
+      "label": "show recovery",
+      "plane": "data"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Architecture map: Phases 3, 6, 7 \u2192 Design and Plan",
+      "edges": [
+        "e1"
+      ],
+      "action": "Phases 3, 6, 7 build judgment to Design and Plan; record evidence for Design and Plan, Manage Infrastructure, Security and Compliance, Process Optimization, and Reliability.",
+      "why_traversal": "Trace the primary decision path for How the phases map to the exam domains by making Design and Plan an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "domains:d1:step_1:evidence_present",
+        "logs": "topic=domains lens=d1 edge=e1",
+        "commands": "record and verify e1 for How the phases map to the exam domains"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Architecture map: Phases 3, 6, 7 \u2192 Process Optimization",
+      "edges": [
+        "e2"
+      ],
+      "action": "Phases 3, 6, 7 optimise choices to Process Optimization; record evidence for Design and Plan, Manage Infrastructure, Security and Compliance, Process Optimization, and Reliability.",
+      "why_traversal": "Trace the primary decision path for How the phases map to the exam domains by making Process Optimization an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "domains:d1:step_2:evidence_present",
+        "logs": "topic=domains lens=d1 edge=e2",
+        "commands": "record and verify e2 for How the phases map to the exam domains"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Architecture map: Phases 3, 6, 7 \u2192 Reliability",
+      "edges": [
+        "e3"
+      ],
+      "action": "Phases 3, 6, 7 test trade-offs to Reliability; record evidence for Design and Plan, Manage Infrastructure, Security and Compliance, Process Optimization, and Reliability.",
+      "why_traversal": "Trace the primary decision path for How the phases map to the exam domains by making Reliability an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "domains:d1:step_3:evidence_present",
+        "logs": "topic=domains lens=d1 edge=e3",
+        "commands": "record and verify e3 for How the phases map to the exam domains"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "domain-blind-spot",
+      "label": "A domain has no learning evidence",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "evidence"
+        ],
+        "failedEdges": [
+          "e7"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The learner can recite a domain but has no diagram, ADR, lab, or case output.",
+      "diverted_path": "The How the phases map to the exam domains path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Case / Design Evidence and any downstream decision depending on it.",
+      "recovery": "Attach a concrete artifact to each domain capability.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "domains:d1:domain-blind-spot:resolved",
+        "command": "review d1 evidence for Case / Design Evidence"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "phase-mismatch",
+      "label": "A phase is mapped to the wrong capability",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "domain-design"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Study time is spent without closing the intended exam or consulting gap.",
+      "diverted_path": "The How the phases map to the exam domains path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Design and Plan and any downstream decision depending on it.",
+      "recovery": "Review the phase-to-domain mapping before selecting the next topic.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "domains:d1:phase-mismatch:resolved",
+        "command": "review d1 evidence for Design and Plan"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "reliability-omission",
+      "label": "Reliability is treated as a single phase",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "domain-reliability"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Recovery, failure domains, and operations are omitted from otherwise complete designs.",
+      "diverted_path": "The How the phases map to the exam domains path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Reliability and any downstream decision depending on it.",
+      "recovery": "Thread reliability checks through infrastructure, security, cost, and case work.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "domains:d1:reliability-omission:resolved",
+        "command": "review d1 evidence for Reliability"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

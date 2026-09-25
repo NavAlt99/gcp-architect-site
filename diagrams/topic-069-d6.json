@@ -4,89 +4,243 @@
   "topic_no": "069",
   "roadmap_id": "tracker",
   "kind": "internals",
-  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
-  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "purpose": "Implementation seams for Progress tracker: phases, topic and lab completion, checkpoints, evidence, and the next highest-value action.",
+  "routing_rationale": "Use the D6 lens to keep phases, topic and lab completion, checkpoints, evidence, and the next highest-value action connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Turn the roadmap into a measurable loop of topic completion, labs, checkpoints, evidence, and next actions.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Progress tracker",
+      "id": "phase",
+      "label": "Phase Board",
+      "product": "Phases 0\u20137 and cross-cutting tracks",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 220,
+      "detail": "The high-level sequence and current phase."
+    },
+    {
+      "id": "topics",
+      "label": "Topic Checklist",
+      "product": "Concepts and services",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 100,
+      "detail": "What has been studied and what remains."
+    },
+    {
+      "id": "labs",
+      "label": "Lab Checklist",
+      "product": "Hands-on exercises",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 290,
+      "y": 340,
+      "detail": "What has been practiced safely."
+    },
+    {
+      "id": "checkpoint",
+      "label": "Checkpoint",
+      "product": "Design review or case output",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "A proof point that the phase is understood."
+    },
+    {
+      "id": "evidence",
+      "label": "Evidence Log",
+      "product": "Notes, ADRs, diagrams, results",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 100,
+      "detail": "The artifact supporting completion."
+    },
+    {
+      "id": "next",
+      "label": "Next Action",
+      "product": "Smallest useful follow-up",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 340,
+      "detail": "The next action chosen from evidence, not vague intention."
+    },
+    {
+      "id": "snapshot",
+      "label": "Progress Snapshot",
+      "product": "Local browser state",
+      "group": "root",
+      "plane": "control",
+      "x": 900,
+      "y": 220,
+      "detail": "A local view of progress; it does not create cloud resources."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "phase",
+      "to": "topics",
+      "label": "select topics",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "phase",
+      "to": "labs",
+      "label": "select labs",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "topics",
+      "to": "checkpoint",
+      "label": "test understanding",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "labs",
+      "to": "checkpoint",
+      "label": "test practice",
+      "plane": "data"
+    },
+    {
+      "id": "e5",
+      "from": "checkpoint",
+      "to": "evidence",
+      "label": "record proof",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "evidence",
+      "to": "next",
+      "label": "choose gap",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "next",
+      "to": "snapshot",
+      "label": "update locally",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Implementation seams: Checkpoint \u2192 Evidence Log",
+      "edges": [
+        "e5"
+      ],
+      "action": "Checkpoint record proof to Evidence Log; record evidence for phases, topic and lab completion, checkpoints, evidence, and the next highest-value action.",
+      "why_traversal": "Inspect the documented implementation seam for Progress tracker by making Evidence Log an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "tracker:d6:step_1:evidence_present",
+        "logs": "topic=tracker lens=d6 edge=e5",
+        "commands": "record and verify e5 for Progress tracker"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Implementation seams: Evidence Log \u2192 Next Action",
+      "edges": [
+        "e6"
+      ],
+      "action": "Evidence Log choose gap to Next Action; record evidence for phases, topic and lab completion, checkpoints, evidence, and the next highest-value action.",
+      "why_traversal": "Inspect the documented implementation seam for Progress tracker by making Next Action an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "tracker:d6:step_2:evidence_present",
+        "logs": "topic=tracker lens=d6 edge=e6",
+        "commands": "record and verify e6 for Progress tracker"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Implementation seams: Next Action \u2192 Progress Snapshot",
+      "edges": [
+        "e7"
+      ],
+      "action": "Next Action update locally to Progress Snapshot; record evidence for phases, topic and lab completion, checkpoints, evidence, and the next highest-value action.",
+      "why_traversal": "Inspect the documented implementation seam for Progress tracker by making Progress Snapshot an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "tracker:d6:step_3:evidence_present",
+        "logs": "topic=tracker lens=d6 edge=e7",
+        "commands": "record and verify e7 for Progress tracker"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "checkbox-without-proof",
+      "label": "A topic is marked complete without evidence",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "topics"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Completion records activity but not understanding or a design artifact.",
+      "diverted_path": "The Progress tracker path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Topic Checklist and any downstream decision depending on it.",
+      "recovery": "Attach a note, quiz result, diagram, or review output.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "tracker:d6:checkbox-without-proof:resolved",
+        "command": "review d6 evidence for Topic Checklist"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "lab-without-checkpoint",
+      "label": "Hands-on work never becomes judgment",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "labs"
+        ],
+        "failedEdges": [
+          "e2"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A lab is run but its trade-off and failure result are not reviewed.",
+      "diverted_path": "The Progress tracker path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Lab Checklist and any downstream decision depending on it.",
+      "recovery": "Convert the lab into a checkpoint with an explicit lesson.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "tracker:d6:lab-without-checkpoint:resolved",
+        "command": "review d6 evidence for Lab Checklist"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "stale-next-action",
+      "label": "The next action no longer reflects the gap",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "next"
+        ],
+        "failedEdges": [
+          "e6"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Progress continues while the highest-risk learning gap remains open.",
+      "diverted_path": "The Progress tracker path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Next Action and any downstream decision depending on it.",
+      "recovery": "Recalculate the next action from the latest evidence.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "tracker:d6:stale-next-action:resolved",
+        "command": "review d6 evidence for Next Action"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

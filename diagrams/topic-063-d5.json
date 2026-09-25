@@ -4,89 +4,236 @@
   "topic_no": "063",
   "roadmap_id": "7.4",
   "kind": "scale-cost",
-  "purpose": "Shows what changes at 10x load and where operational cost moves.",
-  "summary": "Shows what changes at 10x load and where operational cost moves.",
+  "purpose": "Scale and cost for Practice case studies: official cases, one-page designs, diagrams, ADRs, cost estimates, time-boxing, and architecture-framework critique.",
+  "routing_rationale": "Use the D5 lens to keep official cases, one-page designs, diagrams, ADRs, cost estimates, time-boxing, and architecture-framework critique connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Turn a timed case prompt into a one-page design, diagram, ADR set, cost estimate, and peer critique.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Practice case studies",
+      "id": "prompt",
+      "label": "Case Prompt",
+      "product": "Official or invented scenario",
+      "group": "root",
+      "plane": "control",
+      "x": 100,
+      "y": 220,
+      "detail": "The bounded case to solve under a time limit."
+    },
+    {
+      "id": "design",
+      "label": "One-Page Design",
+      "product": "Goals, constraints, requirements",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 120,
+      "detail": "A concise design with a reason for each major choice."
+    },
+    {
+      "id": "diagram",
+      "label": "Architecture Diagram",
+      "product": "Flows, boundaries, failure domains",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 500,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "A visual explanation of components and traffic paths."
+    },
+    {
+      "id": "adr",
+      "label": "ADR Set",
+      "product": "Decisions and rejected alternatives",
+      "group": "root",
+      "plane": "control",
+      "x": 710,
+      "y": 120,
+      "detail": "Decision records that preserve context and consequences."
+    },
+    {
+      "id": "cost",
+      "label": "Rough Cost Estimate",
+      "product": "Assumptions and unit economics",
+      "group": "root",
+      "plane": "control",
+      "x": 710,
+      "y": 320,
+      "detail": "A directional cost model that exposes its assumptions."
+    },
+    {
+      "id": "critique",
+      "label": "Peer Critique",
+      "product": "Five architecture framework pillars",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
+      "y": 380,
+      "detail": "A review that tests trade-offs, risks, and missing evidence."
+    },
+    {
+      "id": "timer",
+      "label": "30-Minute Timer",
+      "product": "Exam-style pacing",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 320,
+      "detail": "The constraint that forces prioritisation and a defensible answer."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "prompt",
+      "to": "design",
+      "label": "extract requirements",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "design",
+      "to": "diagram",
+      "label": "explain topology",
+      "plane": "data"
+    },
+    {
+      "id": "e3",
+      "from": "diagram",
+      "to": "adr",
+      "label": "justify choices",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "diagram",
+      "to": "cost",
+      "label": "price assumptions",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "timer",
+      "to": "design",
+      "label": "time-box",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "adr",
+      "to": "critique",
+      "label": "review trade-offs",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
+      "title": "Scale and cost: One-Page Design \u2192 Architecture Diagram",
+      "edges": [
+        "e2"
+      ],
+      "action": "One-Page Design explain topology to Architecture Diagram; record evidence for official cases, one-page designs, diagrams, ADRs, cost estimates, time-boxing, and architecture-framework critique.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Practice case studies by making Architecture Diagram an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
       "plane": "Data Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "7.4:d5:step_1:evidence_present",
+        "logs": "topic=7.4 lens=d5 edge=e2",
+        "commands": "record and verify e2 for Practice case studies"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Scale and cost: 30-Minute Timer \u2192 One-Page Design",
+      "edges": [
+        "e5"
+      ],
+      "action": "30-Minute Timer time-box to One-Page Design; record evidence for official cases, one-page designs, diagrams, ADRs, cost estimates, time-boxing, and architecture-framework critique.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Practice case studies by making One-Page Design an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.4:d5:step_2:evidence_present",
+        "logs": "topic=7.4 lens=d5 edge=e5",
+        "commands": "record and verify e5 for Practice case studies"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Scale and cost: ADR Set \u2192 Peer Critique",
+      "edges": [
+        "e6"
+      ],
+      "action": "ADR Set review trade-offs to Peer Critique; record evidence for official cases, one-page designs, diagrams, ADRs, cost estimates, time-boxing, and architecture-framework critique.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Practice case studies by making Peer Critique an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "7.4:d5:step_3:evidence_present",
+        "logs": "topic=7.4 lens=d5 edge=e6",
+        "commands": "record and verify e6 for Practice case studies"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "scope-creep",
+      "label": "The case exceeds the time box",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "timer"
+        ],
+        "failedEdges": [
+          "e5"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Research expands while the required design remains unfinished.",
+      "diverted_path": "The Practice case studies path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of 30-Minute Timer and any downstream decision depending on it.",
+      "recovery": "Write assumptions, time-box discovery, and move open questions to risks.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.4:d5:scope-creep:resolved",
+        "command": "review d5 evidence for 30-Minute Timer"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "diagram-gap",
+      "label": "The design cannot be explained visually",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "diagram"
+        ],
+        "failedEdges": [
+          "e2"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The diagram omits a dependency, boundary, or failure domain.",
+      "diverted_path": "The Practice case studies path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Architecture Diagram and any downstream decision depending on it.",
+      "recovery": "Trace every requirement through a node and an edge.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.4:d5:diagram-gap:resolved",
+        "command": "review d5 evidence for Architecture Diagram"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "unsupported-adr",
+      "label": "An ADR has no evidence",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "adr"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The recommendation is asserted without a rejected alternative or cost impact.",
+      "diverted_path": "The Practice case studies path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of ADR Set and any downstream decision depending on it.",
+      "recovery": "Add assumptions, evidence, consequences, and a verification date.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "7.4:d5:unsupported-adr:resolved",
+        "command": "review d5 evidence for ADR Set"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

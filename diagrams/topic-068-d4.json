@@ -4,89 +4,243 @@
   "topic_no": "068",
   "roadmap_id": "consult-3",
   "kind": "security",
-  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
-  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "purpose": "Security and ownership for Portfolio and career: documented projects, decision logs, cost estimates, Terraform repositories, certifications, community, and release notes.",
+  "routing_rationale": "Use the D4 lens to keep documented projects, decision logs, cost estimates, Terraform repositories, certifications, community, and release notes connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Build a credible architect portfolio from documented projects, decisions, cost models, Terraform, writing, and deliberate learning.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Portfolio and career",
+      "id": "project",
+      "label": "Documented Project",
+      "product": "Architecture case",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 90,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "A real or fictional architecture with a clear business outcome."
+    },
+    {
+      "id": "repo",
+      "label": "Architecture Repository",
+      "product": "Diagram and Terraform",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 100,
+      "detail": "Versioned implementation and design evidence."
+    },
+    {
+      "id": "decisions",
+      "label": "Decision Log",
+      "product": "ADRs and trade-offs",
+      "group": "root",
+      "plane": "control",
+      "x": 290,
+      "y": 340,
+      "detail": "The reasoning that makes the portfolio credible."
+    },
+    {
+      "id": "cost",
+      "label": "Cost Model",
+      "product": "Estimate and assumptions",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
+      "y": 220,
+      "detail": "A design that acknowledges unit economics."
+    },
+    {
+      "id": "writeup",
+      "label": "Published Case Study",
+      "product": "Blog, zine, or walkthrough",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 100,
+      "detail": "A clear explanation for technical and executive readers."
+    },
+    {
+      "id": "certs",
+      "label": "Certification Sequence",
+      "product": "CDL, ACE, PCA, specialty",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 340,
+      "detail": "A learning plan that reinforces the portfolio."
+    },
+    {
+      "id": "community",
+      "label": "Community and Release Notes",
+      "product": "Feedback and current knowledge",
+      "group": "root",
+      "plane": "control",
+      "x": 900,
+      "y": 220,
+      "detail": "External feedback and awareness of changing services."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "project",
+      "to": "repo",
+      "label": "implement and version",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "project",
+      "to": "decisions",
+      "label": "record choices",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "repo",
+      "to": "cost",
+      "label": "measure assumptions",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "decisions",
+      "to": "cost",
+      "label": "explain trade-off",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "repo",
+      "to": "writeup",
+      "label": "explain architecture",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "writeup",
+      "to": "community",
+      "label": "get feedback",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "project",
+      "to": "certs",
+      "label": "reinforce gaps",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Security and ownership: Documented Project \u2192 Architecture Repository",
+      "edges": [
+        "e1"
+      ],
+      "action": "Documented Project implement and version to Architecture Repository; record evidence for documented projects, decision logs, cost estimates, Terraform repositories, certifications, community, and release notes.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Portfolio and career by making Architecture Repository an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "consult-3:d4:step_1:evidence_present",
+        "logs": "topic=consult-3 lens=d4 edge=e1",
+        "commands": "record and verify e1 for Portfolio and career"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Security and ownership: Decision Log \u2192 Cost Model",
+      "edges": [
+        "e4"
+      ],
+      "action": "Decision Log explain trade-off to Cost Model; record evidence for documented projects, decision logs, cost estimates, Terraform repositories, certifications, community, and release notes.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Portfolio and career by making Cost Model an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-3:d4:step_2:evidence_present",
+        "logs": "topic=consult-3 lens=d4 edge=e4",
+        "commands": "record and verify e4 for Portfolio and career"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Security and ownership: Architecture Repository \u2192 Published Case Study",
+      "edges": [
+        "e5"
+      ],
+      "action": "Architecture Repository explain architecture to Published Case Study; record evidence for documented projects, decision logs, cost estimates, Terraform repositories, certifications, community, and release notes.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Portfolio and career by making Published Case Study an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-3:d4:step_3:evidence_present",
+        "logs": "topic=consult-3 lens=d4 edge=e5",
+        "commands": "record and verify e5 for Portfolio and career"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "demo-only",
+      "label": "The portfolio shows commands but no decisions",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "decisions"
+        ],
+        "failedEdges": [
+          "e2"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A reviewer cannot see assumptions, rejected alternatives, or consequences.",
+      "diverted_path": "The Portfolio and career path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Decision Log and any downstream decision depending on it.",
+      "recovery": "Add ADRs and a design-review narrative to every project.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-3:d4:demo-only:resolved",
+        "command": "review d4 evidence for Decision Log"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "unverifiable-cost",
+      "label": "The cost model cannot be checked",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "cost"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Pricing, workload size, or unit assumptions are absent.",
+      "diverted_path": "The Portfolio and career path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Cost Model and any downstream decision depending on it.",
+      "recovery": "Publish assumptions and a verification date, not a false precision.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-3:d4:unverifiable-cost:resolved",
+        "command": "review d4 evidence for Cost Model"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "stale-advice",
+      "label": "The portfolio ignores platform change",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "community"
+        ],
+        "failedEdges": [
+          "e6"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Service behavior, limits, or exam guidance has changed since publication.",
+      "diverted_path": "The Portfolio and career path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Community and Release Notes and any downstream decision depending on it.",
+      "recovery": "Track release notes and mark time-sensitive claims for re-verification.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-3:d4:stale-advice:resolved",
+        "command": "review d4 evidence for Community and Release Notes"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

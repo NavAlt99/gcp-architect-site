@@ -3,90 +3,251 @@
   "title": "Architecture deliverables \u2014 D3",
   "topic_no": "067",
   "roadmap_id": "consult-2",
-  "kind": "map",
-  "purpose": "Architecture view for Architecture deliverables.",
-  "summary": "Accessible summary for Architecture deliverables.",
+  "kind": "failure",
+  "purpose": "Failure analysis for Architecture deliverables: requirements, diagrams, ADRs, cost estimates, security mapping, migration plans, DR plans, and runbooks.",
+  "routing_rationale": "Use the D3 lens to keep requirements, diagrams, ADRs, cost estimates, security mapping, migration plans, DR plans, and runbooks connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Assemble the architecture artifacts needed to move from requirements through decisions, cost, security, recovery, and operations handover.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Architecture deliverables",
+      "id": "requirements",
+      "label": "Requirements Baseline",
+      "product": "Business and technical needs",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 220,
+      "detail": "The measurable requirements that every artifact must answer."
+    },
+    {
+      "id": "diagram",
+      "label": "Architecture Diagram",
+      "product": "Context, flows, boundaries",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 280,
+      "y": 100,
+      "detail": "The visual topology and failure domains."
+    },
+    {
+      "id": "adr",
+      "label": "Decision Records",
+      "product": "ADRs and alternatives",
+      "group": "root",
+      "plane": "control",
+      "x": 280,
+      "y": 340,
+      "detail": "Why each major design choice was made."
+    },
+    {
+      "id": "cost",
+      "label": "Cost Estimate",
+      "product": "Assumptions and unit economics",
+      "group": "root",
+      "plane": "control",
+      "x": 500,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "A quantified cost view with assumptions."
+    },
+    {
+      "id": "security",
+      "label": "Security Mapping",
+      "product": "Controls and compliance",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 100,
+      "detail": "Identity, data, network, and audit controls mapped to requirements."
+    },
+    {
+      "id": "dr",
+      "label": "DR Plan",
+      "product": "RTO, RPO, tests",
+      "group": "root",
+      "plane": "control",
+      "x": 700,
+      "y": 340,
+      "detail": "Recovery design, runbook, and test result."
+    },
+    {
+      "id": "handover",
+      "label": "Operations Handover",
+      "product": "Runbooks and ownership",
+      "group": "root",
+      "plane": "control",
+      "x": 900,
+      "y": 220,
+      "detail": "The team, signals, escalation, and day-two operating model."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "requirements",
+      "to": "diagram",
+      "label": "visualise",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "requirements",
+      "to": "adr",
+      "label": "decide",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "diagram",
+      "to": "cost",
+      "label": "size and price",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "adr",
+      "to": "cost",
+      "label": "quantify trade-off",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "diagram",
+      "to": "security",
+      "label": "map controls",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "diagram",
+      "to": "dr",
+      "label": "model failure",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "security",
+      "to": "handover",
+      "label": "operate safely",
+      "plane": "control"
+    },
+    {
+      "id": "e8",
+      "from": "dr",
+      "to": "handover",
+      "label": "hand over recovery",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Failure analysis: Architecture Diagram \u2192 Cost Estimate",
+      "edges": [
+        "e3"
+      ],
+      "action": "Architecture Diagram size and price to Cost Estimate; record evidence for requirements, diagrams, ADRs, cost estimates, security mapping, migration plans, DR plans, and runbooks.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Architecture deliverables by making Cost Estimate an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "consult-2:d3:step_1:evidence_present",
+        "logs": "topic=consult-2 lens=d3 edge=e3",
+        "commands": "record and verify e3 for Architecture deliverables"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Failure analysis: Decision Records \u2192 Cost Estimate",
+      "edges": [
+        "e4"
+      ],
+      "action": "Decision Records quantify trade-off to Cost Estimate; record evidence for requirements, diagrams, ADRs, cost estimates, security mapping, migration plans, DR plans, and runbooks.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Architecture deliverables by making Cost Estimate an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-2:d3:step_2:evidence_present",
+        "logs": "topic=consult-2 lens=d3 edge=e4",
+        "commands": "record and verify e4 for Architecture deliverables"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Failure analysis: Architecture Diagram \u2192 Security Mapping",
+      "edges": [
+        "e5"
+      ],
+      "action": "Architecture Diagram map controls to Security Mapping; record evidence for requirements, diagrams, ADRs, cost estimates, security mapping, migration plans, DR plans, and runbooks.",
+      "why_traversal": "Inspect the evidence at the failure boundary for Architecture deliverables by making Security Mapping an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-2:d3:step_3:evidence_present",
+        "logs": "topic=consult-2 lens=d3 edge=e5",
+        "commands": "record and verify e5 for Architecture deliverables"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "orphan-artifact",
+      "label": "An artifact does not trace to a requirement",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "diagram"
+        ],
+        "failedEdges": [
+          "e1"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The document looks complete but cannot justify a component or control.",
+      "diverted_path": "The Architecture deliverables path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Architecture Diagram and any downstream decision depending on it.",
+      "recovery": "Add a requirement reference to the diagram, ADR, and review checklist.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-2:d3:orphan-artifact:resolved",
+        "command": "review d3 evidence for Architecture Diagram"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "unpriced-design",
+      "label": "Cost assumptions are missing",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "cost"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A recommendation is approved without a cost range or unit driver.",
+      "diverted_path": "The Architecture deliverables path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Cost Estimate and any downstream decision depending on it.",
+      "recovery": "Record assumptions, sensitivity, and an owner for current pricing verification.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-2:d3:unpriced-design:resolved",
+        "command": "review d3 evidence for Cost Estimate"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "handover-gap",
+      "label": "Operations cannot recover the service",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "handover"
+        ],
+        "failedEdges": [
+          "e7"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Runbooks, ownership, signals, or DR tests are absent.",
+      "diverted_path": "The Architecture deliverables path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Operations Handover and any downstream decision depending on it.",
+      "recovery": "Run the handover review and rehearse the recovery path.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-2:d3:handover-gap:resolved",
+        "command": "review d3 evidence for Operations Handover"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

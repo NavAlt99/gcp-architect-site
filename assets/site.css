@@ -166,12 +166,19 @@ html[data-theme="light"] .demo-safety-banner { background-color: var(--panel); }
 .cost-warning, .demo-safety-banner { border:1px solid var(--accent-orange); border-left-width:4px; padding:12px 14px; color:#fed7aa; background:rgba(249,115,22,.08); border-radius:5px; }
 .analogy-scene { min-height:180px; margin:14px 0; border:1px solid var(--panel-border); border-radius:8px; background:#070b15; overflow:hidden; outline:none; }
 .analogy-scene:focus { border-color:var(--accent-cyan); box-shadow:0 0 0 2px rgba(56,189,248,.2); }
-.city-scene-svg { display:block; width:100%; min-height:180px; }
+.city-scene-svg { display:block; width:100%; height:auto; min-height:180px; background:#070b15; }
+.city-scene-svg text { fill:var(--text-main); font-family:var(--font-mono); font-size:13px; font-weight:600; pointer-events:none; }
+.city-scene-svg .city-step { fill:var(--accent-orange); font-size:14px; font-weight:700; }
 .city-element { cursor:pointer; transition:filter .2s, opacity .2s; }
+.city-element rect { fill:#17243a; stroke:var(--accent-cyan); stroke-width:2; }
 .city-element:hover, .city-element.active { filter:drop-shadow(0 0 7px var(--accent-cyan)); }
-.city-ground { fill:#0d1728; stroke:#253450; }
+.city-ground { fill:#0d1728; stroke:#253450; stroke-width:2; }
 .city-road { stroke:#475569; stroke-width:7; stroke-linecap:round; }
-.city-beacon { fill:var(--accent-orange); }
+.city-beacon { fill:var(--accent-orange); stroke:#fed7aa; stroke-width:2; }
+html[data-theme="light"] .city-scene-svg { background:#f8fafc; }
+html[data-theme="light"] .city-ground { fill:#e2e8f0; stroke:#94a3b8; }
+html[data-theme="light"] .city-element rect { fill:#dbeafe; stroke:var(--accent-cyan); }
+html[data-theme="light"] .city-road { stroke:#64748b; }
 .diagram-extra-set { margin-top:24px; padding-top:8px; border-top:1px solid var(--panel-border); }
 .site-footer { max-width:var(--max-width); margin:40px auto 0; padding:22px 20px; color:var(--text-dim); font-size:11px; border-top:1px solid var(--panel-border); }
 
@@ -541,6 +548,24 @@ td {
   border-radius: 8px;
   padding: 16px;
 }
+.reference-list { margin: 10px 0 0 20px; padding-left: 18px; }
+.reference-list li { margin: 8px 0; color: var(--text-dim); }
+.reference-list a { color: var(--accent-cyan); }
+.reference-list span { color: var(--text-dim); }
+.checklist-citation { white-space: nowrap; margin-left: 4px; font-size: .78em; }
+.checklist-citation a { color: var(--accent-cyan); text-decoration: none; }
+.checklist-citation a:hover { text-decoration: underline; }
+.checklist-topic-reference { white-space: nowrap; margin-left: 4px; font-size: .78em; color: var(--accent-pink); }
+.checklist-topic-reference a { color: var(--accent-pink); text-decoration: none; }
+.checklist-topic-reference a:hover { text-decoration: underline; }
+.topic-source-row { margin: 12px 0 4px; color: var(--text-dim); font-size: 11px; }
+.topic-source-row strong { color: var(--text-main); }
+.inline-references { margin: 10px 0 16px; padding: 9px 12px; border-left: 3px solid var(--accent-cyan); background: rgba(56,189,248,.07); color: var(--text-dim); font-size: 11px; }
+.inline-references a { color: var(--accent-cyan); }
+.claim-citation { white-space: nowrap; margin-left: 4px; font-size: .82em; }
+.claim-citation a { color: var(--accent-cyan); text-decoration: none; }
+.claim-citation a:hover { text-decoration: underline; }
+.table-citation { margin: 4px 0 12px; color: var(--text-dim); font-size: 10px; }
 
 /* ==========================================================================
    Comprehensive Topic Navigation System (Header, Subnav, Pagination, Dock)

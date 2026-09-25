@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-inject_topic_navigation.py - Adds complete multi-point navigation across all 60 topic pages:
-1. Header Topic Switcher with quick Prev/Next and 60-topic Phase-grouped dropdown
+inject_topic_navigation.py - Adds complete multi-point navigation across the generated topic catalog:
+1. Header Topic Switcher with quick Prev/Next and a phase-grouped dropdown
 2. Breadcrumb / Progress sub-nav bar
 3. Bottom Topic Pagination Cards (Prev, Roadmap Index, Next)
 4. Persistent Floating Quick Navigation Dock (bottom-right)
@@ -14,7 +14,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGES_DIR = os.path.join(BASE_DIR, "pages")
 
-# Master topic catalog (60 topics)
+# Legacy fallback catalog. At runtime this is replaced with the generated page catalog.
 TOPICS = [
     ("001", "0.1", "Networking Fundamentals", "concept", "Phase 0 — Prerequisites"),
     ("002", "0.2", "Linux & Command Line for Architects", "concept", "Phase 0 — Prerequisites"),
@@ -87,6 +87,24 @@ TOPICS = [
     ("060", "CS.6", "Key Numbers, Limits & SLAs to Memorise", "cheat-sheet", "Service Decision Cheat Sheets")
 ]
 
+
+def load_generated_topics():
+    """Read navigation metadata from every generated page, including the tail topics."""
+    from pathlib import Path
+    from repair_site import page_meta
+
+    rows = []
+    for path in Path(PAGES_DIR).glob("topic-*.html"):
+        meta = page_meta(path)
+        if meta["roadmap_id"]:
+            rows.append((meta["topic_no"], meta["roadmap_id"], meta["title"], meta["page_type"], meta["phase"]))
+    return sorted(rows, key=lambda item: int(item[0]))
+
+
+generated_topics = load_generated_topics()
+if generated_topics:
+    TOPICS = generated_topics
+
 # Build dropdown options once
 def build_dropdown_options(current_topic_no):
     phases = []
@@ -112,7 +130,7 @@ def enrich_topic_page(idx):
     item = TOPICS[idx]
     topic_no, roadmap_id, title, page_type, phase = item
     prev_item = TOPICS[idx - 1] if idx > 0 else None
-    next_item = TOPICS[idx + 1] if idx < 59 else None
+    next_item = TOPICS[idx + 1] if idx + 1 < len(TOPICS) else None
     
     file_path = os.path.join(PAGES_DIR, f"topic-{topic_no}.html")
     if not os.path.exists(file_path):
@@ -162,13 +180,13 @@ def enrich_topic_page(idx):
       </a>"""
     else:
         next_url = "../index.html"
-        header_next_arrow = '<a href="../index.html" class="nav-topic-arrow next disabled" title="End of Roadmap (Topic 060)">›</a>'
+        header_next_arrow = f'<a href="../index.html" class="nav-topic-arrow next disabled" title="End of Roadmap (Topic {TOPICS[-1][0]})">›</a>'
         subnav_next_btn = '<span class="subnav-nav-btn next disabled">Next →</span>'
-        dock_next_btn = '<span class="dock-btn next disabled">060 →</span>'
-        pagination_next = """      <!-- Next Topic (End of Curriculum) -->
+        dock_next_btn = f'<span class="dock-btn next disabled">{TOPICS[-1][0]} →</span>'
+        pagination_next = f"""      <!-- Next Topic (End of Curriculum) -->
       <a href="../index.html" class="pagination-card next">
         <div class="pagination-direction">ROADMAP COMPLETED ✓</div>
-        <div class="pagination-topic-meta">All 60 Topics Mastered</div>
+        <div class="pagination-topic-meta">All {len(TOPICS)} Topics Mastered</div>
         <div class="pagination-title">Return to Architecture Explorer</div>
         <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>I</kbd></div>
       </a>"""
@@ -217,7 +235,7 @@ def enrich_topic_page(idx):
         <span class="crumb-phase">{phase}</span>
         <span class="crumb-sep">/</span>
         <span class="crumb-current">Topic {topic_no}</span>
-        <span class="crumb-progress">({idx + 1} of 60)</span>
+      <span class="crumb-progress">({idx + 1} of {len(TOPICS)})</span>
       </div>
       <div class="subnav-actions">
         {subnav_prev_btn}
@@ -243,7 +261,7 @@ def enrich_topic_page(idx):
       <!-- Roadmap Overview -->
       <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
         <div class="pagination-direction">ROADMAP OVERVIEW</div>
-        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
+        <div class="pagination-topic-meta">All {len(TOPICS)} Topics • 7+ Phases</div>
         <div class="pagination-title">Architecture Explorer</div>
         <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
       </a>
@@ -263,7 +281,7 @@ def enrich_topic_page(idx):
     floating_and_script = f"""  <!-- Floating Quick Navigation Dock -->
   <div class="floating-topic-dock" id="floating-topic-dock">
     {dock_prev_btn}
-    <span class="dock-indicator" title="Topic {topic_no} of 60">{topic_no} / 060</span>
+    <span class="dock-indicator" title="Topic {topic_no} of {len(TOPICS)}">{topic_no} / {TOPICS[-1][0]}</span>
     {dock_next_btn}
     <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
   </div>
@@ -295,7 +313,7 @@ def enrich_topic_page(idx):
     return True
 
 def main():
-    print(f"Injecting full navigation system into all {len(TOPICS)} topic pages...")
+    print(f"Injecting full navigation system into all {len(TOPICS)} generated topic pages...")
     success_count = 0
     for i in range(len(TOPICS)):
         if enrich_topic_page(i):

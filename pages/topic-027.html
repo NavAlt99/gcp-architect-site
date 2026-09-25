@@ -1,549 +1,222 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>027 (3.5) Diagramming & Documentation: C4 Model & Visual Standards | GCP Architect Explorer</title>
-  <link rel="stylesheet" href="../assets/site.css?v=20260924-2">
-  <link rel="stylesheet" href="../assets/diagram-engine.css?v=20260924-2">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>027 (3.5) Diagramming &amp; Documentation: C4 Model &amp; Visual Standards | GCP Architect Explorer</title>
+<link href="../assets/site.css?v=20260924-2" rel="stylesheet"/>
+<link href="../assets/diagram-engine.css?v=20260924-2" rel="stylesheet"/>
 </head>
 <body>
-
-    <!-- Navigation -->
-  <header class="site-nav">
-    <div class="nav-container">
-      <a href="../index.html" class="brand-link">
-        <span style="font-size:16px;">☁</span>
-        <span class="brand-text">GCP ARCHITECT ROADMAP</span>
-      </a>
-
-      <!-- Quick Topic Navigator -->
-      <div class="nav-topic-switcher">
-        <a href="topic-026.html" class="nav-topic-arrow prev" title="Previous Topic: Decision Frameworks: ADRs & Matrices [Key: P]">‹</a>
-        <div class="nav-select-wrapper">
-          <select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic">
-            <optgroup label="Phase 0 — Prerequisites">
-              <option value="topic-001.html">001 [0.1] Networking Fundamentals</option>
-              <option value="topic-002.html">002 [0.2] Linux & Command Line for Archi…</option>
-              <option value="topic-003.html">003 [0.3] Virtualization and Containers</option>
-              <option value="topic-004.html">004 [0.4] Cloud Concepts & Operating Mod…</option>
-              <option value="topic-005.html">005 [0.5] Software Architecture & Delive…</option>
-              <option value="topic-006.html">006 [0.6] Cloud Digital Leader & Busines…</option>
-            </optgroup>
-            <optgroup label="Phase 1 — GCP Foundations">
-              <option value="topic-007.html">007 [1.1] Account, Tools and Access</option>
-              <option value="topic-008.html">008 [1.2] Resource Hierarchy & Org Polic…</option>
-              <option value="topic-009.html">009 [1.3] Identity Basics: IAM & Service…</option>
-              <option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and Fin…</option>
-              <option value="topic-011.html">011 [1.5] Global Infrastructure & Networ…</option>
-              <option value="topic-012.html">012 [1.6] Support, Governance & Asset In…</option>
-            </optgroup>
-            <optgroup label="Phase 2 — Core Services">
-              <option value="topic-013.html">013 [2.1] Compute Engine: VMs & Managed …</option>
-              <option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE)</option>
-              <option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run …</option>
-              <option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Ne…</option>
-              <option value="topic-017.html">017 [2.5] Cloud Load Balancing, CDN & Cl…</option>
-              <option value="topic-018.html">018 [2.6] Hybrid & Multi-Cloud Connectiv…</option>
-              <option value="topic-019.html">019 [2.7] Cloud Storage & Enterprise Fil…</option>
-              <option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner …</option>
-              <option value="topic-021.html">021 [2.9] Messaging & Integration: Pub/S…</option>
-            </optgroup>
-            <optgroup label="Phase 3 — Architecture Thinking">
-              <option value="topic-022.html">022 [3.1] Requirements Analysis: Discovery</option>
-              <option value="topic-023.html">023 [3.2] Google Cloud Architecture Fram…</option>
-              <option value="topic-024.html">024 [3.3] Reference Architectures & Patt…</option>
-              <option value="topic-025.html">025 [3.4] Migration & Modernization: The…</option>
-              <option value="topic-026.html">026 [3.4b] Decision Frameworks: ADRs & Ma…</option>
-              <option value="topic-027.html" selected>027 [3.5] Diagramming & Docs: C4 Model</option>
-            </optgroup>
-            <optgroup label="Phase 4 — Reliability & HA">
-              <option value="topic-028.html">028 [4.1] Reliability Fundamentals & Ava…</option>
-              <option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs & Err…</option>
-              <option value="topic-030.html">030 [4.3] High Availability by Layer</option>
-              <option value="topic-031.html">031 [4.4] Disaster Recovery Patterns (RT…</option>
-              <option value="topic-032.html">032 [4.5] Observability: Monitoring, Log…</option>
-              <option value="topic-033.html">033 [4.6] Testing for Reliability: Load …</option>
-            </optgroup>
-            <optgroup label="Phase 5 — Security & Compliance">
-              <option value="topic-034.html">034 [5.1] Advanced IAM, Federation & Zer…</option>
-              <option value="topic-035.html">035 [5.2] Network Security: VPC-SC & Clo…</option>
-              <option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS & DLP</option>
-              <option value="topic-037.html">037 [5.4] Compliance, Governance & Assur…</option>
-              <option value="topic-038.html">038 [5.5] Security Operations & Threat D…</option>
-              <option value="topic-039.html">039 [5.5b] Application & Supply-Chain Sec…</option>
-            </optgroup>
-            <optgroup label="Phase 6 — Optimization & Ops">
-              <option value="topic-040.html">040 [6.1] Cost Optimization & FinOps</option>
-              <option value="topic-041.html">041 [6.2] Performance Optimization & Bot…</option>
-              <option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraf…</option>
-              <option value="topic-043.html">043 [6.4] CI/CD & Release Engineering: C…</option>
-              <option value="topic-044.html">044 [6.5] Operations & Platform Engineer…</option>
-            </optgroup>
-            <optgroup label="Phase 7 — Case Studies & Exam">
-              <option value="topic-045.html">045 [7.1] Case Analysis Method & Discove…</option>
-              <option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare</option>
-              <option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games</option>
-              <option value="topic-048.html">048 [7.4c] Case Study: TerramEarth</option>
-              <option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing …</option>
-              <option value="topic-050.html">050 [7.5] PCA Exam Strategy & Keyword El…</option>
-            </optgroup>
-            <optgroup label="Data, Analytics & ML">
-              <option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery & L…</option>
-              <option value="topic-052.html">052 [D.2] Data Processing: Dataflow & Da…</option>
-              <option value="topic-053.html">053 [D.3] Data Lake, Lakehouse & BigLake</option>
-              <option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Ar…</option>
-            </optgroup>
-            <optgroup label="Service Decision Cheat Sheets">
-              <option value="topic-055.html">055 [CS.1] Compute Decision Cheat Sheet</option>
-              <option value="topic-056.html">056 [CS.2] Database Decision Cheat Sheet</option>
-              <option value="topic-057.html">057 [CS.3] Load Balancer Decision Cheat S…</option>
-              <option value="topic-058.html">058 [CS.4] Hybrid Connectivity Decision C…</option>
-              <option value="topic-059.html">059 [CS.5] Storage & Messaging Decision C…</option>
-              <option value="topic-060.html">060 [CS.6] Key Numbers, Limits & SLAs to …</option>
-            </optgroup>
-          </select>
-        </div>
-        <a href="topic-028.html" class="nav-topic-arrow next" title="Next Topic: Reliability Fundamentals & Availability [Key: N]">›</a>
-      </div>
-
-      <nav class="nav-links">
-        <a href="../index.html" class="nav-link">Overview</a>
-        <a href="#diagrams" class="nav-link">Diagrams</a>
-        <a href="#demo-or-practice" class="nav-link">Labs</a>
-        <a href="#quiz" class="nav-link">Knowledge Check</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="main-content">
-    <!-- Topic Sub-Navigation Strip -->
-    <nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation">
-      <div class="subnav-breadcrumbs">
-        <a href="../index.html" class="crumb-home">🗺 Roadmap Index</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-phase">Phase 3 — Architecture Thinking</span>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">Topic 027</span>
-        <span class="crumb-progress">(27 of 60)</span>
-      </div>
-      <div class="subnav-actions">
-        <a href="topic-026.html" class="subnav-nav-btn prev" title="Decision Frameworks: ADRs & Matrices">← Prev (026)</a>
-        <a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a>
-        <a href="topic-028.html" class="subnav-nav-btn next" title="Reliability Fundamentals & Availability">Next (028) →</a>
-      </div>
-    </nav>
-
-    
-    <!-- Topic Header -->
-    <header class="page-header">
-      <div class="page-meta">
-        <span class="badge">Topic 027</span>
-        <span class="badge badge-type">Roadmap ID: 3.5</span>
-        <span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 3 — Architecture Thinking</span>
-        <span class="badge badge-type">Type: concept</span>
-        <span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
-      </div>
-      <h1 class="page-title">Diagramming & Documentation: C4 Model & Visual Standards</h1>
-      <p class="page-lead">Visual communication for cloud architects: The C4 Model (Context, Container, Component, Code), network topology flows, data lineage diagrams, and Mermaid/draw.io standards.</p>
-    </header>
-
-    <!-- Part 1: Real-World Explanation -->
-    <nav class="topic-toc" aria-label="On this page">
-  <div class="topic-toc-heading">On this page</div>
-  <div class="topic-toc-links">
-    <a href="#real-world"><span>1</span> Real-World Explanation</a>
-    <a href="#technical"><span>2</span> Technical Discussion</a>
-    <a href="#analogy"><span>3</span> Cloud City Analogy</a>
-    <a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
-    <a href="#quiz"><span>5</span> Knowledge Check</a>
-    <a href="#reading"><span>6</span> Further Reading</a>
-  </div>
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<header class="site-nav"><div class="nav-container"><a href="../index.html" class="brand-link"><span style="font-size:16px;">☁</span><span class="brand-text">GCP ARCHITECT ROADMAP</span></a><div class="nav-topic-switcher"><a href="topic-026.html" class="nav-topic-arrow prev" title="Previous Topic: Decision-Making Frameworks: ADRs &amp; Trade-Off Matrices [Key: P]">‹</a><div class="nav-select-wrapper"><select class="nav-topic-select" onchange="if(this.value) window.location.href=this.value;" title="Quick Jump to Any Topic"><optgroup label="Phase 0 — Prerequisites"><option value="topic-001.html">001 [0.1] Networking Fundamentals</option><option value="topic-002.html">002 [0.2] Linux and Command Line for Cloud Ar…</option><option value="topic-003.html">003 [0.3] Virtualization and Containers: From…</option><option value="topic-004.html">004 [0.4] Cloud Concepts &amp; Operating Models</option><option value="topic-005.html">005 [0.5] Software Architecture &amp; Delivery Ba…</option><option value="topic-006.html">006 [0.6] Cloud Digital Leader &amp; Business Fou…</option></optgroup><optgroup label="Phase 1 — GCP Foundations"><option value="topic-007.html">007 [1.1] Account, Tools and Access: Cloud Sh…</option><option value="topic-008.html">008 [1.2] Resource Hierarchy and Organization…</option><option value="topic-009.html">009 [1.3] Identity Basics: IAM, Principals, a…</option><option value="topic-010.html">010 [1.4] Billing, Cost Hygiene, and FinOps A…</option><option value="topic-011.html">011 [1.5] Google Global Infrastructure &amp; Netw…</option><option value="topic-012.html">012 [1.6] Support, Governance Basics, and Ass…</option></optgroup><optgroup label="Phase 2 — Core Services"><option value="topic-013.html">013 [2.1] Compute Engine: VMs, Disks, and Man…</option><option value="topic-014.html">014 [2.2] Google Kubernetes Engine (GKE): Aut…</option><option value="topic-015.html">015 [2.3] Serverless Compute: Cloud Run, Func…</option><option value="topic-016.html">016 [2.4] Virtual Private Cloud (VPC) Network…</option><option value="topic-017.html">017 [2.5] Cloud Load Balancing, Cloud CDN, an…</option><option value="topic-018.html">018 [2.6] Hybrid and Multi-Cloud Connectivity…</option><option value="topic-019.html">019 [2.7] Cloud Storage, Object Lifecycle, an…</option><option value="topic-020.html">020 [2.8] Databases: Cloud SQL, Spanner, Fire…</option><option value="topic-021.html">021 [2.9] Messaging and Integration: Pub/Sub,…</option></optgroup><optgroup label="Phase 3 — Architecture Thinking"><option value="topic-022.html">022 [3.1] Requirements Analysis: Business &amp; T…</option><option value="topic-023.html">023 [3.2] Google Cloud Architecture Framework…</option><option value="topic-024.html">024 [3.3] Reference Architectures &amp; Enterpris…</option><option value="topic-025.html">025 [3.4] Migration &amp; Modernization: The 6 Rs…</option><option value="topic-026.html">026 [3.4b] Decision-Making Frameworks: ADRs &amp; …</option><option value="topic-027.html" selected>027 [3.5] Diagramming &amp; Documentation: C4 Mod…</option></optgroup><optgroup label="Phase 4 — Reliability and High Availability"><option value="topic-028.html">028 [4.1] Reliability Fundamentals: Availabil…</option><option value="topic-029.html">029 [4.2] SRE Concepts: SLIs, SLOs, Error Bud…</option><option value="topic-030.html">030 [4.3] High Availability by Layer: Compute…</option><option value="topic-031.html">031 [4.4] Disaster Recovery Patterns: RTO, RP…</option><option value="topic-032.html">032 [4.5] Observability: Cloud Monitoring, Lo…</option><option value="topic-033.html">033 [4.6] Testing for Reliability: Load, Chao…</option></optgroup><optgroup label="Phase 5 — Security and Compliance"><option value="topic-034.html">034 [5.1] Advanced IAM, Identity Federation &amp;…</option><option value="topic-035.html">035 [5.2] Network Security: VPC Service Contr…</option><option value="topic-036.html">036 [5.3] Data Protection: Cloud KMS, Sensiti…</option><option value="topic-037.html">037 [5.4] Compliance, Governance &amp; Assured Wo…</option><option value="topic-038.html">038 [5.5] Security Operations: Security Comma…</option><option value="topic-039.html">039 [5.5b] Application &amp; Supply-Chain Security…</option></optgroup><optgroup label="Phase 6 — Optimization and Operations"><option value="topic-040.html">040 [6.1] Cost Optimization &amp; FinOps: CUDs, S…</option><option value="topic-041.html">041 [6.2] Performance Optimization: Bottlenec…</option><option value="topic-042.html">042 [6.3] Infrastructure as Code: Terraform, …</option><option value="topic-043.html">043 [6.4] CI/CD &amp; Release Engineering: Cloud …</option><option value="topic-044.html">044 [6.5] Operations &amp; Process Improvement: P…</option></optgroup><optgroup label="Phase 7 — Case Studies &amp; Exam Prep"><option value="topic-045.html">045 [7.1] Case Analysis Method: The 6-Step Ar…</option><option value="topic-046.html">046 [7.4a] Case Study: EHR Healthcare — HIPAA,…</option><option value="topic-047.html">047 [7.4b] Case Study: Mountkirk Games — Globa…</option><option value="topic-048.html">048 [7.4c] Case Study: TerramEarth — IoT Fleet…</option><option value="topic-049.html">049 [7.4d] Case Study: Helicopter Racing Leagu…</option><option value="topic-050.html">050 [7.5] PCA Exam Strategy: Keyword Eliminat…</option></optgroup><optgroup label="Data, Analytics &amp; ML"><option value="topic-051.html">051 [D.1] Data Warehousing: BigQuery Architec…</option><option value="topic-052.html">052 [D.2] Data Processing: Dataflow (Beam), D…</option><option value="topic-053.html">053 [D.3] Data Lake, Lakehouse &amp; BigLake: Ope…</option><option value="topic-054.html">054 [D.4] Machine Learning: Vertex AI Archite…</option></optgroup><optgroup label="Service Decision Cheat Sheets"><option value="topic-055.html">055 [cheat-1] Cheat Sheet: Compute Engine vs GKE …</option><option value="topic-056.html">056 [cheat-2] Cheat Sheet: Cloud SQL vs AlloyDB v…</option><option value="topic-057.html">057 [cheat-3] Cheat Sheet: Cloud Load Balancing S…</option><option value="topic-058.html">058 [cheat-4] Cheat Sheet: Hybrid Connectivity (H…</option><option value="topic-059.html">059 [cheat-5] Cheat Sheet: Storage selection</option><option value="topic-060.html">060 [cheat-7] Cheat Sheet: Key Numbers, Limits &amp; …</option><option value="topic-064.html">064 [cheat-6] Messaging selection</option></optgroup><optgroup label="Phase 7 — Case Studies &amp; Exam"><option value="topic-061.html">061 [7.2] Case reading technique</option><option value="topic-062.html">062 [7.3] Discovery question bank</option><option value="topic-063.html">063 [7.4] Practice case studies</option></optgroup><optgroup label="Hands-on, Consulting &amp; Framing"><option value="topic-065.html">065 [plan] Google Cloud Skills Boost platform …</option><option value="topic-066.html">066 [consult-1] Consultant communication and delivery</option><option value="topic-067.html">067 [consult-2] Architecture deliverables</option><option value="topic-068.html">068 [consult-3] Portfolio and career</option><option value="topic-069.html">069 [tracker] Progress tracker</option><option value="topic-070.html">070 [notes] Practical notes and operating rules</option><option value="topic-071.html">071 [domains] How the phases map to the exam domains</option></optgroup></select></div><a href="topic-028.html" class="nav-topic-arrow next" title="Next Topic: Reliability Fundamentals: Availability Math &amp; Failure Domains [Key: N]">›</a></div><nav class="nav-links"><a href="../index.html" class="nav-link">Overview</a><a href="#diagrams" class="nav-link">Diagrams</a><a href="#demo-or-practice" class="nav-link">Labs</a><a href="#quiz" class="nav-link">Knowledge Check</a></nav></div></header>
+<main class="main-content">
+<!-- Topic Sub-Navigation Strip -->
+<nav class="topic-subnav-strip" aria-label="Topic Sub-Navigation"><div class="subnav-breadcrumbs"><a href="../index.html" class="crumb-home">🗺 Roadmap Index</a><span class="crumb-sep">/</span><span class="crumb-phase">Phase 3 — Architecture Thinking</span><span class="crumb-sep">/</span><span class="crumb-current">Topic 027</span><span class="crumb-progress">(27 of 71)</span></div><div class="subnav-actions"><a href="topic-026.html" class="subnav-nav-btn prev" title="Decision-Making Frameworks: ADRs &amp; Trade-Off Matrices">← Prev (026)</a><a href="../index.html" class="subnav-nav-btn" title="View all topics">☰ Index</a><a href="topic-028.html" class="subnav-nav-btn next" title="Reliability Fundamentals: Availability Math &amp; Failure Domains">Next (028) →</a></div></nav>
+<!-- Topic Header -->
+<header class="page-header">
+<div class="page-meta">
+<span class="badge">Topic 027</span>
+<span class="badge badge-type">Roadmap ID: 3.5</span>
+<span class="badge" style="background:#1c1006; color:#fb923c; border-color:#f97316;">Phase 3 — Architecture Thinking</span>
+<span class="badge badge-type">Type: concept</span>
+<span style="font-size:11px; color:var(--text-dim); margin-left:auto;">Verified: 2026-09-24</span>
+</div>
+<h1 class="page-title">Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</h1>
+<p class="page-lead">Visual communication for cloud architects: The C4 Model (Context, Container, Component, Code), network topology flows, data lineage diagrams, and Mermaid/draw.io standards.</p>
+</header>
+<!-- Part 1: Real-World Explanation -->
+<nav aria-label="On this page" class="topic-toc">
+<div class="topic-toc-heading">On this page</div>
+<div class="topic-toc-links">
+<a href="#real-world"><span>1</span> Real-World Explanation</a>
+<a href="#technical"><span>2</span> Technical Discussion</a>
+<a href="#analogy"><span>3</span> Cloud City Analogy</a>
+<a href="#demo-or-practice"><span>4</span> Practice Exercise</a>
+<a href="#quiz"><span>5</span> Knowledge Check</a>
+<a href="#reading"><span>6</span> Further Reading</a>
+</div>
 </nav>
-
 <section class="topic-section" id="real-world">
-      <h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
-      
-        <h3>The Situation: The Danger of Ambiguous Architecture Diagrams</h3>
-        <p>
-          Almost every failed cloud deployment can be traced back to an ambiguous diagram. A white box labeled "API" connected by an unlabelled arrow to another white box labeled "Database" hides dozens of critical questions:
-        </p>
-        <ul>
-          <li>What protocol is used? (HTTPS, gRPC, raw TCP?)</li>
-          <li>Is the connection authenticated, encrypted in transit (TLS 1.3), or traversing the public internet?</li>
-          <li>What happens when the database is unreachable? (Retry? Circuit break? Failover?)</li>
-          <li>Which GCP project, VPC, region, and security perimeter does each service belong to?</li>
-        </ul>
-        <p>
-          Professional cloud architects use structured methodologies like the <strong>C4 Model</strong> and diagrammatic standards to communicate unambiguous technical designs.
-        </p>
-        
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-      <div class="compliance-addendum part1-complete">
-<h3>The Pain</h3><p>Without a deliberate Diagramming &amp; Documentation: C4 Model &amp; Visual Standards design, Brightloaf can see slow pages, failed orders, surprise spend, audit gaps, or a deployment that requires a weekend of manual work.</p>
-<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards gives one business problem a clear boundary, an observable lifecycle, and an explicit recovery choice. The learner should be able to explain the idea before seeing configuration.</p>
-<h3>Real-World Examples</h3><ul><li>Retail: a seasonal order spike must not become a checkout outage.</li><li>Healthcare: a records workflow must preserve privacy and an audit trail.</li><li>Media or gaming: a bursty workload must scale without making every dependency global.</li></ul>
-<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>What they need</th></tr><tr><td>CTO</td><td>Business continuity and a defensible trade-off.</td></tr><tr><td>Security lead</td><td>Least privilege, boundaries, and evidence.</td></tr><tr><td>Finance owner</td><td>Attribution, forecastability, and cost controls.</td></tr><tr><td>Operations engineer</td><td>Signals, runbooks, and a small blast radius.</td></tr><tr><td>Developer</td><td>A predictable interface with safe defaults.</td></tr></table>
-<h3>Common Misconceptions</h3><ul><li>A managed service removes all responsibility — it does not.</li><li>High availability automatically means disaster recovery — it does not.</li><li>A budget stops spending — it only alerts unless automation is added.</li><li>A replica is a backup — corruption and deletion can replicate.</li></ul>
-<h3>Vocabulary Starter</h3><ul><li><code>scope</code>: the boundary where a resource exists.</li><li><code>control plane</code>: systems that create or change resources.</li><li><code>data plane</code>: runtime workload traffic.</li><li><code>blast radius</code>: the set of users and dependencies affected by failure.</li><li><code>SLO</code>: a measurable target for service behavior.</li><li><code>RTO/RPO</code>: recovery time and acceptable data-loss objectives.</li></ul>
-<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards; use the previous topic for prerequisites and the next topic to extend the design.</p></div>
-    </section>
+<h2 class="section-title"><span class="section-number">1</span> Real-World Explanation</h2>
+<h3>The Situation: The Danger of Ambiguous Architecture Diagrams</h3>
+<p>
+          Almost every failed cloud deployment can be traced back to an ambiguous diagram. A white box labeled "API" connected by an unlabelled arrow to another white box labeled "Database" hides dozens of critical questions: <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<ul>
+<li>What protocol is used? (HTTPS, gRPC, raw TCP?) <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li>
+<li>Is the connection authenticated, encrypted in transit (TLS 1.3), or traversing the public internet? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li>
+<li>What happens when the database is unreachable? (Retry? Circuit break? Failover?) <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li>
+<li>Which GCP project, VPC, region, and security perimeter does each service belong to? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li>
+</ul>
+<p>
+          Professional cloud architects use structured methodologies like the <strong>C4 Model</strong> and diagrammatic standards to communicate unambiguous technical designs. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<div class="compliance-addendum part1-complete">
+<p class="inline-references"><strong>Foundation references:</strong> <a href="https://c4model.com/" target="_blank" rel="noopener">C4 model</a> · <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener">Google Cloud Architecture Center</a></p>
+<h3>The Pain</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards becomes risky when teams treat <strong>C4 model (context, container, component)</strong> as a checkbox instead of a boundary with an owner, evidence, and recovery path. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h3>The Idea in One Paragraph</h3><p>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards is a design decision anchored by <strong>C4 model (context, container, component)</strong>. Connect it to <strong>Network diagrams with regions, zones, subnets and flows</strong>, make the dependency visible, and state what changes when the requirement or failure domain changes. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+<h3>Real-World Examples</h3><ul><li>Brightloaf scenario: make <strong>C4 model (context, container, component)</strong> observable and reviewable before launch. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>Brightloaf scenario: make <strong>Network diagrams with regions, zones, subnets and flows</strong> observable and reviewable before launch. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li>Brightloaf scenario: make <strong>Data flow diagrams</strong> observable and reviewable before launch. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li></ul>
+<h3>Who Cares and Why</h3><table><tr><th>Role</th><th>Specific concern</th></tr><tr><td>Business owner</td><td>Protect the outcome represented by <strong>C4 model (context, container, component)</strong>.</td></tr><tr><td>Platform owner</td><td>Set the scope and operating boundary for <strong>Network diagrams with regions, zones, subnets and flows</strong>.</td></tr><tr><td>Security lead</td><td>Require evidence around <strong>Data flow diagrams</strong>.</td></tr><tr><td>Finance owner</td><td>Attribute the cost of <strong>Sequence diagrams for failure scenarios</strong>.</td></tr><tr><td>Operations engineer</td><td>Detect and recover when <strong>Tools: draw.io, Lucidchart, Google Cloud architecture diagramming tool, Mermaid</strong>.</td></tr></table><p class="table-citation claim-citation"><strong>Sources:</strong> <a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></p>
+<h3>Common Misconceptions</h3><ul><li><strong>C4 model (context, container, component)</strong> is a requirement to verify, not proof that the design is safe by itself. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li><strong>Network diagrams with regions, zones, subnets and flows</strong> is a requirement to verify, not proof that the design is safe by itself. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li><strong>Data flow diagrams</strong> is a requirement to verify, not proof that the design is safe by itself. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li><strong>Sequence diagrams for failure scenarios</strong> is a requirement to verify, not proof that the design is safe by itself. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li></ul>
+<h3>Vocabulary Starter</h3><ul><li><code>scope anchor</code>: the topic-specific anchor is <strong>C4 model (context, container, component)</strong>. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li><code>operating signal</code>: the topic-specific anchor is <strong>Network diagrams with regions, zones, subnets and flows</strong>. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li><code>trade-off evidence</code>: the topic-specific anchor is <strong>Data flow diagrams</strong>. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li><code>failure horizon</code>: the topic-specific anchor is <strong>Sequence diagrams for failure scenarios</strong>. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li><code>exit condition</code>: the topic-specific anchor is <strong>Tools: draw.io, Lucidchart, Google Cloud architecture diagramming tool, Mermaid</strong>. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li></ul>
+<h3>Where It Fits</h3><p>Roadmap 3.5 · Diagramming &amp; Documentation: C4 Model &amp; Visual Standards. Start with <strong>C4 model (context, container, component)</strong>, then connect it to <strong>Do three migration assessments for fictional companies (retail, bank, media) and pick R strategies per workload</strong> and the next topic's decision boundary. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p></div>
 
-    <!-- Part 2: Technical Discussion & Diagrams -->
-    <section class="topic-section" id="technical">
-      <h2 class="section-title"><span class="section-number">2</span> Technical Discussion & Architecture Diagrams</h2>
-      
-      
-        <h4>Layer 1 — Foundation: The C4 Model (Zoom Levels)</h4>
-        <p>Created by Simon Brown, C4 provides 4 zoom levels: <strong>Context</strong> (people and systems), <strong>Containers</strong> (deployable units like Cloud Run, GKE pods, Cloud SQL), <strong>Components</strong> (internal software modules), and <strong>Code</strong> (class diagrams).</p>
-        <h4>Layer 2 — Practitioner: Network & Data Flow Standards</h4>
-        <p>Every arrow must have a clear direction, explicit label, and protocol (e.g., <code>HTTPS / OAuth 2.0 (Port 443)</code>). Group components into clear visual perimeters: External, VPC, Regional Subnet, and Database Tier.</p>
-        <h4>Layer 3 — Architect: Sequence Diagrams for Failure Scenarios</h4>
-        <p>Static diagrams only show the happy path. Architects produce UML sequence diagrams illustrating failure scenarios: timeouts, primary zone crashes, circuit breakers tripping, and health check rerouting.</p>
-        <h4>Layer 4 — Staff: Diagrams as Code (Mermaid & PlantUML)</h4>
-        <p>Storing diagrams as text in Git alongside code. Pull requests update both the Terraform code and the Mermaid diagram simultaneously, preventing documentation drift.</p>
-        
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
+</section>
+<!-- Part 2: Technical Discussion & Diagrams -->
+<section class="topic-section" id="technical">
+<h2 class="section-title"><span class="section-number">2</span> Technical Discussion &amp; Architecture Diagrams</h2>
+<h4>Layer 1 — Foundation: The C4 Model (Zoom Levels)</h4>
+<p>Created by Simon Brown, C4 provides 4 zoom levels: <strong>Context</strong> (people and systems), <strong>Containers</strong> (deployable units like Cloud Run, GKE pods, Cloud SQL), <strong>Components</strong> (internal software modules), and <strong>Code</strong> (class diagrams). <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h4>Layer 2 — Practitioner: Network &amp; Data Flow Standards</h4>
+<p>Every arrow must have a clear direction, explicit label, and protocol (e.g., <code>HTTPS / OAuth 2.0 (Port 443)</code>). Group components into clear visual perimeters: External, VPC, Regional Subnet, and Database Tier. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+<h4>Layer 3 — Architect: Sequence Diagrams for Failure Scenarios</h4>
+<p>Static diagrams only show the happy path. Architects produce UML sequence diagrams illustrating failure scenarios: timeouts, primary zone crashes, circuit breakers tripping, and health check rerouting. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h4>Layer 4 — Staff: Diagrams as Code (Mermaid &amp; PlantUML)</h4>
+<p>Storing diagrams as text in Git alongside code. Pull requests update both the Terraform code and the Mermaid diagram simultaneously, preventing documentation drift. <sup class="claim-citation"><a href="https://cloud.google.com/docs/terraform" target="_blank" rel="noopener" aria-label="Source: Terraform on Google Cloud">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+<div class="compliance-addendum depth-complete">
+<p class="inline-references"><strong>Technical references:</strong> <a href="https://c4model.com/" target="_blank" rel="noopener">C4 model</a> · <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener">Google Cloud Architecture Center</a></p>
+<h4>Scope and planes</h4><p>The scope of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards is set by <strong>C4 model (context, container, component)</strong>. Separate the control-plane decision from the runtime path, and state which organization, project, region, zone, or resource owns the boundary. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h4>Practitioner defaults and troubleshooting</h4><p>Start by verifying <strong>Network diagrams with regions, zones, subnets and flows</strong>, then inspect the identity, quota, network, logging, and dependency evidence that can invalidate that assumption. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Topic-specific consequence</th><th>Choose when</th></tr><tr><td>Managed path</td><td>Less undifferentiated toil</td><td>C4 model (context, container, component)</td><td>when the team can accept the platform boundary</td></tr><tr><td>Explicit path</td><td>More configuration and ownership</td><td>Network diagrams with regions, zones, subnets and flows</td><td>when control over the requirement is material</td></tr><tr><td>Alternative or defer</td><td>Lower commitment while evidence is missing</td><td>Data flow diagrams</td><td>when the requirement needs validation</td></tr></table><p class="table-citation claim-citation"><strong>Sources:</strong> <a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://cloud.google.com/nat/docs/overview" target="_blank" rel="noopener" aria-label="Source: Cloud NAT overview">[2]</a></p><p>Make the choice reversible where possible: record why <strong>C4 model (context, container, component)</strong> wins, what evidence would change the decision, and how the team will detect drift. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Gap in C4 model (context, container, component)</td><td>The requirement is absent from the design evidence.</td><td>Consumers of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards that depend on this decision.</td><td>Inspect the relevant path and record the observed result.</td><td>Turn the item into a review gate and a repeatable test.</td></tr><tr><td>Gap in Network diagrams with regions, zones, subnets and flows</td><td>The requirement is absent from the design evidence.</td><td>Consumers of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards that depend on this decision.</td><td>Inspect the relevant path and record the observed result.</td><td>Turn the item into a review gate and a repeatable test.</td></tr><tr><td>Gap in Data flow diagrams</td><td>The requirement is absent from the design evidence.</td><td>Consumers of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards that depend on this decision.</td><td>Inspect the relevant path and record the observed result.</td><td>Turn the item into a review gate and a repeatable test.</td></tr><tr><td>Gap in Sequence diagrams for failure scenarios</td><td>The requirement is absent from the design evidence.</td><td>Consumers of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards that depend on this decision.</td><td>Inspect the relevant path and record the observed result.</td><td>Turn the item into a review gate and a repeatable test.</td></tr><tr><td>Gap in Tools: draw.io, Lucidchart, Google Cloud architecture diagramming tool, Mermaid</td><td>The requirement is absent from the design evidence.</td><td>Consumers of Diagramming &amp; Documentation: C4 Model &amp; Visual Standards that depend on this decision.</td><td>Inspect the relevant path and record the observed result.</td><td>Turn the item into a review gate and a repeatable test.</td></tr></table><p class="table-citation claim-citation"><strong>Sources:</strong> <a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></p>
+<h4>Hidden dependencies and day-2 operations</h4><p>For Diagramming &amp; Documentation: C4 Model &amp; Visual Standards, review the dependencies implied by <strong>Data flow diagrams</strong> and <strong>Do three migration assessments for fictional companies (retail, bank, media) and pick R strategies per workload</strong>; assign ownership, an escalation path, a cost signal, and a migration or deprecation plan. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement makes <strong>C4 model (context, container, component)</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>What business requirement makes <strong>Network diagrams with regions, zones, subnets and flows</strong> necessary? <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li>What business requirement makes <strong>Data flow diagrams</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>What business requirement makes <strong>Sequence diagrams for failure scenarios</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>What business requirement makes <strong>Tools: draw.io, Lucidchart, Google Cloud architecture diagramming tool, Mermaid</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>What business requirement makes <strong>Redesign a monolithic app on paper into a cloud-native architecture with a written ADR for each major decision</strong> necessary? <sup class="claim-citation"><a href="https://cloud.google.com/nat/docs/overview" target="_blank" rel="noopener" aria-label="Source: Cloud NAT overview">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li>What business requirement makes <strong>Draw a landing zone diagram (org, folders, shared VPC, logging project, security project)</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>What business requirement makes <strong>Do three migration assessments for fictional companies (retail, bank, media) and pick R strategies per workload</strong> necessary? <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li></ol>
+<h4>What good looks like</h4><ul class="mature-deployment"><li>The design names evidence for <strong>C4 model (context, container, component)</strong> and an owner for the next action. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>The design names evidence for <strong>Network diagrams with regions, zones, subnets and flows</strong> and an owner for the next action. <sup class="claim-citation"><a href="https://cloud.google.com/vpc/docs/subnets" target="_blank" rel="noopener" aria-label="Source: Subnet IP allocation rules">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></li><li>The design names evidence for <strong>Data flow diagrams</strong> and an owner for the next action. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>The design names evidence for <strong>Sequence diagrams for failure scenarios</strong> and an owner for the next action. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li><li>The design names evidence for <strong>Tools: draw.io, Lucidchart, Google Cloud architecture diagramming tool, Mermaid</strong> and an owner for the next action. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></li></ul>
+<div class="progression-links"><strong>Before this:</strong> establish the prerequisite for <strong>C4 model (context, container, component)</strong>. <strong>After this:</strong> connect the decision to <strong>Do three migration assessments for fictional companies (retail, bank, media) and pick R strategies per workload</strong>. <strong>Levels up:</strong> test the same design under a regional failure, 10× load, a cost constraint, or a new compliance requirement.</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div class="compliance-addendum depth-complete"><h4>Scope and planes</h4><p>The resource model for Diagramming &amp; Documentation: C4 Model &amp; Visual Standards must name its organization, folder, project, global, regional, zonal, or resource scope. Control-plane intent and data-plane traffic are different paths.</p>
-<h4>Practitioner defaults and troubleshooting</h4><p>Set explicit project, region, identity, quotas, logging, and network dependencies. Treat undocumented internals as <em>observed behaviour, may change</em>.</p>
-<h4>Architect trade-off table</h4><table><tr><th>Choice</th><th>Operational burden</th><th>Scaling/consistency</th><th>Choose when</th></tr><tr><td>Managed option</td><td>Lower toil, less control</td><td>Platform-defined</td><td>Minimize undifferentiated operations.</td></tr><tr><td>Self-managed option</td><td>Higher toil, more control</td><td>Team-defined</td><td>Specific runtime or portability constraints matter.</td></tr><tr><td>Alternative service</td><td>Different cost model</td><td>Different failure domain</td><td>Its native data or traffic model fits better.</td></tr></table><p><strong>Choose the managed option when</strong> operational simplicity dominates; <strong>choose self-managed when</strong> control is required; <strong>avoid either</strong> while requirements remain ambiguous.</p>
-<h4>Failure-mode table</h4><table class="failure-mode-table"><tr><th>Failure</th><th>Signal</th><th>Blast radius</th><th>Immediate action</th><th>Durable prevention</th></tr><tr><td>Quota exhaustion</td><td>Quota error or throttling</td><td>Consumers of that quota</td><td>Reduce load and inspect quota</td><td>Headroom alerts</td></tr><tr><td>Zonal outage</td><td>Health checks fail</td><td>One zone and dependents</td><td>Confirm failover</td><td>Multi-zone placement and drills</td></tr><tr><td>Bad rollout</td><td>Error rate rises after change</td><td>Promoted revision</td><td>Rollback</td><td>Canary gates</td></tr><tr><td>Expired certificate</td><td>TLS handshake errors</td><td>Ingress clients</td><td>Renew and verify chain</td><td>Managed renewal alert</td></tr><tr><td>Misconfigured firewall or IAM</td><td>403, timeout, or denied log</td><td>Matching identities or routes</td><td>Compare effective policy</td><td>Policy as code</td></tr></table>
-<h4>Hidden dependencies and day-2 operations</h4><p>Review DNS, IAM, metadata access, quotas, Google APIs, upgrades, capacity changes, migration off the service, and deprecation risk. Keep ownership, escalation, and landing-zone guardrails explicit.</p>
-<h4>Design-review questions</h4><ol class="review-questions"><li>What business requirement selects this service?</li><li>What is its real scope?</li><li>Which control-plane calls must succeed?</li><li>What is the data-plane failure signal?</li><li>Which quota or IP range saturates first?</li><li>What is the blast radius of a bad policy?</li><li>How are cost and usage attributed?</li><li>How is rollback or migration tested?</li></ol>
-<h4>What good looks like</h4><ul class="mature-deployment"><li>Explicit scope and ownership</li><li>Least-privilege identity</li><li>Observable health and cost</li><li>Tested recovery and rollback</li><li>Documented alternative and exit path</li></ul>
-<div class="progression-links"><strong>Before this:</strong> prerequisite concepts and the previous roadmap topic. <strong>After this:</strong> the next topic that builds on the boundary. <strong>Levels up:</strong> what changes at 10x load, a regional failure, or a new compliance requirement?</div></div>
 
-      <div id="diagrams" style="margin-top: 32px;">
-        <h3>2B — Interactive Architecture Diagrams</h3>
-        
-        <div class="callout" style="margin-bottom: 24px;">
-          <div class="callout-title">Diagram Architectural Scope & Taxonomy: Why These Three Diagrams Exist</div>
-          <p>
-            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic:
-          </p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-              <strong style="color: var(--accent); font-size: 13px;">D1 — Scope & Boundary Map (Structural Lens)</strong>
-              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
-                <strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br>
-                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation.
-              </p>
-            </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-              <strong style="color: var(--accent); font-size: 13px;">D2 — Request & Control Flow (Runtime Ingress Lens)</strong>
-              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
-                <strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br>
-                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging.
-              </p>
-            </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-              <strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection & Resilience (Chaos Lens)</strong>
-              <p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
-                <strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br>
-                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        
-        <!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
-        <div class="diagram-suite-nav">
-          <span class="suite-title">VIEWPOINT:</span>
-          <a href="#diagram-d1" class="suite-pill"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
-          <span class="suite-arrow">→</span>
-          <a href="#diagram-d2" class="suite-pill"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
-          <span class="suite-arrow">→</span>
-          <a href="#diagram-d3" class="suite-pill"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
-        </div>
 
+
+
+
+
+
+
+
+
+<div id="diagrams" style="margin-top: 32px;">
+<h3>2B — Interactive Architecture Diagrams</h3>
+<div class="callout" style="margin-bottom: 24px;">
+<div class="callout-title">Diagram Architectural Scope &amp; Taxonomy: Why These Three Diagrams Exist</div>
+<p>
+            Architecture diagrams in this curriculum are not decorative illustrations; they are <strong>precision engineering models</strong> designed to answer three distinct, non-overlapping architectural questions for every topic: <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px;">
+<div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+<strong style="color: var(--accent); font-size: 13px;">D1 — Scope &amp; Boundary Map (Structural Lens)</strong>
+<p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+<strong>Question Answered:</strong> <em>Where do execution and security boundaries lie?</em><br/>
+                Maps components into their isolation perimeters (Client Edge vs Project VPC vs Managed Services). Establishes trust boundaries, network ingress choke-points, and data-plane vs control-plane separation. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+</div>
+<div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+<strong style="color: var(--accent); font-size: 13px;">D2 — Request &amp; Control Flow (Runtime Ingress Lens)</strong>
+<p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+<strong>Question Answered:</strong> <em>How does production traffic traverse the architecture securely?</em><br/>
+                Traces an end-to-end operational journey—from ingress initiation and IAM perimeter validation across Andromeda SDN to backend state persistence and audit logging. <sup class="claim-citation"><a href="https://cloud.google.com/iam/docs/overview" target="_blank" rel="noopener" aria-label="Source: IAM overview">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+</div>
+<div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+<strong style="color: var(--accent); font-size: 13px;">D3 — Failure Injection &amp; Resilience (Chaos Lens)</strong>
+<p style="font-size: 12px; margin: 6px 0 0 0; color: var(--text-dim);">
+<strong>Question Answered:</strong> <em>How does the system degrade, alert, and auto-heal under catastrophic failure?</em><br/>
+                Models the exact mechanics of component saturation, network timeouts, and health check evictions under stress, revealing observability signals and automated failover pathways. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+</div>
+</div>
+</div>
+<!-- Topic-Level 'Where Am I' Architecture Viewpoints Progression Strip -->
+<div class="diagram-suite-nav">
+<span class="suite-title">VIEWPOINT:</span>
+<a class="suite-pill" href="#diagram-d1"><span class="pill-id">D1</span> SCOPE &amp; BOUNDARY MAP</a>
+<span class="suite-arrow">→</span>
+<a class="suite-pill" href="#diagram-d2"><span class="pill-id">D2</span> REQUEST &amp; DATA FLOW</a>
+<span class="suite-arrow">→</span>
+<a class="suite-pill" href="#diagram-d3"><span class="pill-id">D3</span> CHAOS &amp; RESILIENCE</a>
+</div>
 <!-- Diagram 1 Context Card & Container -->
-        <div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
-          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Diagramming & Docs: C4 Model — Scope & Architecture Map</h4>
-          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
-            <strong>Architectural Intent:</strong> Visualizes the C4 Architecture Diagramming Model applied to Google Cloud: Level 1 (System Context), Level 2 (Container), Level 3 (Component), and Level 4 (Code) with live cloud infrastructure mapping.
-          </p>
-        </div>
-        <div id="diagram-d1"></div>
-
-        <!-- Diagram 2 Context Card & Container -->
-        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
-          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: Diagramming & Docs: C4 Model — Request & Control Flow</h4>
-          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
-            <strong>Architectural Intent:</strong> Traces the Diagram-as-Code CI/CD Pipeline: from markdown/Mermaid commit in Git through automated rendering to the Developer Portal.
-          </p>
-        </div>
-        <div id="diagram-d2"></div>
-
-        <!-- Diagram 3 Context Card & Container -->
-        <div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
-          <h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: Diagramming & Docs: C4 Model — Failure Injection & Auto-Healing</h4>
-          <p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
-            <strong>Architectural Intent:</strong> Simulates Documentation vs Production Reality Drift: automated Drift Detector flags newly provisioned BigQuery dataset missing from C4 Level 2 Container diagram.
-          </p>
-        </div>
-        <div id="diagram-d3"></div>
-      </div>
-    
-      <div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence.</p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D5</h4><p>Shows what changes at 10x load and where operational cost moves.</p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D6</h4><p>Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.</p></div><div id="diagram-d6"></div></div>
-    </section>
-
-    <!-- Part 3: Explained by Analogy -->
-    <section class="topic-section" id="analogy">
-      <h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
-      <p>In Cloud City, Nora's multi-layered blueprints allow city engineers to zoom from the entire metropolitan area down to individual water valves.</p>
-
-      <div class="analogy-stepper" style="margin-top: 20px;">
-        <button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
-        <button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
-        <button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
-        <button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
-      </div>
-
-      <div class="analogy-box" id="analogy-display"></div>
-      <div id="analogy-scene" class="analogy-scene" tabindex="0" aria-label="Interactive Cloud City analogy scene"></div>
-      <div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
+<div class="diagram-context-card" style="margin-top: 18px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+<h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 1: Diagramming &amp; Docs: C4 Model — Scope &amp; Architecture Map</h4>
+<p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+<strong>Architectural Intent:</strong> Visualizes the C4 Architecture Diagramming Model applied to Google Cloud: Level 1 (System Context), Level 2 (Container), Level 3 (Component), and Level 4 (Code) with live cloud infrastructure mapping. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+</div>
+<div id="diagram-d1"></div>
+<!-- Diagram 2 Context Card & Container -->
+<div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+<h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 2: Diagramming &amp; Docs: C4 Model — Request &amp; Control Flow</h4>
+<p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+<strong>Architectural Intent:</strong> Traces the Diagram-as-Code CI/CD Pipeline: from markdown/Mermaid commit in Git through automated rendering to the Developer Portal. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p>
+</div>
+<div id="diagram-d2"></div>
+<!-- Diagram 3 Context Card & Container -->
+<div class="diagram-context-card" style="margin-top: 28px; margin-bottom: 10px; padding: 12px 14px; background: rgba(33, 150, 243, 0.05); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0;">
+<h4 style="margin: 0 0 5px 0; color: var(--text); font-size: 13.5px;">Diagram 3: Diagramming &amp; Docs: C4 Model — Failure Injection &amp; Auto-Healing</h4>
+<p style="margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+<strong>Architectural Intent:</strong> Simulates Documentation vs Production Reality Drift: automated Drift Detector flags newly provisioned BigQuery dataset missing from C4 Level 2 Container diagram. <sup class="claim-citation"><a href="https://cloud.google.com/bigquery/docs" target="_blank" rel="noopener" aria-label="Source: BigQuery documentation">[1]</a> <a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[2]</a></sup></p>
+</div>
+<div id="diagram-d3"></div>
+</div>
+<div class="diagram-extra-set"><h3>Security, scale, and internals views</h3><div class="diagram-context-card diagram-extra"><h4>D4 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D4</h4><p>Shows identities, trust boundaries, policy checks, and audit evidence for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p></div><div id="diagram-d4"></div><div class="diagram-context-card diagram-extra"><h4>D5 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D5</h4><p>Shows what changes at 10x load for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> and where operational cost moves. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p></div><div id="diagram-d5"></div><div class="diagram-context-card diagram-extra"><h4>D6 — Diagramming &amp; Documentation: C4 Model &amp; Visual Standards — D6</h4><p>Shows the documented internals needed to predict <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>; undocumented details are observed behavior and may change. <sup class="claim-citation"><a href="https://c4model.com/" target="_blank" rel="noopener" aria-label="Source: C4 model">[1]</a> <a href="https://cloud.google.com/architecture" target="_blank" rel="noopener" aria-label="Source: Google Cloud Architecture Center">[2]</a></sup></p></div><div id="diagram-d6"></div></div>
+</section>
+<!-- Part 3: Explained by Analogy -->
+<section class="topic-section" id="analogy">
+<h2 class="section-title"><span class="section-number">3</span> Explained by Analogy: Cloud City</h2>
+<p>In Cloud City, Nora's multi-layered blueprints allow city engineers to zoom from the entire metropolitan area down to individual water valves.</p>
+<div class="analogy-stepper" style="margin-top: 20px;">
+<button class="stepper-btn active" onclick="showAnalogyBeat(1)">1. The City Problem</button>
+<button class="stepper-btn" onclick="showAnalogyBeat(2)">2. The City Solution</button>
+<button class="stepper-btn" onclick="showAnalogyBeat(3)">3. City Under Stress</button>
+<button class="stepper-btn" onclick="showAnalogyBeat(4)">4. Where Metaphor Breaks</button>
+</div>
+<div class="analogy-box" id="analogy-display"></div>
+<div aria-label="Interactive Cloud City analogy scene" class="analogy-scene" id="analogy-scene" tabindex="0"></div>
+<div class="analogy-mapping"><h3>Cloud City mapping table</h3><table><thead><tr><th>City concept</th><th>Real GCP term</th><th>Boundary to remember</th></tr></thead><tbody>
 <tr><td>Brightloaf city campus</td><td>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</td><td>The topic has an explicit scope; do not infer a broader boundary.</td></tr>
 <tr><td>Inspector permits</td><td>IAM and policy</td><td>Authorization is additive unless a deny or boundary limits it.</td></tr>
 <tr><td>Dispatcher roads</td><td>Networking and dependencies</td><td>DNS, quotas, APIs, and identity remain hidden dependencies.</td></tr>
 <tr><td>Emergency response</td><td>Recovery and operations</td><td>A replica is not automatically a backup, and a budget is not a cap.</td></tr>
 </tbody></table><p class="metaphor-breaks"><strong>Where the metaphor breaks:</strong> a city permit is physical and human; a cloud policy is evaluated by software and can be misconfigured. Verify the real behavior in documentation.</p></div>
-    </section>
-
-    <!-- Part 4: Demo or Practice Exercise -->
-    <section class="topic-section" id="demo-or-practice">
-      <h2 class="section-title"><span class="section-number">4</span> Practice Exercise</h2>
-      
-        <div class="callout">
-          <div class="callout-title">Practice Exercise: Diagrams as Code with Mermaid</div>
-          <p>Examine the following Mermaid code block. It represents a secure 3-tier GCP web architecture. Review the diagram syntax.</p>
-        </div>
-        <pre><code class="language-mermaid">graph TD
-    Client[Internet Clients] -->|HTTPS 443| LB[Global External ALB]
-    LB -->|mTLS / Port 8080| GKE[GKE Autopilot Workload Pods]
-    GKE -->|Private Service Connect| SQL[(Cloud SQL PostgreSQL HA)]
-    GKE -->|Async Event| PS[Cloud Pub/Sub Topic]
-    PS -->|Push Subscription| CR[Cloud Run Worker]
+</section>
+<!-- Part 4: Demo or Practice Exercise -->
+<section class="topic-section" id="demo-or-practice">
+<h2 class="section-title"><span class="section-number">4</span> Practice Exercise</h2>
+<div class="callout">
+<div class="callout-title">Practice Exercise: Diagrams as Code with Mermaid</div>
+<p>Examine the following Mermaid code block. It represents a secure 3-tier GCP web architecture. Review the diagram syntax.</p>
+</div>
+<pre><code class="language-mermaid">graph TD
+    Client[Internet Clients] --&gt;|HTTPS 443| LB[Global External ALB]
+    LB --&gt;|mTLS / Port 8080| GKE[GKE Autopilot Workload Pods]
+    GKE --&gt;|Private Service Connect| SQL[(Cloud SQL PostgreSQL HA)]
+    GKE --&gt;|Async Event| PS[Cloud Pub/Sub Topic]
+    PS --&gt;|Push Subscription| CR[Cloud Run Worker]
     
     subgraph VPC [Custom Global VPC]
         subgraph SubnetApp [Regional Subnet: 10.0.1.0/24]
@@ -553,83 +226,50 @@
             SQL
         end
     end</code></pre>
-        
-      <div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
+<div class="demo-complete"><div class="demo-safety-banner"><strong>LIVE DEMO SAFETY:</strong> T2 by default. Set <code>DEMO_PROJECT_ID</code>, confirm the active project, use a budget alert, and do not run apply until the plan is reviewed.</div><h3>PREREQUISITES</h3><pre><code>gcloud config list
 gcloud projects describe "$GOOGLE_CLOUD_PROJECT"
 gcloud services list --enabled
 : "Guard: DEMO_PROJECT_ID must be set"
-test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
+test "$GOOGLE_CLOUD_PROJECT" = "$DEMO_PROJECT_ID"</code></pre><h3>PATH EQUIVALENCE TABLE</h3><table><tr><th>Action</th><th>GUI</th><th>Terraform</th><th>CLI</th></tr><tr><td>Inspect/create the resource</td><td>Cloud Console product page; confirm project and region</td><td>Review module, validate, and plan</td><td>Use the narrow gcloud/kubectl/bq command</td></tr></table><h3>GUI PATH</h3><p>Open the relevant Cloud Console product for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>, select the guarded project, use the smallest safe setting, and capture status and audit evidence.</p><h3>TERRAFORM PATH</h3><pre><code>terraform init
 terraform fmt -check
 terraform validate
 terraform plan -var="project_id=$DEMO_PROJECT_ID"
 # apply only after review and explicit opt-in
 terraform apply -var="project_id=$DEMO_PROJECT_ID" -var="allow_apply=true"
 terraform output
-terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
+terraform destroy -var="project_id=$DEMO_PROJECT_ID"</code></pre><p>Do not commit <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> state or secrets; use remote locking and team ownership.</p><h3>CLI PATH</h3><pre><code>gcloud config list
 gcloud projects describe "$DEMO_PROJECT_ID"
-gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency.</p><h3>CLEANUP</h3><p>Destroy named resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
-    </section>
-
-    <!-- Footer 1: Knowledge Check -->
-    <section class="topic-section" id="quiz">
-      <h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
-      
-        <div class="quiz-card">
-          <span class="quiz-badge">Band: Diagramming Standards (Question 1)</span>
-          <p><strong>When presenting a cloud architecture design to both security auditors and executive stakeholders, which diagramming approach best ensures clarity and compliance?</strong></p>
-          <ul class="quiz-options">
-            <button class="quiz-option" type="button" onclick="checkQuiz(this, true, 'Correct! The C4 model provides distinct levels of abstraction: Level 1 Context for executives, and Level 2 Container/VPC topologies with explicit protocols and security perimeters for auditors.')">A) Use the C4 model to provide a Level 1 System Context diagram for executives, and Level 2 Container diagrams with explicit network protocols and VPC perimeters for auditors.</button>
-            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'A single massive diagram containing every low-level detail overwhelms executives and obscures business context.')">B) Put every single VM, IP address, and software library into a single diagram for all audiences.</button>
-            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Omitting protocol labels creates ambiguity and fails security audits.')">C) Omit protocol names and port numbers to keep diagrams uncluttered for auditors.</button>
-            <button class="quiz-option" type="button" onclick="checkQuiz(this, false, 'Unstructured whiteboard photos are not auditable or reproducible engineering artifacts.')">D) Rely exclusively on informal hand-drawn whiteboard photos stored in chat channels.</button>
-          </ul>
-          <div class="quiz-explanation"></div>
-        </div>
-        
-      <div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" type="button" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')">Show answer</button><div class="quiz-explanation"></div></div>
-    </section>
-
-    <!-- Footer 2: Further Reading -->
-    <section class="topic-section" id="reading">
-      <h2 class="section-title"><span class="section-number">6</span> Further Reading & Authoritative Google Cloud Docs</h2>
-      <ul><li><a href='https://c4model.com/' target='_blank'>The C4 Model for Visualising Software Architecture</a></li><li><a href='https://cloud.google.com/architecture/diagrams' target='_blank'>Google Cloud Architecture Diagramming Tools & Icons</a></li></ul>
-    </section>
-    <!-- Topic Pagination Footer -->
-    <nav class="topic-pagination" aria-label="Topic Pagination">
-      <!-- Previous Topic -->
-      <a href="topic-026.html" class="pagination-card prev">
-        <div class="pagination-direction">← PREVIOUS TOPIC</div>
-        <div class="pagination-topic-meta">Phase 3 — Architecture Thinking • [3.4b]</div>
-        <div class="pagination-title">026: Decision Frameworks: ADRs & Matrices</div>
-        <div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div>
-      </a>
-
-      <!-- Roadmap Overview -->
-      <a href="../index.html" class="pagination-card index" title="Return to All Topics Index">
-        <div class="pagination-direction">ROADMAP OVERVIEW</div>
-        <div class="pagination-topic-meta">All 60 Topics • 7 Phases</div>
-        <div class="pagination-title">Architecture Explorer</div>
-        <div class="pagination-shortcut">Key: <kbd>I</kbd></div>
-      </a>
-
-      <!-- Next Topic -->
-      <a href="topic-028.html" class="pagination-card next">
-        <div class="pagination-direction">NEXT TOPIC →</div>
-        <div class="pagination-topic-meta">Phase 4 — Reliability & HA • [4.1]</div>
-        <div class="pagination-title">028: Reliability Fundamentals & Availability</div>
-        <div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div>
-      </a>
-    </nav>
-
-
-  </main>
-
-  <footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
-    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static & Offline Compatible
+gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSERVE</h3><p>Check <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> status, audit logs, health metrics, and matching D1/D2 nodes.</p><h3>EXPECTED RESULT</h3><p>The intended <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> boundary is visible and the result is attributable to the guarded project.</p><h3>BREAK IT ON PURPOSE</h3><p>In a disposable project for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>, revoke a narrow role, block a health check, or select an exhausted range. Observe, diagnose, and restore it.</p><h3>TROUBLESHOOTING</h3><p>Check project, API enablement, IAM, quota, DNS, firewall, logs, and eventual consistency for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>.</p><h3>CLEANUP</h3><p>Destroy named <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> resources, then verify deletion and billing asynchronously.</p><h3>COST / SAFETY NOTE</h3><p>Tier T2 for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>: use free-tier or cents-scale resources where available; verify current pricing and delete promptly. T4 topics are plan-only by default.</p></div>
+</section>
+<!-- Footer 1: Knowledge Check -->
+<section class="topic-section" id="quiz">
+<h2 class="section-title"><span class="section-number">5</span> Check Your Understanding</h2>
+<div class="quiz-card">
+<span class="quiz-badge">Band: Diagramming Standards (Question 1)</span>
+<p><strong>When presenting a cloud architecture design to both security auditors and executive stakeholders, which diagramming approach best ensures clarity and compliance?</strong></p>
+<div class="quiz-options" role="group" aria-label="Answer options">
+<button class="quiz-option" onclick="checkQuiz(this, true, 'Correct! The C4 model provides distinct levels of abstraction: Level 1 Context for executives, and Level 2 Container/VPC topologies with explicit protocols and security perimeters for auditors.')" type="button">A) Use the C4 model to provide a Level 1 System Context diagram for executives, and Level 2 Container diagrams with explicit network protocols and VPC perimeters for auditors.</button>
+<button class="quiz-option" onclick="checkQuiz(this, false, 'A single massive diagram containing every low-level detail overwhelms executives and obscures business context.')" type="button">B) Put every single VM, IP address, and software library into a single diagram for all audiences.</button>
+<button class="quiz-option" onclick="checkQuiz(this, false, 'Omitting protocol labels creates ambiguity and fails security audits.')" type="button">C) Omit protocol names and port numbers to keep diagrams uncluttered for auditors.</button>
+<button class="quiz-option" onclick="checkQuiz(this, false, 'Unstructured whiteboard photos are not auditable or reproducible engineering artifacts.')" type="button">D) Rely exclusively on informal hand-drawn whiteboard photos stored in chat channels.</button>
+</div>
+<div class="quiz-explanation"></div>
+</div>
+<div class="quiz-card"><span class="quiz-badge">Band: Recall</span><p><strong>What is the core resource boundary described by this topic?</strong></p><button class="quiz-option" onclick="checkQuiz(this,true,'Start with the documented scope, not the product name.')" type="button">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: PCA Scenario</span><p><strong>A requirement changes from regional to global. What must be revisited first?</strong></p><button class="quiz-option" onclick="checkQuiz(this,true,'Revisit scope, consistency, failure domains, and cost.')" type="button">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Staff Review</span><p><strong>Which hidden dependency would you instrument before approving this design?</strong></p><button class="quiz-option" onclick="checkQuiz(this,true,'Review IAM, DNS, quotas, Google APIs, metadata access, and ownership.')" type="button">Show answer</button><div class="quiz-explanation"></div></div><div class="quiz-card"><span class="quiz-badge">Band: Practical Task</span><p><strong>Write one rejected alternative and the evidence that would change your decision.</strong></p><button class="quiz-option" onclick="checkQuiz(this,true,'Record assumptions, alternatives, evidence, and rollback.')" type="button">Show answer</button><div class="quiz-explanation"></div></div>
+</section>
+<!-- Footer 2: Further Reading -->
+<section class="topic-section" id="reading">
+<h2 class="section-title"><span class="section-number">6</span> Further Reading &amp; Authoritative Google Cloud Docs</h2>
+<ul><li><a href="https://c4model.com/" target="_blank">The C4 Model for Visualising Software Architecture</a></li><li><a href="https://cloud.google.com/architecture/diagrams" target="_blank">Google Cloud Architecture Diagramming Tools &amp; Icons</a></li></ul>
+</section><section class="topic-section references-section" id="references"><h2 class="section-title"><span class="section-number">7</span> References</h2><p>Use these sources to establish the foundation for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>, verify product behavior, and then return to the architecture discussion.</p><ul class="reference-list"><li><a href="https://c4model.com/" target="_blank" rel="noopener">C4 model</a><span> — A practical hierarchy for communicating software architecture.</span></li><li><a href="https://cloud.google.com/architecture" target="_blank" rel="noopener">Google Cloud Architecture Center</a><span> — Cloud reference diagrams and patterns.</span></li></ul></section>
+<!-- Topic Pagination Footer -->
+<nav class="topic-pagination" aria-label="Topic Pagination"><a href="topic-026.html" class="pagination-card prev"><div class="pagination-direction">← PREVIOUS TOPIC</div><div class="pagination-topic-meta">Phase 3 — Architecture Thinking · [3.4b]</div><div class="pagination-title">026: Decision-Making Frameworks: ADRs &amp; Trade-Off Matrices</div><div class="pagination-shortcut">Shortcut: <kbd>P</kbd> or <kbd>←</kbd></div></a><a href="../index.html" class="pagination-card index" title="Return to All Topics Index"><div class="pagination-direction">ROADMAP OVERVIEW</div><div class="pagination-topic-meta">All 71 Topics · 12 Phases</div><div class="pagination-title">Architecture Explorer</div><div class="pagination-shortcut">Key: <kbd>I</kbd></div></a><a href="topic-028.html" class="pagination-card next"><div class="pagination-direction">NEXT TOPIC →</div><div class="pagination-topic-meta">Phase 4 — Reliability and High Availability · [4.1]</div><div class="pagination-title">028: Reliability Fundamentals: Availability Math &amp; Failure Domains</div><div class="pagination-shortcut">Shortcut: <kbd>N</kbd> or <kbd>→</kbd></div></a></nav>
+</main>
+<footer style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 11px; border-top: 1px solid var(--panel-border);">
+    Google Cloud Architect Roadmap • Minimalist Systems Design • 100% Static &amp; Offline Compatible
   </footer>
-
-  <!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
-  <script id="spec-d1-data" type="application/json">
+<!-- Embedded Data & Scripts (Zero Fetch / 100% Offline & File:// Compatible) -->
+<script id="spec-d1-data" type="application/json">
 {
   "id": "topic-027-d1",
   "title": "Diagramming & Docs: C4 Model \u2014 Scope & Architecture Map",
@@ -816,7 +456,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   ]
 }
   </script>
-  <script id="spec-d2-data" type="application/json">
+<script id="spec-d2-data" type="application/json">
 {
   "id": "topic-027-d2",
   "title": "Diagramming & Docs: C4 Model \u2014 Request & Control Flow",
@@ -985,7 +625,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   ]
 }
   </script>
-  <script id="spec-d3-data" type="application/json">
+<script id="spec-d3-data" type="application/json">
 {
   "id": "topic-027-d3",
   "title": "Diagramming & Docs: C4 Model \u2014 Failure Injection & Auto-Healing",
@@ -1133,7 +773,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   "topic_no": "027",
   "roadmap_id": "3.5",
   "kind": "security",
-  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>.",
   "routing_rationale": "The C4 model provides hierarchical zoom levels, ensuring business executives, systems architects, and software engineers understand the system at their required depth without visual clutter.",
   "groups": [
     {
@@ -1361,7 +1001,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
       }
     }
   ],
-  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence."
+  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>."
 }
 </script>
 <script id="spec-d5-data" type="application/json">
@@ -1371,7 +1011,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   "topic_no": "027",
   "roadmap_id": "3.5",
   "kind": "scale-cost",
-  "purpose": "Shows what changes at 10x load and where operational cost moves.",
+  "purpose": "Shows what changes at 10x load for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> and where operational cost moves.",
   "routing_rationale": "The C4 model provides hierarchical zoom levels, ensuring business executives, systems architects, and software engineers understand the system at their required depth without visual clutter.",
   "groups": [
     {
@@ -1599,7 +1239,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
       }
     }
   ],
-  "summary": "Shows what changes at 10x load and where operational cost moves."
+  "summary": "Shows what changes at 10x load for <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong> and where operational cost moves."
 }
 </script>
 <script id="spec-d6-data" type="application/json">
@@ -1609,7 +1249,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   "topic_no": "027",
   "roadmap_id": "3.5",
   "kind": "internals",
-  "purpose": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change.",
+  "purpose": "Shows the documented internals needed to predict <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>; undocumented details are observed behavior and may change.",
   "routing_rationale": "The C4 model provides hierarchical zoom levels, ensuring business executives, systems architects, and software engineers understand the system at their required depth without visual clutter.",
   "groups": [
     {
@@ -1837,10 +1477,10 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
       }
     }
   ],
-  "summary": "Shows the documented internals needed to predict behavior; undocumented details are observed behavior and may change."
+  "summary": "Shows the documented internals needed to predict <strong>Diagramming &amp; Documentation: C4 Model &amp; Visual Standards</strong>; undocumented details are observed behavior and may change."
 }
 </script>
-  <script id="brightloaf-data" type="application/json">{
+<script id="brightloaf-data" type="application/json">{
   "company_name": "Brightloaf Bakery",
   "founder": "Bea the Baker",
   "industry": "Artisanal Bakery & E-Commerce",
@@ -1872,7 +1512,7 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   }
 }
 </script>
-  <script id="analogy-data" type="application/json">
+<script id="analogy-data" type="application/json">
 {
   "topic_no": "027",
   "roadmap_id": "3.5",
@@ -1917,9 +1557,8 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
   ]
 }
   </script>
-
-  <script src="../assets/diagram-engine.js"></script>
-  <script>
+<script src="../assets/diagram-engine.js"></script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
       const specD1 = JSON.parse(document.getElementById('spec-d1-data').textContent);
       const specD2 = JSON.parse(document.getElementById('spec-d2-data').textContent);
@@ -1983,33 +1622,10 @@ gcloud services list --enabled --project="$DEMO_PROJECT_ID"</code></pre><h3>OBSE
       explEl.innerHTML = `<strong style="color:${isCorrect ? '#34d399' : '#f87171'};">${isCorrect ? '✅ Correct' : '❌ Incorrect'}:</strong> ${explanation}`;
     }
   </script>
-  <!-- Floating Quick Navigation Dock -->
-  <div class="floating-topic-dock" id="floating-topic-dock">
-    <a href="topic-026.html" class="dock-btn prev" title="Previous Topic: Decision Frameworks: ADRs & Matrices [Key: P]">← 026</a>
-    <span class="dock-indicator" title="Topic 027 of 60">027 / 060</span>
-    <a href="topic-028.html" class="dock-btn next" title="Next Topic: Reliability Fundamentals & Availability [Key: N]">028 →</a>
-    <a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a>
-  </div>
-
-  <script>
-    // Global Keyboard Navigation between topics
-    (function() {
-      const prevUrl = "topic-026.html";
-      const nextUrl = "topic-028.html";
-      document.addEventListener('keydown', (e) => {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
-        if (e.key === 'p' || e.key === 'P' || e.key === '[' || (e.key === 'ArrowLeft' && e.altKey)) {
-          if (prevUrl) window.location.href = prevUrl;
-        } else if (e.key === 'n' || e.key === 'N' || e.key === ']' || (e.key === 'ArrowRight' && e.altKey)) {
-          if (nextUrl) window.location.href = nextUrl;
-        } else if (e.key === 'i' || e.key === 'I') {
-          window.location.href = '../index.html';
-        }
-      });
-    })();
-  </script>
-  <!-- End Floating Quick Navigation Dock -->
-
-  <script src="../assets/site-interactions.js?v=20260924-4"></script>
+<script src="../assets/site-interactions.js?v=20260924-4"></script>
+<!-- Floating Quick Navigation Dock -->
+<div class="floating-topic-dock" id="floating-topic-dock"><a href="topic-026.html" class="dock-btn prev" title="Previous Topic: Decision-Making Frameworks: ADRs &amp; Trade-Off Matrices [Key: P]">← 026</a><span class="dock-indicator" title="Topic 027 of 71">027 / 071</span><a href="topic-028.html" class="dock-btn next" title="Next Topic: Reliability Fundamentals: Availability Math &amp; Failure Domains [Key: N]">028 →</a><a href="../index.html" class="dock-btn index" title="Roadmap Overview [Key: I]">☰</a></div>
+<script>(function(){const prevUrl="topic-026.html";const nextUrl="topic-028.html";document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||e.target.isContentEditable)return;if(e.key==='p'||e.key==='P'||e.key==='['||(e.key==='ArrowLeft'&&e.altKey)){if(prevUrl)window.location.href=prevUrl;}else if(e.key==='n'||e.key==='N'||e.key===']'||(e.key==='ArrowRight'&&e.altKey)){if(nextUrl)window.location.href=nextUrl;}else if(e.key==='i'||e.key==='I')window.location.href='../index.html';});})();</script>
+<!-- End Floating Quick Navigation Dock -->
 </body>
 </html>

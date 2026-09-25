@@ -4,89 +4,243 @@
   "topic_no": "066",
   "roadmap_id": "consult-1",
   "kind": "scale-cost",
-  "purpose": "Shows what changes at 10x load and where operational cost moves.",
-  "summary": "Shows what changes at 10x load and where operational cost moves.",
+  "purpose": "Scale and cost for Consultant communication and delivery: workshops, executive outcomes, engineering detail, options, proposals, assumptions, risks, and review feedback.",
+  "routing_rationale": "Use the D5 lens to keep workshops, executive outcomes, engineering detail, options, proposals, assumptions, risks, and review feedback connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Turn discovery into executive outcomes, engineering constraints, options, a recommendation, and an agreed delivery record.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Consultant communication and delivery",
+      "id": "workshop",
+      "label": "Discovery Workshop",
+      "product": "Questions and stakeholder map",
       "group": "root",
-      "plane": "data",
-      "x": 480,
+      "plane": "control",
+      "x": 100,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "The facilitated session that exposes outcomes, constraints, and risks."
+    },
+    {
+      "id": "executive",
+      "label": "Executive Outcome",
+      "product": "Risk, cost, time-to-value",
+      "group": "root",
+      "plane": "control",
+      "x": 300,
+      "y": 100,
+      "detail": "The concise story for decision-makers."
+    },
+    {
+      "id": "engineering",
+      "label": "Engineering Constraints",
+      "product": "Latency, integration, operations",
+      "group": "root",
+      "plane": "control",
+      "x": 300,
+      "y": 340,
+      "detail": "The detail engineers need to validate feasibility."
+    },
+    {
+      "id": "options",
+      "label": "Options Matrix",
+      "product": "Alternatives and weighted criteria",
+      "group": "root",
+      "plane": "control",
+      "x": 520,
+      "y": 220,
+      "detail": "At least two viable options with explicit trade-offs."
+    },
+    {
+      "id": "proposal",
+      "label": "Proposal / SOW",
+      "product": "Scope, assumptions, deliverables",
+      "group": "root",
+      "plane": "control",
+      "x": 720,
+      "y": 100,
+      "detail": "The delivery contract and boundaries."
+    },
+    {
+      "id": "risks",
+      "label": "Assumptions and Risk Log",
+      "product": "Open questions and mitigations",
+      "group": "root",
+      "plane": "control",
+      "x": 720,
+      "y": 340,
+      "detail": "Uncertainty that needs an owner and a next action."
+    },
+    {
+      "id": "decision",
+      "label": "Recommendation and Review",
+      "product": "Decision and feedback",
+      "group": "root",
+      "plane": "control",
+      "x": 920,
+      "y": 220,
+      "detail": "The selected path and the feedback loop that keeps it honest."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "workshop",
+      "to": "executive",
+      "label": "frame outcome",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "workshop",
+      "to": "engineering",
+      "label": "capture constraints",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "executive",
+      "to": "options",
+      "label": "compare value",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "engineering",
+      "to": "options",
+      "label": "compare feasibility",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "options",
+      "to": "proposal",
+      "label": "scope the work",
+      "plane": "control"
+    },
+    {
+      "id": "e6",
+      "from": "options",
+      "to": "risks",
+      "label": "record uncertainty",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "proposal",
+      "to": "decision",
+      "label": "recommend and review",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
-      "plane": "Data Plane",
+      "title": "Scale and cost: Discovery Workshop \u2192 Engineering Constraints",
+      "edges": [
+        "e2"
+      ],
+      "action": "Discovery Workshop capture constraints to Engineering Constraints; record evidence for workshops, executive outcomes, engineering detail, options, proposals, assumptions, risks, and review feedback.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Consultant communication and delivery by making Engineering Constraints an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "consult-1:d5:step_1:evidence_present",
+        "logs": "topic=consult-1 lens=d5 edge=e2",
+        "commands": "record and verify e2 for Consultant communication and delivery"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Scale and cost: Options Matrix \u2192 Proposal / SOW",
+      "edges": [
+        "e5"
+      ],
+      "action": "Options Matrix scope the work to Proposal / SOW; record evidence for workshops, executive outcomes, engineering detail, options, proposals, assumptions, risks, and review feedback.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Consultant communication and delivery by making Proposal / SOW an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-1:d5:step_2:evidence_present",
+        "logs": "topic=consult-1 lens=d5 edge=e5",
+        "commands": "record and verify e5 for Consultant communication and delivery"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Scale and cost: Options Matrix \u2192 Assumptions and Risk Log",
+      "edges": [
+        "e6"
+      ],
+      "action": "Options Matrix record uncertainty to Assumptions and Risk Log; record evidence for workshops, executive outcomes, engineering detail, options, proposals, assumptions, risks, and review feedback.",
+      "why_traversal": "Stress the capacity, time, and cost boundary for Consultant communication and delivery by making Assumptions and Risk Log an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "consult-1:d5:step_3:evidence_present",
+        "logs": "topic=consult-1 lens=d5 edge=e6",
+        "commands": "record and verify e6 for Consultant communication and delivery"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "single-option",
+      "label": "The recommendation has no alternative",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "options"
+        ],
+        "failedEdges": [
+          "e3"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "The client cannot see what was rejected or what the trade-off buys.",
+      "diverted_path": "The Consultant communication and delivery path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Options Matrix and any downstream decision depending on it.",
+      "recovery": "Present multiple options with weighted criteria and consequences.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-1:d5:single-option:resolved",
+        "command": "review d5 evidence for Options Matrix"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "scope-drift",
+      "label": "The delivery boundary is ambiguous",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "proposal"
+        ],
+        "failedEdges": [
+          "e5"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Assumptions become commitments and change requests arrive late.",
+      "diverted_path": "The Consultant communication and delivery path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Proposal / SOW and any downstream decision depending on it.",
+      "recovery": "Make scope, exclusions, deliverables, and verification dates explicit.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-1:d5:scope-drift:resolved",
+        "command": "review d5 evidence for Proposal / SOW"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "unowned-risk",
+      "label": "A risk is recorded without an owner",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "risks"
+        ],
+        "failedEdges": [
+          "e6"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "An open question persists through approval and delivery.",
+      "diverted_path": "The Consultant communication and delivery path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Assumptions and Risk Log and any downstream decision depending on it.",
+      "recovery": "Assign an owner, mitigation, evidence, and escalation path.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "consult-1:d5:unowned-risk:resolved",
+        "command": "review d5 evidence for Assumptions and Risk Log"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 }

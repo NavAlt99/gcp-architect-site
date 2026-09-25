@@ -8,89 +8,243 @@
   "topic_no": "065",
   "roadmap_id": "plan",
   "kind": "security",
-  "purpose": "Shows identities, trust boundaries, policy checks, and audit evidence.",
-  "summary": "Shows identities, trust boundaries, policy checks, and audit evidence.",
+  "purpose": "Security and ownership for Google Cloud Skills Boost platform plan: learning-path sequencing, hands-on labs, budget alerts, project safety, checkpoints, and evidence capture.",
+  "routing_rationale": "Use the D4 lens to keep learning-path sequencing, hands-on labs, budget alerts, project safety, checkpoints, and evidence capture connected to an explicit owner, evidence path, and recovery action.",
+  "summary": "Sequence Cloud Skills Boost learning paths and specialist quests into an evidence-backed architect practice plan.",
   "groups": [],
   "nodes": [
     {
-      "id": "brightloaf",
-      "label": "Brightloaf workload",
-      "product": "Google Cloud Skills Boost platform plan",
+      "id": "learner",
+      "label": "Learner Goal",
+      "product": "PCA and architecture judgment",
+      "group": "root",
+      "plane": "control",
+      "x": 90,
+      "y": 220,
+      "detail": "The outcome that determines which learning path is next."
+    },
+    {
+      "id": "digital",
+      "label": "Cloud Digital Leader",
+      "product": "Optional warm-up",
+      "group": "root",
+      "plane": "control",
+      "x": 270,
+      "y": 100,
+      "detail": "Business framing and low-pressure cloud vocabulary."
+    },
+    {
+      "id": "engineer",
+      "label": "Cloud Engineer Path",
+      "product": "Core infrastructure labs",
+      "group": "root",
+      "plane": "control",
+      "x": 470,
+      "y": 220,
+      "detail": "Hands-on networking, compute, storage, and operations foundation."
+    },
+    {
+      "id": "pca",
+      "label": "PCA Learning Path",
+      "product": "Professional Cloud Architect",
+      "group": "root",
+      "plane": "control",
+      "x": 680,
+      "y": 100,
+      "detail": "Architecture trade-offs, case analysis, and exam preparation."
+    },
+    {
+      "id": "quests",
+      "label": "Specialist Quests",
+      "product": "Networking, security, Kubernetes, data",
+      "group": "root",
+      "plane": "control",
+      "x": 680,
+      "y": 340,
+      "detail": "Optional depth after the core path."
+    },
+    {
+      "id": "lab",
+      "label": "Disposable Lab Project",
+      "product": "Trial or free-tier project",
       "group": "root",
       "plane": "data",
-      "x": 480,
+      "x": 470,
+      "y": 380,
+      "detail": "A guarded project with region, IAM, budget, and cleanup controls."
+    },
+    {
+      "id": "evidence",
+      "label": "Evidence Log",
+      "product": "Screenshots, ADRs, notes, checkpoints",
+      "group": "root",
+      "plane": "control",
+      "x": 880,
       "y": 220,
-      "detail": "The workload under review."
+      "detail": "Proof of what was learned and what remains to verify."
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "learner",
+      "to": "digital",
+      "label": "optional warm-up",
+      "plane": "control"
+    },
+    {
+      "id": "e2",
+      "from": "learner",
+      "to": "engineer",
+      "label": "build foundation",
+      "plane": "control"
+    },
+    {
+      "id": "e3",
+      "from": "engineer",
+      "to": "pca",
+      "label": "advance to architecture",
+      "plane": "control"
+    },
+    {
+      "id": "e4",
+      "from": "pca",
+      "to": "quests",
+      "label": "add specialist depth",
+      "plane": "control"
+    },
+    {
+      "id": "e5",
+      "from": "engineer",
+      "to": "lab",
+      "label": "practice safely",
+      "plane": "data"
+    },
+    {
+      "id": "e6",
+      "from": "lab",
+      "to": "evidence",
+      "label": "capture result",
+      "plane": "control"
+    },
+    {
+      "id": "e7",
+      "from": "pca",
+      "to": "evidence",
+      "label": "pass checkpoint",
+      "plane": "control"
+    }
+  ],
   "steps": [
     {
       "n": 1,
-      "title": "Inspect the resource",
-      "edges": [],
-      "action": "Inspect the resource and its dependencies.",
-      "why_traversal": "This makes the boundary observable.",
+      "title": "Security and ownership: Learner Goal \u2192 Cloud Digital Leader",
+      "edges": [
+        "e1"
+      ],
+      "action": "Learner Goal optional warm-up to Cloud Digital Leader; record evidence for learning-path sequencing, hands-on labs, budget alerts, project safety, checkpoints, and evidence capture.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Google Cloud Skills Boost platform plan by making Cloud Digital Leader an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "plan:d4:step_1:evidence_present",
+        "logs": "topic=plan lens=d4 edge=e1",
+        "commands": "record and verify e1 for Google Cloud Skills Boost platform plan"
+      }
+    },
+    {
+      "n": 2,
+      "title": "Security and ownership: PCA Learning Path \u2192 Specialist Quests",
+      "edges": [
+        "e4"
+      ],
+      "action": "PCA Learning Path add specialist depth to Specialist Quests; record evidence for learning-path sequencing, hands-on labs, budget alerts, project safety, checkpoints, and evidence capture.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Google Cloud Skills Boost platform plan by making Specialist Quests an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
+      "plane": "Control Plane",
+      "check": {
+        "metrics": "plan:d4:step_2:evidence_present",
+        "logs": "topic=plan lens=d4 edge=e4",
+        "commands": "record and verify e4 for Google Cloud Skills Boost platform plan"
+      }
+    },
+    {
+      "n": 3,
+      "title": "Security and ownership: Cloud Engineer Path \u2192 Disposable Lab Project",
+      "edges": [
+        "e5"
+      ],
+      "action": "Cloud Engineer Path practice safely to Disposable Lab Project; record evidence for learning-path sequencing, hands-on labs, budget alerts, project safety, checkpoints, and evidence capture.",
+      "why_traversal": "Check the trust, ownership, and evidence boundary for Google Cloud Skills Boost platform plan by making Disposable Lab Project an explicit review boundary.",
+      "protocol": "Review / evidence handoff",
       "plane": "Data Plane",
       "check": {
-        "metrics": "request_count",
-        "logs": "severity>=ERROR",
-        "commands": "gcloud services list --enabled"
+        "metrics": "plan:d4:step_3:evidence_present",
+        "logs": "topic=plan lens=d4 edge=e5",
+        "commands": "record and verify e5 for Google Cloud Skills Boost platform plan"
       }
     }
   ],
   "scenarios": [
     {
-      "id": "quota-exhausted",
-      "label": "Quota exhausted",
+      "id": "path-skipping",
+      "label": "A learner skips the foundation",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "engineer"
+        ],
+        "failedEdges": [
+          "e2"
         ]
       },
-      "root_cause": "A project or regional quota reaches its allocation limit.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Advanced labs are attempted without the networking or IAM model needed to explain them.",
+      "diverted_path": "The Google Cloud Skills Boost platform plan path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Cloud Engineer Path and any downstream decision depending on it.",
+      "recovery": "Return to the prerequisite path and record the missing concept.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "plan:d4:path-skipping:resolved",
+        "command": "review d4 evidence for Cloud Engineer Path"
       }
     },
     {
-      "id": "dependency-unavailable",
-      "label": "Dependency unavailable",
+      "id": "unsafe-lab",
+      "label": "A lab project has no guardrails",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "lab"
+        ],
+        "failedEdges": [
+          "e5"
         ]
       },
-      "root_cause": "A required API or downstream dependency is unavailable.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "Credentials, budget, region, or cleanup controls are missing.",
+      "diverted_path": "The Google Cloud Skills Boost platform plan path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Disposable Lab Project and any downstream decision depending on it.",
+      "recovery": "Set the project guard, budget alert, least privilege, and destroy step first.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "plan:d4:unsafe-lab:resolved",
+        "command": "review d4 evidence for Disposable Lab Project"
       }
     },
     {
-      "id": "bad-rollout",
-      "label": "Bad rollout",
+      "id": "no-evidence",
+      "label": "Completion cannot be demonstrated",
       "changes": {
         "failedNodes": [
-          "brightloaf"
+          "evidence"
+        ],
+        "failedEdges": [
+          "e6"
         ]
       },
-      "root_cause": "A configuration or release changes a healthy behavior.",
-      "diverted_path": "Requests surface elevated latency, errors, or denied actions.",
-      "blast_radius": "Consumers of the affected resource or dependency.",
-      "recovery": "Reduce load, restore the dependency, and add a tested prevention.",
+      "root_cause": "A lab was run but its decision, result, or checkpoint was not recorded.",
+      "diverted_path": "The Google Cloud Skills Boost platform plan path stops at the affected boundary and the evidence trail becomes incomplete.",
+      "blast_radius": "Consumers of Evidence Log and any downstream decision depending on it.",
+      "recovery": "Capture the architecture, observation, cost, and next verification.",
       "check": {
-        "metric": "error_count > 0",
-        "command": "gcloud logging read 'severity>=ERROR' --limit=20"
+        "metric": "plan:d4:no-evidence:resolved",
+        "command": "review d4 evidence for Evidence Log"
       }
     }
-  ],
-  "routing_rationale": "Separate control-plane intent from data-plane traffic, then make the failure boundary explicit."
+  ]
 };document.addEventListener('DOMContentLoaded',()=>new DiagramEngine('standalone-diagram',spec));</script></body></html>
