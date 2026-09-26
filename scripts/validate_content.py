@@ -54,6 +54,22 @@ def validate() -> tuple[list[str], list[str]]:
         fail(errors, "roadmap-content.html: citations must use [t]/[tN] website and [v]/[vN] video markers")
     if 'class="checklist-topic-reference"' not in roadmap_text:
         fail(errors, "roadmap-content.html: checklist is missing links to matching site topics")
+    checklist_items_markup = re.findall(
+        r'<li><label><input[^>]*data-roadmap-check=.*?</li>', roadmap_text, re.S | re.I
+    )
+    if any(item.count('class="checklist-topic-reference"') > 1 for item in checklist_items_markup):
+        fail(errors, "roadmap-content.html: a checklist item has more than one site-topic marker")
+    for item in checklist_items_markup:
+        if 'class="checklist-topic-reference"' in item and not re.search(r'href="pages/topic-\d+\.html#topic-\d+-item-\d+"', item):
+            fail(errors, "roadmap-content.html: internal site citations must target an item anchor")
+    for item_id, topic_no in (("0.1-5", "001"), ("0.1-12", "035")):
+        item = re.search(
+            rf'<li><label><input[^>]*data-roadmap-check="{re.escape(item_id)}".*?</li>',
+            roadmap_text,
+            re.S | re.I,
+        )
+        if not item or item.group(0).count('class="checklist-topic-reference"') != 1 or f'pages/topic-{topic_no}.html' not in item.group(0):
+            fail(errors, f"roadmap-content.html: {item_id} must point to primary topic {topic_no}")
     catalog = [page_meta(path) for path in pages]
     by_id = {item["roadmap_id"]: item for item in catalog if item["roadmap_id"]}
     expected_ids = [item[0] for item in EXPECTED]
@@ -76,6 +92,11 @@ def validate() -> tuple[list[str], list[str]]:
     for path in pages:
         text = path.read_text(encoding="utf-8", errors="ignore")
         page_texts[path.name] = text
+        anchor_ids = re.findall(r'<(?:div|span)[^>]*\bid="(topic-\d+-item-\d+)"[^>]*class="topic-index-entry"', text, re.I)
+        if not anchor_ids:
+            fail(errors, f"{path.name}: missing topic item index anchors")
+        if len(anchor_ids) != len(set(anchor_ids)):
+            fail(errors, f"{path.name}: duplicate topic item index anchors")
         if normalize_analogy_layout(text) != text:
             fail(errors, f"{path.name}: Cloud City scene or mapping is nested inside the beat display")
         if re.search(r'<ul\b[^>]*\bquiz-options\b', text, re.I) or re.search(r'<li\b[^>]*\bquiz-option\b', text, re.I):
@@ -94,8 +115,35 @@ def validate() -> tuple[list[str], list[str]]:
                 fail(errors, f"{path.name}: {section_id} section is missing inline concept references")
             if not section or 'class="claim-citation"' not in section.group(0):
                 fail(errors, f"{path.name}: {section_id} section is missing claim-level citations")
+        if path.name == "topic-001.html":
+            misconceptions = re.search(
+                r'<h3>Common Misconceptions</h3>(.*?)<h3>Vocabulary Starter</h3>',
+                text,
+                re.S | re.I,
+            )
+            first_misconception = re.search(r'<li\b[^>]*>.*?</li>', misconceptions.group(1), re.S | re.I) if misconceptions else None
+            if not first_misconception:
+                fail(errors, "topic-001.html: missing first Common Misconceptions item")
+            else:
+                item_markup = first_misconception.group(0)
+                citation_block = re.search(r'<sup\s+class="claim-citation".*?</sup>', item_markup, re.S | re.I)
+                citation_urls = re.findall(r'<a\b[^>]*href="https?://', citation_block.group(0), re.I) if citation_block else []
+                if len(citation_urls) != 2:
+                    fail(errors, "topic-001.html: /24 misconception must have exactly two citation links")
+                if "https://cloud.google.com/vpc/docs/subnets" not in item_markup:
+                    fail(errors, "topic-001.html: /24 misconception must cite the subnet allocation rules")
+                if "https://www.rfc-editor.org/rfc/rfc950" not in item_markup:
+                    fail(errors, "topic-001.html: generic IPv4 reservation rule must cite RFC 950")
+                if "https://cloud.google.com/vpc/docs/overview" in item_markup:
+                    fail(errors, "topic-001.html: /24 misconception must not cite the generic VPC overview")
         if 'class="demo-complete"' in text and 'class="demo-safety-banner"' not in text:
             fail(errors, f"{path.name}: live demo is missing safety banner")
+        if re.search(
+            r'</table>(?:\s*<p\s+class="[^"]*\btable-citation\b[^"]*"[^>]*>.*?</p>){2,}',
+            text,
+            re.S | re.I,
+        ):
+            fail(errors, f"{path.name}: a table has duplicate adjacent citation blocks")
         for attr in re.findall(r"(?:href|src)=\"([^\"]+)\"", text):
             target = local_target(path.parent, attr)
             if target and not target.exists():

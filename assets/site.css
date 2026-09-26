@@ -562,6 +562,14 @@ td {
 .topic-source-row strong { color: var(--text-main); }
 .inline-references { margin: 10px 0 16px; padding: 9px 12px; border-left: 3px solid var(--accent-cyan); background: rgba(56,189,248,.07); color: var(--text-dim); font-size: 11px; }
 .inline-references a { color: var(--accent-cyan); }
+.topic-item-index { margin: 16px 0 22px; padding: 12px 14px; border: 1px solid var(--panel-border); border-left: 3px solid var(--accent); border-radius: 6px; background: rgba(244,63,94,.05); }
+.topic-item-index h3 { margin: 0 0 9px; font-size: 13px; color: var(--accent); }
+.topic-index-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.topic-index-entry { scroll-margin-top: 96px; min-width: 0; }
+.topic-index-link { display: block; padding: 6px 8px; border-radius: 4px; color: var(--text-dim); font-size: 11px; line-height: 1.45; }
+.topic-index-entry:target .topic-index-link { color: var(--accent); background: rgba(244,63,94,.12); outline: 1px solid var(--accent); }
+.topic-index-link:hover, .topic-index-link:focus { color: var(--accent-cyan); background: rgba(56,189,248,.08); }
+@media (max-width:700px) { .topic-index-links { grid-template-columns:1fr; } }
 .claim-citation { white-space: nowrap; margin-left: 4px; font-size: .82em; }
 .claim-citation a { color: var(--accent-cyan); text-decoration: none; }
 .claim-citation a:hover { text-decoration: underline; }

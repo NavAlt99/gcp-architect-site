@@ -670,6 +670,17 @@ def item_text(items: list[str], index: int, limit: int = 180) -> str:
     return esc(value)
 
 
+def topic_item_index(meta: dict, items: list[str]) -> str:
+    """Expose stable, item-level anchors for roadmap citations."""
+    if not items:
+        return ""
+    links = "".join(
+        f'<div id="topic-{esc(meta["topic_no"])}-item-{index}" class="topic-index-entry"><a class="topic-index-link" href="#topic-{esc(meta["topic_no"])}-item-{index}">{index:02d}. {esc(value)}</a></div>'
+        for index, value in enumerate(items, 1)
+    )
+    return f'<nav class="topic-item-index" aria-label="Topic item index"><h3>Topic index</h3><div class="topic-index-links">{links}</div></nav>'
+
+
 def part1_addendum(meta: dict) -> str:
     title = esc(meta["title"])
     roadmap_id = esc(meta["roadmap_id"])
@@ -698,6 +709,7 @@ def part1_addendum(meta: dict) -> str:
     )
     return f"""<div class="compliance-addendum part1-complete">
 <p class="inline-references"><strong>Foundation references:</strong> {inline_reference_markup(meta)}</p>
+{topic_item_index(meta, items)}
 <h3>The Pain</h3><p>{title} becomes risky when teams treat <strong>{item_text(items, 0)}</strong> as a checkbox instead of a boundary with an owner, evidence, and recovery path.</p>
 <h3>The Idea in One Paragraph</h3><p>{title} is a design decision anchored by <strong>{item_text(items, 0)}</strong>. Connect it to <strong>{item_text(items, 1)}</strong>, make the dependency visible, and state what changes when the requirement or failure domain changes.</p>
 <h3>Real-World Examples</h3><ul>{examples}</ul>
@@ -945,11 +957,28 @@ def inline_reference_markup(meta: dict, count: int = 2) -> str:
 CLAIM_REFERENCE_RULES = (
     ("subnet", "Subnet IP allocation rules", "https://cloud.google.com/vpc/docs/subnets"),
     ("cidr", "Subnet IP allocation rules", "https://cloud.google.com/vpc/docs/subnets"),
+    ("network and broadcast", "Internet Standard Subnetting Procedure", "https://www.rfc-editor.org/rfc/rfc950"),
+    ("rfc 1918", "RFC 1918 private address space", "https://www.rfc-editor.org/rfc/rfc1918"),
+    ("ipv4", "Subnet IP allocation rules", "https://cloud.google.com/vpc/docs/subnets"),
+    ("ipv6", "VPC IPv6 documentation", "https://cloud.google.com/vpc/docs/using-ipv6"),
+    ("reserved", "Subnet IP allocation rules", "https://cloud.google.com/vpc/docs/subnets"),
+    ("usable ip", "Subnet IP allocation rules", "https://cloud.google.com/vpc/docs/subnets"),
+    ("tcp/ip", "VPC network overview", "https://cloud.google.com/vpc/docs/overview"),
+    ("layer 4", "Choosing a load balancer", "https://cloud.google.com/load-balancing/docs/choosing-load-balancer"),
+    ("layer 7", "Choosing a load balancer", "https://cloud.google.com/load-balancing/docs/choosing-load-balancer"),
+    ("load balanc", "Choosing a load balancer", "https://cloud.google.com/load-balancing/docs/choosing-load-balancer"),
+    ("health check", "Load-balancer health checks", "https://cloud.google.com/load-balancing/docs/health-check-concepts"),
     ("firewall", "VPC firewall rules", "https://cloud.google.com/firewall/docs/firewalls"),
+    ("stateful", "VPC firewall rules", "https://cloud.google.com/firewall/docs/firewalls"),
     ("dns", "Cloud DNS overview", "https://cloud.google.com/dns/docs/overview"),
     ("ttl", "Cloud DNS overview", "https://cloud.google.com/dns/docs/overview"),
     ("nat", "Cloud NAT overview", "https://cloud.google.com/nat/docs/overview"),
-    ("load balanc", "Choosing a load balancer", "https://cloud.google.com/load-balancing/docs/choosing-load-balancer"),
+    ("routing", "VPC routes", "https://cloud.google.com/vpc/docs/routes"),
+    ("bgp", "Cloud Router BGP overview", "https://cloud.google.com/network-connectivity/docs/router/concepts/overview"),
+    ("vpn", "Cloud VPN concepts", "https://cloud.google.com/network-connectivity/docs/vpn/concepts/overview"),
+    ("ipsec", "Cloud VPN concepts", "https://cloud.google.com/network-connectivity/docs/vpn/concepts/overview"),
+    ("tls", "SSL certificates for load balancing", "https://cloud.google.com/load-balancing/docs/ssl-certificates"),
+    ("certificate", "SSL certificates for load balancing", "https://cloud.google.com/load-balancing/docs/ssl-certificates"),
     ("iam", "IAM overview", "https://cloud.google.com/iam/docs/overview"),
     ("service account", "IAM service accounts", "https://cloud.google.com/iam/docs/service-accounts"),
     ("kubernetes", "GKE overview", "https://cloud.google.com/kubernetes-engine/docs/concepts/kubernetes-engine-overview"),
@@ -970,12 +999,12 @@ def claim_sources(meta: dict, claim_text: str) -> list[tuple[str, str]]:
     for keyword, label, url in CLAIM_REFERENCE_RULES:
         if keyword in lowered and (label, url) not in selected:
             selected.append((label, url))
-    for label, url, _reason in topic_references(meta):
-        if (label, url) not in selected:
-            selected.append((label, url))
-        if len(selected) >= 2:
-            break
-    return selected[:2]
+    # Once a claim-specific source is found, do not pad it with generic page
+    # references.  That was the source of misleading pairs such as a subnet
+    # reservation claim citing both subnet docs and a generic VPC overview.
+    if selected:
+        return selected[:2]
+    return [(label, url) for label, url, _reason in topic_references(meta)[:2]]
 
 
 def claim_citation(meta: dict, claim_text: str = "") -> str:
@@ -997,27 +1026,43 @@ def annotate_claims(text: str, meta: dict) -> str:
 
             def annotate_paragraph(paragraph: re.Match[str]) -> str:
                 attrs, content = paragraph.group(1), paragraph.group(2)
-                if "inline-references" in attrs or "table-citation" in attrs or "claim-citation" in content:
+                if "inline-references" in attrs or "table-citation" in attrs:
                     return paragraph.group(0)
+                content = re.sub(r'\s*<sup\s+class="claim-citation"[^>]*>.*?</sup>', "", content, flags=re.S | re.I)
                 return f'<p{attrs}>{content} <sup class="claim-citation">{claim_citation(meta, content)}</sup></p>'
 
             body = re.sub(r'<p\b([^>]*)>(.*?)</p>', annotate_paragraph, body, flags=re.S | re.I)
 
             def annotate_item(item: re.Match[str]) -> str:
-                content = item.group(1)
-                if "claim-citation" in content:
-                    return item.group(0)
-                return f'<li>{content} <sup class="claim-citation">{claim_citation(meta, content)}</sup></li>'
+                attrs, content = item.group(1), item.group(2)
+                content = re.sub(r'\s*<sup\s+class="claim-citation"[^>]*>.*?</sup>', "", content, flags=re.S | re.I)
+                return f'<li{attrs}>{content} <sup class="claim-citation">{claim_citation(meta, content)}</sup></li>'
 
-            body = re.sub(r'<li\b[^>]*>(.*?)</li>', annotate_item, body, flags=re.S | re.I)
+            body = re.sub(r'<li\b([^>]*)>(.*?)</li>', annotate_item, body, flags=re.S | re.I)
+            citation_class = r'class="[^"]*\btable-citation\b[^"]*"'
+            # Strip stale duplicate citations before adding exactly one after
+            # each table/code block.  This keeps repeated site builds
+            # idempotent even when the citation also has claim-citation.
             body = re.sub(
-                r'(<table\b[^>]*>.*?</table>)(?!\s*<p class="table-citation")',
+                rf'(<table\b[^>]*>.*?</table>)((?:\s*<p\s+{citation_class}[^>]*>.*?</p>)+)',
+                r'\1',
+                body,
+                flags=re.S | re.I,
+            )
+            body = re.sub(
+                r'(<table\b[^>]*>.*?</table>)(?!\s*<p\s+class="[^"]*\btable-citation\b[^"]*")',
                 lambda table: table.group(1) + f'<p class="table-citation claim-citation"><strong>Sources:</strong> {claim_citation(meta, table.group(1))}</p>',
                 body,
                 flags=re.S | re.I,
             )
             body = re.sub(
-                r'(<pre\b[^>]*>.*?</pre>)(?!\s*<p class="table-citation")',
+                rf'(<pre\b[^>]*>.*?</pre>)((?:\s*<p\s+{citation_class}[^>]*>.*?</p>)+)',
+                r'\1',
+                body,
+                flags=re.S | re.I,
+            )
+            body = re.sub(
+                r'(<pre\b[^>]*>.*?</pre>)(?!\s*<p\s+class="[^"]*\btable-citation\b[^"]*")',
                 lambda code: code.group(1) + (f'<p class="table-citation claim-citation"><strong>Sources:</strong> {claim_citation(meta, code.group(1))}</p>' if re.search(r'formula|example|usable|reserved|cidr|rto|rpo', code.group(1), re.I) else ""),
                 body,
                 flags=re.S | re.I,
@@ -1103,17 +1148,41 @@ def quiz_addendum() -> str:
 
 def replace_addendum(text: str, class_name: str, replacement: str) -> str:
     """Replace all copies of an addendum while retaining exactly one copy."""
-    pattern = re.compile(rf'<div class="compliance-addendum {re.escape(class_name)}">.*?</div>', re.S)
+    marker = f'<div class="compliance-addendum {class_name}">'
+    cursor = 0
     first = True
-
-    def replace(match: re.Match[str]) -> str:
-        nonlocal first
+    chunks: list[str] = []
+    while True:
+        start = text.find(marker, cursor)
+        if start == -1:
+            chunks.append(text[cursor:])
+            break
+        bounds = div_block_bounds(text, start)
+        if bounds is None:
+            # Preserve malformed input rather than deleting content when a
+            # block cannot be balanced; validation will report the issue.
+            chunks.append(text[cursor:])
+            break
+        _block_start, end = bounds
+        chunks.append(text[cursor:start])
         if first:
+            chunks.append(replacement)
             first = False
-            return replacement
-        return ""
-
-    return pattern.sub(replace, text)
+        cursor = end
+    result = "".join(chunks)
+    # Older builds could leave the remainder of a nested addendum outside its
+    # outer div because a non-balanced regex stopped at the first inner
+    # </div>. Once the real block has been replaced, discard that orphaned
+    # remainder up to the enclosing section boundary.
+    if class_name == "part1-complete":
+        fresh_start = result.find(marker)
+        fresh_bounds = div_block_bounds(result, fresh_start) if fresh_start >= 0 else None
+        if fresh_bounds:
+            _fresh_start, fresh_end = fresh_bounds
+            section_end = result.find("</section>", fresh_end)
+            if section_end >= 0 and "topic-index-entry" in result[fresh_end:section_end]:
+                result = result[:fresh_end] + result[section_end:]
+    return result
 
 
 def replace_inline_specs(text: str, specs: dict[str, dict]) -> str:
@@ -1270,8 +1339,7 @@ def navigation_markup(meta: dict, catalog: list[dict]) -> tuple[str, str, str, s
 
 def normalize_navigation(text: str, meta: dict, catalog: list[dict]) -> str:
     header, subnav, pagination, floating = navigation_markup(meta, catalog)
-    text = re.sub(r'\s*<!-- Navigation -->\s*<header class="site-nav">.*?</header>', "\n" + header, text, count=1, flags=re.S)
-    text = re.sub(r'\s*<header class="site-nav">.*?</header>', "\n" + header, text, count=1, flags=re.S)
+    text = re.sub(r'(?:\s*<!-- Navigation -->\s*)*<header class="site-nav">.*?</header>', "\n" + header, text, count=1, flags=re.S)
     text = re.sub(r'\s*<!-- Topic Sub-Navigation Strip -->.*?</nav>\s*', "\n", text, count=1, flags=re.S)
     text = re.sub(r'\s*<nav class="topic-subnav-strip"[^>]*>.*?</nav>\s*', "\n", text, count=1, flags=re.S)
     text = text.replace('<main class="main-content">', '<main class="main-content">\n' + subnav, 1)

@@ -50,6 +50,42 @@ CHECKLIST_REFERENCE_RULES = (
     ("Vertex AI", "Vertex AI documentation", "https://cloud.google.com/vertex-ai/docs"),
 )
 
+# A checklist term can appear in many topic pages because those pages mention
+# it as a dependency, troubleshooting item, or example.  The checklist link
+# should point to the one page that owns the concept, not every page that
+# happens to contain the same word.
+CHECKLIST_PRIMARY_TOPICS = {
+    "OSI": "001",
+    "TCP/IP": "001",
+    "IPv4": "001",
+    "RFC 1918": "001",
+    "CIDR": "001",
+    "IPv6": "001",
+    "DNS": "001",
+    "TTL": "001",
+    "TCP": "001",
+    "UDP": "001",
+    "HTTP/HTTPS": "001",
+    "TLS handshake": "001",
+    "certificates": "001",
+    "NAT": "001",
+    "Routing": "001",
+    "BGP": "001",
+    "VPN": "001",
+    "IPsec": "001",
+    "load balancing": "017",
+    "health checks": "017",
+    "firewall": "035",
+    "IAM": "009",
+    "service account": "009",
+    "Kubernetes": "014",
+    "Pub/Sub": "021",
+    "Terraform": "042",
+    "BigQuery": "051",
+    "Dataflow": "052",
+    "Vertex AI": "054",
+}
+
 
 def source_marker(sources: list[tuple[str, str]], kind: str = "t") -> str:
     markers = []
@@ -72,23 +108,34 @@ def site_topic_index() -> list[dict]:
     topics = []
     for path in sorted((SITE / "pages").glob("topic-*.html")):
         meta = page_meta(path)
-        topics.append({"topic_no": meta["topic_no"], "title": meta["title"], "text": topic_text(path)})
+        topics.append({
+            "topic_no": meta["topic_no"],
+            "roadmap_id": meta["roadmap_id"],
+            "title": meta["title"],
+            "text": topic_text(path),
+        })
     return topics
 
 
-def site_topic_marker(phrase: str, topics: list[dict]) -> str:
-    pattern = re.compile(rf"(?<![A-Za-z0-9]){re.escape(phrase)}(?![A-Za-z0-9])", re.I)
-    matches = [topic for topic in topics if pattern.search(topic["text"])]
-    if not matches:
+def site_topic_marker(phrase: str, topics: list[dict], section_items: dict[str, list[str]]) -> str:
+    topic_no = CHECKLIST_PRIMARY_TOPICS.get(phrase)
+    if not topic_no:
         return ""
-    links = ",".join(
-        f'<a href="pages/topic-{esc(topic["topic_no"])}.html" target="_self" aria-label="Site topic {esc(topic["topic_no"])}: {esc(topic["title"])}">{esc(topic["topic_no"])}</a>'
-        for topic in matches
+    topic = next((item for item in topics if item["topic_no"] == topic_no), None)
+    if not topic:
+        return ""
+    item_no = next(
+        (index for index, item in enumerate(section_items.get(topic["roadmap_id"], []), 1) if re.search(re.escape(phrase), item, re.I)),
+        1,
     )
-    return f'<sup class="checklist-topic-reference">site:[{links}]</sup>'
+    anchor = f'topic-{topic["topic_no"]}-item-{item_no}'
+    target_items = section_items.get(topic["roadmap_id"]) or [topic["title"]]
+    item_label = target_items[min(item_no - 1, len(target_items) - 1)]
+    link = f'<a href="pages/topic-{esc(topic["topic_no"])}.html#{esc(anchor)}" target="_self" aria-label="Primary site topic {esc(topic["topic_no"])} item {item_no}: {esc(item_label)}" title="Jump to topic item {item_no}">{esc(topic["topic_no"])}</a>'
+    return f'<sup class="checklist-topic-reference">site:[{link}]</sup>'
 
 
-def inline_checklist_item(value: str, title: str, topics: list[dict]) -> str:
+def inline_checklist_item(value: str, title: str, topics: list[dict], section_items: dict[str, list[str]]) -> str:
     """Attach proof links immediately after the concept they support."""
     matches = []
     for phrase, label, url in CHECKLIST_REFERENCE_RULES:
@@ -101,10 +148,14 @@ def inline_checklist_item(value: str, title: str, topics: list[dict]) -> str:
         return esc(value) + " " + source_marker(sources)
     parts = []
     cursor = 0
+    site_link_added = False
     for start, end, phrase, label, url in matches:
         parts.append(esc(value[cursor:end]))
         parts.append(source_marker([(label, url)]))
-        parts.append(site_topic_marker(phrase, topics))
+        if not site_link_added:
+            marker = site_topic_marker(phrase, topics, section_items)
+            parts.append(marker)
+            site_link_added = bool(marker)
         cursor = end
     parts.append(esc(value[cursor:]))
     return "".join(parts)
@@ -163,9 +214,10 @@ def build(source: Path) -> None:
     topic_total = sum(len(section["items"]) for section in sections)
     total = topic_total + len(labs)
     topics = site_topic_index()
+    section_items = {section["id"]: section["items"] for section in sections}
     sections_html = []
     for section in sections:
-        items = "".join(f'<li><label><input type="checkbox" data-roadmap-check="{esc(section["id"])}-{i}"> {inline_checklist_item(value, section["title"], topics)}</label></li>' for i, value in enumerate(section["items"], 1))
+        items = "".join(f'<li><label><input type="checkbox" data-roadmap-check="{esc(section["id"])}-{i}"> {inline_checklist_item(value, section["title"], topics, section_items)}</label></li>' for i, value in enumerate(section["items"], 1))
         citations = topic_source_row(section["title"])
         sections_html.append(f'<details class="roadmap-source-section"><summary><strong>{esc(section["id"])}</strong> {esc(section["title"])} <span class="roadmap-count">{len(section["items"])} items</span></summary><ul>{items}</ul>{citations}</details>')
     lab_html = "".join(f'<li><label><input type="checkbox" data-roadmap-check="lab-{i}"> {esc(value)}</label></li>' for i, value in enumerate(labs, 1))
